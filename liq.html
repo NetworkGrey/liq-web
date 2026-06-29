@@ -102,8 +102,8 @@
   .tab-btn:last-child { border-right: none; }
 
   .tab-btn[aria-selected="true"] {
-    background: var(--bg-raised);
-    color: var(--gold);
+    background: var(--gold);
+    color: var(--bg);
   }
 
   /* ── Input area ───────────────────────────────────────── */
@@ -193,6 +193,31 @@
     font-size: 0.85rem;
     color: var(--muted);
     margin-bottom: 8px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  details.held-collapse summary::-webkit-details-marker { display: none; }
+
+  details.held-collapse summary::before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 5px solid var(--muted);
+    transition: transform 0.15s ease;
+  }
+
+  details.held-collapse[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details.held-collapse summary::before { transition: none; }
   }
 
   .held-list {
@@ -333,6 +358,13 @@
     line-height: 1.6;
     color: var(--white);
     white-space: pre-wrap;
+  }
+
+  .prose-only hr,
+  .full-explanation .prose hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
   }
 
   .soft-message {
@@ -494,6 +526,8 @@
     tabReviewBtn.setAttribute("aria-selected", String(!askSelected));
     panelAsk.hidden = !askSelected;
     panelReview.hidden = askSelected;
+    output.innerHTML = "";
+    window.scrollTo(0, 0);
   }
 
   tabAskBtn.addEventListener("click", function () { selectTab("ask"); });
@@ -522,11 +556,14 @@
     return div.innerHTML;
   }
 
-  // Render a constrained markdown subset (**bold** only) safely,
-  // since the LLM reply is plain prose, not arbitrary HTML.
+  // Render a constrained markdown subset safely, since the LLM reply
+  // is plain prose, not arbitrary HTML: **bold**, and standalone "---"
+  // section dividers become a styled <hr> instead of rendering literally.
   function renderProse(text) {
     const escaped = escapeHtml(text || "");
-    return escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    return escaped
+      .replace(/^[ \t]*-{3,}[ \t]*$/gm, "<hr>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   }
 
   // Pull the first "R1,234" / "R1234.50" figure out of a prose string
