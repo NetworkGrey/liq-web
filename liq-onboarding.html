@@ -227,7 +227,6 @@
 
     /* CTA footer */
     .cta-footer {
-      text-align: center;
       padding: 64px 0 32px;
     }
     .cta-heading {
@@ -423,6 +422,18 @@
   }, { threshold: 0.12 });
 
   document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+  // Elements already within the viewport on load won't get an
+  // IntersectionObserver callback until the next scroll, so check
+  // and reveal them immediately on DOMContentLoaded.
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".reveal").forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add("visible");
+        observer.unobserve(el);
+      }
+    });
+  });
 </script>
 </body>
 </html>
