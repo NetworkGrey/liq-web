@@ -1,791 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoyaltyIQ — what your loyalty programmes are actually worth</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0E0E0E;
-    --bg-raised: #161616;
-    --gold: #C9A84C;
-    --white: #F2F1ED;
-    --muted: #7A7A74;
-    --border: #2A2A27;
-    --danger: #C9603C;
-    --font-sans: 'Inter', -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoyaltyIQ — what your loyalty programmes are actually worth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page:        #F5F7FA;
+      --bg-surface:     #FFFFFF;
+      --bg-surface-2:   #EEF2F7;
+      --border:         #CBD5E1;
+      --border-strong:  #94A3B8;
+      --ink-primary:    #111827;
+      --ink-secondary:  #4B5563;
+      --ink-muted:      #94A3B8;
+      --accent:         #2563EB;
+      --accent-hover:   #1D4ED8;
+      --accent-subtle:  #EFF6FF;
+      --friction-low:   #2563EB;
+      --friction-mid:   #D97706;
+      --friction-high:  #DC2626;
+      --divider-rule:   #CBD5E1;
+    }
 
-  * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--white);
-    font-family: var(--font-sans);
-  }
+    body {
+      background: var(--bg-page);
+      color: var(--ink-primary);
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 32px 24px 48px;
+    }
 
-  body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+    #app {
+      max-width: 700px;
+      margin: 0 auto;
+    }
 
-  a { color: var(--gold); }
+    /* Header */
+    header { margin-bottom: 32px; }
+    .logo { font-family: Rajdhani, sans-serif; font-size: 28px; font-weight: 600; color: var(--ink-primary); }
+    .logo .accent { color: var(--accent); }
+    .tagline { font-size: 13px; color: var(--ink-secondary); margin-top: 4px; }
 
-  button, input, textarea {
-    font-family: inherit;
-    border-radius: 0;
-  }
+    /* Tabs */
+    .tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .tab {
+      font-family: Rajdhani, sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 10px 20px;
+      color: var(--ink-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      cursor: pointer;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--ink-secondary); }
 
-  :focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-  }
+    /* Input area */
+    #input-area { margin-bottom: 32px; }
+    label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'JetBrains Mono', monospace; }
 
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
-  }
+    .input-row { display: flex; gap: 0; }
+    .input-row input { flex: 1; }
 
-  .wrap {
-    max-width: 640px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 24px 20px 64px;
-    flex: 1;
-  }
+    input[type="text"], input[type="number"] {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      padding: 9px 12px;
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      color: var(--ink-primary);
+      width: 100%;
+    }
+    input:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: -1px;
+      border-color: var(--accent);
+    }
+    input::placeholder { color: var(--ink-muted); }
 
-  /* ── Header ───────────────────────────────────────────── */
+    /* Spend grid */
+    .spend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 16px; }
+    .field-group label { margin-bottom: 4px; }
 
-  header.app-header {
-    margin-bottom: 32px;
-  }
+    /* Collapsible */
+    .collapsible { margin-bottom: 16px; }
+    .collapsible-toggle {
+      background: none;
+      border: none;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .collapsible-toggle:hover { color: var(--ink-primary); }
+    .chevron { display: inline-block; transition: transform 0.15s ease; font-size: 16px; line-height: 1; }
+    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-secondary); }
+    .checkbox-grid label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-  header.app-header h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
+    /* Buttons */
+    button[id$="-btn"] {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 0;
+      padding: 9px 20px;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    button[id$="-btn"]:hover { background: var(--accent-hover); }
+    button[id$="-btn"]:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  header.app-header p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.95rem;
-  }
+    /* Counter */
+    .counter { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); margin-top: 8px; }
 
-  /* ── Tabs ──────────────────────────────────────────────── */
+    /* Output */
+    #output-area { border-top: 1px solid var(--border); padding-top: 24px; min-height: 0; }
 
-  .tabs {
-    display: flex;
-    border: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
+    /* Hero number */
+    .hero-number {
+      font-family: Rajdhani, sans-serif;
+      font-size: 48px;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .hero-rule { border: none; border-top: 1px solid var(--border); margin-bottom: 16px; }
 
-  .tab-btn {
-    flex: 1;
-    background: var(--bg);
-    color: var(--muted);
-    border: none;
-    padding: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-right: 1px solid var(--border);
-  }
+    /* Prose */
+    .prose-body { font-size: 14px; line-height: 1.7; color: var(--ink-primary); }
+    .prose-body strong { font-weight: 500; }
+    .section-rule { border: none; border-top: 1px solid var(--divider-rule); margin: 16px 0; }
 
-  .tab-btn:last-child { border-right: none; }
+    /* Routing */
+    .routing-summary { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 500; color: var(--ink-primary); margin-bottom: 16px; }
+    .routing-list { border-top: 1px solid var(--border); }
+    .routing-row { display: grid; grid-template-columns: 120px 1fr 80px 70px; gap: 8px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .routing-category { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .routing-programme { font-weight: 500; color: var(--ink-primary); }
+    .routing-return { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 600; color: var(--accent); }
+    .routing-friction { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+    .friction-low { color: var(--friction-low); }
+    .friction-medium { color: var(--friction-mid); }
+    .friction-high { color: var(--friction-high); }
+    .routing-cta { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
+    .routing-cta:hover { text-decoration: underline; }
 
-  .tab-btn[aria-selected="true"] {
-    background: var(--gold);
-    color: var(--bg);
-  }
+    /* States */
+    .thinking { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-muted); padding: 16px 0; }
+    .error-msg { font-size: 13px; color: var(--friction-high); padding: 12px 0; }
 
-  /* ── Input area ───────────────────────────────────────── */
+    /* Footer */
+    footer { max-width: 700px; margin: 48px auto 0; font-size: 11px; color: var(--ink-muted); display: flex; gap: 8px; }
+    .sep { color: var(--border); }
 
-  .panel {
-    border: 1px solid var(--border);
-    background: var(--bg-raised);
-    padding: 16px;
-    margin-bottom: 24px;
-  }
+    /* Accessibility */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
 
-  .panel[hidden] { display: none; }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  input[type="text"],
-  input[type="number"] {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--white);
-    padding: 10px 12px;
-    font-size: 0.95rem;
-  }
-
-  input[type="text"]:focus,
-  input[type="number"]:focus {
-    border-color: var(--gold);
-  }
-
-  .ask-row {
-    display: flex;
-    gap: 8px;
-  }
-
-  .ask-row input[type="text"] { flex: 1; }
-
-  button.primary {
-    background: var(--gold);
-    color: var(--bg);
-    border: 1px solid var(--gold);
-    padding: 10px 18px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  button.primary:hover { background: #d8b961; }
-  button.primary:disabled {
-    background: var(--border);
-    border-color: var(--border);
-    color: var(--muted);
-    cursor: not-allowed;
-  }
-
-  .remaining {
-    margin-top: 10px;
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-family: var(--font-mono);
-  }
-
-  .spend-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  @media (max-width: 480px) {
-    .spend-grid { grid-template-columns: 1fr; }
-  }
-
-  details.held-collapse {
-    border-top: 1px solid var(--border);
-    padding-top: 12px;
-    margin-bottom: 16px;
-  }
-
-  details.held-collapse summary {
-    cursor: pointer;
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 8px;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  details.held-collapse summary::-webkit-details-marker { display: none; }
-
-  details.held-collapse summary::before {
-    content: "";
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-top: 4px solid transparent;
-    border-bottom: 4px solid transparent;
-    border-left: 5px solid var(--muted);
-    transition: transform 0.15s ease;
-  }
-
-  details.held-collapse[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    details.held-collapse summary::before { transition: none; }
-  }
-
-  .held-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .held-list label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--white);
-    font-size: 0.9rem;
-    margin-bottom: 0;
-  }
-
-  .held-list input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--gold);
-  }
-
-  /* ── Output area ──────────────────────────────────────── */
-
-  #output {
-    min-height: 40px;
-  }
-
-  .out-card {
-    border: 1px solid var(--border);
-    padding: 20px 16px;
-    margin-bottom: 16px;
-  }
-
-  .out-figure {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 2.4rem;
-    color: var(--gold);
-    text-align: left;
-    line-height: 1.1;
-    margin: 0 0 8px;
-    word-break: break-word;
-  }
-
-  .out-programme {
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--white);
-    margin: 0 0 12px;
-  }
-
-  .out-line {
-    font-size: 0.92rem;
-    color: var(--white);
-    margin: 0 0 8px;
-    line-height: 1.5;
-  }
-
-  .friction-tag {
-    display: inline-block;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 2px 6px;
-    border: 1px solid var(--border);
-    margin-bottom: 8px;
-  }
-
-  .friction-low   { color: var(--gold); border-color: var(--gold); }
-  .friction-medium{ color: var(--white); }
-  .friction-high  { color: var(--muted); }
-
-  .cta-link {
-    display: inline-block;
-    margin-top: 8px;
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    padding: 8px 14px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .cta-link:hover { background: var(--gold); color: var(--bg); }
-
-  .rec-row {
-    border-top: 1px solid var(--border);
-    padding: 12px 0;
-  }
-
-  .rec-row:first-of-type { border-top: none; padding-top: 0; }
-
-  .rec-cat {
-    font-size: 0.78rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 2px;
-  }
-
-  .rec-amount {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--gold);
-  }
-
-  .total-uplift {
-    border-top: 1px solid var(--border);
-    margin-top: 12px;
-    padding-top: 12px;
-    font-family: var(--font-mono);
-    font-size: 1rem;
-    color: var(--white);
-  }
-
-  .full-explanation summary {
-    cursor: pointer;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-
-  .full-explanation .prose {
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-top: 8px;
-    white-space: pre-wrap;
-  }
-
-  .prose-only {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--white);
-    white-space: pre-wrap;
-  }
-
-  .prose-only hr,
-  .full-explanation .prose hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 14px 0;
-  }
-
-  .soft-message {
-    font-size: 0.9rem;
-    color: var(--muted);
-    padding: 16px 0;
-  }
-
-  .loading {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--muted);
-    padding: 16px 0;
-  }
-
-  footer.app-footer {
-    text-align: center;
-    font-size: 0.72rem;
-    color: var(--muted);
-    padding: 24px 0 0;
-  }
-</style>
+    /* Mobile */
+    @media (max-width: 600px) {
+      body { padding: 20px 16px 40px; }
+      .spend-grid { grid-template-columns: 1fr; }
+      .routing-row { grid-template-columns: 1fr 1fr; }
+      .hero-number { font-size: 36px; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="wrap">
+  <div id="app">
 
-  <header class="app-header">
-    <h1>LoyaltyIQ</h1>
-    <p>Find out what your loyalty programmes are actually worth.</p>
-  </header>
+    <!-- HEADER -->
+    <header>
+      <div class="logo">Loyalty<span class="accent">IQ</span></div>
+      <p class="tagline">Find out what your loyalty programmes are actually worth.</p>
+    </header>
 
-  <div class="tabs" role="tablist" aria-label="Query mode">
-    <button class="tab-btn" id="tab-ask-btn" role="tab" aria-selected="true" aria-controls="panel-ask" type="button">Ask</button>
-    <button class="tab-btn" id="tab-review-btn" role="tab" aria-selected="false" aria-controls="panel-review" type="button">Review</button>
+    <!-- INPUT AREA -->
+    <section id="input-area">
+
+      <!-- TABS -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab active" role="tab" id="tab-ask" aria-selected="true" aria-controls="panel-ask">Ask</button>
+        <button class="tab" role="tab" id="tab-review" aria-selected="false" aria-controls="panel-review">Review</button>
+      </div>
+
+      <!-- ASK PANEL -->
+      <div id="panel-ask" role="tabpanel" aria-labelledby="tab-ask">
+        <label for="ask-input">Where are you shopping, or which programme are you considering?</label>
+        <div class="input-row">
+          <input type="text" id="ask-input" placeholder="e.g. I'm at Checkers spending about R800" autocomplete="off">
+          <button id="ask-btn" type="button">Ask</button>
+        </div>
+        <div id="ask-counter" class="counter" aria-live="polite"></div>
+      </div>
+
+      <!-- REVIEW PANEL -->
+      <div id="panel-review" role="tabpanel" aria-labelledby="tab-review" hidden>
+        <p class="panel-label">Enter your monthly spend per category.</p>
+        <div class="spend-grid">
+          <div class="field-group">
+            <label for="cat-groceries">Groceries</label>
+            <input type="number" id="cat-groceries" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label for="cat-fuel">Fuel</label>
+            <input type="number" id="cat-fuel" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label for="cat-pharmacy">Pharmacy &amp; health</label>
+            <input type="number" id="cat-pharmacy" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label for="cat-dining">Dining out</label>
+            <input type="number" id="cat-dining" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label for="cat-clothing">Clothing</label>
+            <input type="number" id="cat-clothing" placeholder="0" min="0" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label for="cat-travel">Travel</label>
+            <input type="number" id="cat-travel" placeholder="0" min="0" inputmode="numeric">
+          </div>
+        </div>
+
+        <!-- Programmes held — collapsible -->
+        <div class="collapsible">
+          <button class="collapsible-toggle" type="button" aria-expanded="false" aria-controls="programmes-held">
+            <span class="chevron">›</span> Programmes I already hold
+          </button>
+          <div id="programmes-held" hidden>
+            <div class="checkbox-grid">
+              <label><input type="checkbox" value="FNB eBucks"> FNB eBucks</label>
+              <label><input type="checkbox" value="Shoprite Xtra Savings"> Shoprite Xtra Savings</label>
+              <label><input type="checkbox" value="Emirates Skywards"> Emirates Skywards</label>
+              <label><input type="checkbox" value="Shell V+"> Shell V+</label>
+              <label><input type="checkbox" value="YumDealz"> YumDealz</label>
+              <label><input type="checkbox" value="Discovery Vitality"> Discovery Vitality</label>
+            </div>
+          </div>
+        </div>
+
+        <button id="analyse-btn" type="button">Analyse</button>
+        <div id="review-counter" class="counter" aria-live="polite"></div>
+      </div>
+
+    </section>
+
+    <!-- OUTPUT AREA -->
+    <section id="output-area" aria-live="polite" aria-label="LIQ response">
+      <!-- Populated by JS -->
+    </section>
+
   </div>
 
-  <section class="panel" id="panel-ask" role="tabpanel" aria-labelledby="tab-ask-btn">
-    <label for="ask-input">Where are you shopping, or which programme are you considering?</label>
-    <div class="ask-row">
-      <input type="text" id="ask-input" placeholder="e.g. I'm at Checkers spending about R800" autocomplete="off">
-      <button class="primary" id="ask-send" type="button">Ask</button>
-    </div>
-    <div class="remaining" id="ask-remaining" aria-hidden="true"></div>
-  </section>
+  <!-- FOOTER -->
+  <footer>
+    <span>Built by Network Grey</span>
+    <span class="sep">·</span>
+    <span>Powered by Anthropic Claude</span>
+  </footer>
 
-  <section class="panel" id="panel-review" role="tabpanel" aria-labelledby="tab-review-btn" hidden>
-    <div class="spend-grid">
-      <div>
-        <label for="cat-groceries">Groceries</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-groceries" placeholder="R0 / month">
-      </div>
-      <div>
-        <label for="cat-fuel">Fuel</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-fuel" placeholder="R0 / month">
-      </div>
-      <div>
-        <label for="cat-pharmacy">Pharmacy &amp; health</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-pharmacy" placeholder="R0 / month">
-      </div>
-      <div>
-        <label for="cat-dining">Dining out</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-dining" placeholder="R0 / month">
-      </div>
-      <div>
-        <label for="cat-clothing">Clothing</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-clothing" placeholder="R0 / month">
-      </div>
-      <div>
-        <label for="cat-travel">Travel</label>
-        <input type="number" inputmode="numeric" min="0" id="cat-travel" placeholder="R0 / month">
-      </div>
-    </div>
+  <script>
+    const API_BASE = "https://web-production-0a66a.up.railway.app";
+    const DAILY_LIMIT = 10;
 
-    <details class="held-collapse">
-      <summary>Programmes I already hold</summary>
-      <div class="held-list" id="held-list">
-        <label><input type="checkbox" value="FNB eBucks"> FNB eBucks</label>
-        <label><input type="checkbox" value="Shoprite Xtra Savings"> Shoprite Xtra Savings</label>
-        <label><input type="checkbox" value="Emirates Skywards"> Emirates Skywards</label>
-        <label><input type="checkbox" value="Shell V+"> Shell V+</label>
-        <label><input type="checkbox" value="YumDealz"> YumDealz</label>
-        <label><input type="checkbox" value="Discovery Vitality"> Discovery Vitality</label>
-      </div>
-    </details>
-
-    <button class="primary" id="review-send" type="button">Analyse</button>
-  </section>
-
-  <section id="output" aria-live="polite" aria-atomic="true"></section>
-
-  <footer class="app-footer">Built by Network Grey · Powered by Anthropic Claude</footer>
-
-</div>
-
-<script>
-(function () {
-  "use strict";
-
-  // ─── Config ─────────────────────────────────────────────
-  // Empty string = same-origin relative requests (liq.html is served
-  // by the same Flask app that exposes /chat and /analyse, so no
-  // cross-origin call — and therefore no CORS allowlist dependency —
-  // is needed). Set to an absolute origin here if liq.html is ever
-  // hosted separately from the API.
-  const API_BASE = "";
-
-  const STORAGE_SESSION_KEY = "liq_session_id";
-  const STORAGE_REMAINING_KEY = "liq_remaining";
-
-  // ─── Safe storage (degrades gracefully if localStorage unavailable) ───
-
-  const storage = {
-    get(key) {
-      try { return window.localStorage.getItem(key); } catch (e) { return null; }
-    },
-    set(key, value) {
-      try { window.localStorage.setItem(key, value); } catch (e) { /* no-op */ }
-    },
-  };
-
-  function makeId() {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") {
-      return window.crypto.randomUUID();
-    }
-    return "liq-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-  }
-
-  function getSessionId() {
-    let id = storage.get(STORAGE_SESSION_KEY);
-    if (!id) {
-      id = makeId();
-      storage.set(STORAGE_SESSION_KEY, id);
-    }
-    return id;
-  }
-
-  // ─── DOM refs ───────────────────────────────────────────
-
-  const tabAskBtn = document.getElementById("tab-ask-btn");
-  const tabReviewBtn = document.getElementById("tab-review-btn");
-  const panelAsk = document.getElementById("panel-ask");
-  const panelReview = document.getElementById("panel-review");
-
-  const askInput = document.getElementById("ask-input");
-  const askSend = document.getElementById("ask-send");
-  const askRemaining = document.getElementById("ask-remaining");
-
-  const reviewSend = document.getElementById("review-send");
-  const heldList = document.getElementById("held-list");
-
-  const output = document.getElementById("output");
-
-  // ─── Tabs ───────────────────────────────────────────────
-
-  function selectTab(which) {
-    const askSelected = which === "ask";
-    tabAskBtn.setAttribute("aria-selected", String(askSelected));
-    tabReviewBtn.setAttribute("aria-selected", String(!askSelected));
-    panelAsk.hidden = !askSelected;
-    panelReview.hidden = askSelected;
-    output.innerHTML = "";
-    window.scrollTo(0, 0);
-  }
-
-  tabAskBtn.addEventListener("click", function () { selectTab("ask"); });
-  tabReviewBtn.addEventListener("click", function () { selectTab("review"); });
-
-  // ─── Remaining-questions display ───────────────────────
-
-  function renderRemaining(remaining) {
-    if (typeof remaining !== "number") return;
-    storage.set(STORAGE_REMAINING_KEY, String(remaining));
-    askRemaining.textContent = remaining + " question" + (remaining === 1 ? "" : "s") + " left today";
-  }
-
-  (function initRemaining() {
-    const stored = storage.get(STORAGE_REMAINING_KEY);
-    if (stored !== null) {
-      askRemaining.textContent = stored + " question" + (stored === "1" ? "" : "s") + " left today";
-    }
-  })();
-
-  // ─── Helpers ────────────────────────────────────────────
-
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  // Render a constrained markdown subset safely, since the LLM reply
-  // is plain prose, not arbitrary HTML: **bold**, and standalone "---"
-  // section dividers become a styled <hr> instead of rendering literally.
-  function renderProse(text) {
-    const escaped = escapeHtml(text || "");
-    return escaped
-      .replace(/^[ \t]*-{3,}[ \t]*$/gm, "<hr>")
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  }
-
-  // Pull the first "R1,234" / "R1234.50" figure out of a prose string
-  // for the large ledger-style display. Returns null if none found.
-  function extractLeadFigure(text) {
-    if (!text) return null;
-    const match = text.match(/R\s?-?\d[\d,]*(\.\d+)?/);
-    return match ? match[0].replace(/\s+/g, "") : null;
-  }
-
-  function setLoading() {
-    output.innerHTML = '<div class="loading">Thinking…</div>';
-  }
-
-  function setSoftMessage(msg) {
-    output.innerHTML = '<div class="soft-message">' + escapeHtml(msg) + "</div>";
-  }
-
-  function frictionTagHtml(level) {
-    if (!level) return "";
-    const norm = String(level).toLowerCase();
-    const cls = norm === "low" ? "friction-low" : norm === "high" ? "friction-high" : "friction-medium";
-    return '<span class="friction-tag ' + cls + '">' + escapeHtml(norm) + "</span>";
-  }
-
-  // ─── Output renderers ──────────────────────────────────
-
-  // Modes 1 and 3 (from /chat): API only returns prose + mode today.
-  // Feature the leading rand figure (the signature element) and show
-  // the full reply beneath it.
-  function renderChatOutput(data) {
-    const text = data.response || "";
-    const figure = extractLeadFigure(text);
-
-    let html = '<div class="out-card">';
-    if (figure) {
-      html += '<div class="out-figure">' + escapeHtml(figure) + "</div>";
-    }
-    html += '<div class="prose-only">' + renderProse(text) + "</div>";
-    html += "</div>";
-
-    output.innerHTML = html;
-  }
-
-  // Mode 2 (from /analyse). `routing` is the structured contract from
-  // resolve_spend_routing() — empty {} until the engine is live, in
-  // which case we render prose only, per the brief.
-  function renderAnalyseOutput(data) {
-    const routing = data.routing || {};
-    const hasRouting = routing && typeof routing === "object" && Object.keys(routing).length > 0;
-
-    if (!hasRouting) {
-      output.innerHTML = '<div class="out-card"><div class="prose-only">' + renderProse(data.response || "") + "</div></div>";
-      return;
-    }
-
-    let html = '<div class="out-card">';
-
-    if (typeof routing.total_uplift_zar === "number") {
-      html += '<div class="out-figure">R' + escapeHtml(String(routing.total_uplift_zar)) + "</div>";
-    }
-    if (routing.summary) {
-      html += '<div class="out-line">' + renderProse(routing.summary) + "</div>";
-    }
-
-    if (Array.isArray(routing.recommendations) && routing.recommendations.length) {
-      routing.recommendations.forEach(function (rec) {
-        html += '<div class="rec-row">';
-        if (rec.category) {
-          html += '<div class="rec-cat">' + escapeHtml(rec.category) + "</div>";
+    function getSessionId() {
+      try {
+        let id = localStorage.getItem("liq_session_id");
+        if (!id) {
+          id = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+          localStorage.setItem("liq_session_id", id);
         }
-        if (rec.recommended_programme) {
-          html += '<div class="out-programme">' + escapeHtml(rec.recommended_programme) + "</div>";
+        return id;
+      } catch { return Math.random().toString(36).slice(2); }
+    }
+
+    function getRemaining() {
+      try { return parseInt(localStorage.getItem("liq_remaining") ?? DAILY_LIMIT, 10); }
+      catch { return DAILY_LIMIT; }
+    }
+
+    function setRemaining(n) {
+      try { localStorage.setItem("liq_remaining", n); } catch {}
+      updateCounters(n);
+    }
+
+    function updateCounters(n) {
+      const text = `${n} / ${DAILY_LIMIT} queries remaining`;
+      document.getElementById("ask-counter").textContent = text;
+      document.getElementById("review-counter").textContent = text;
+    }
+
+    function switchTab(active) {
+      // active = "ask" | "review"
+      ["ask", "review"].forEach(t => {
+        const tab = document.getElementById(`tab-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+        const isActive = t === active;
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-selected", isActive);
+        panel.hidden = !isActive;
+      });
+      clearOutput();           // FIX 2: clear output on tab switch
+      window.scrollTo(0, 0);  // FIX 1: scroll to top on tab switch
+    }
+
+    function clearOutput() {
+      document.getElementById("output-area").innerHTML = "";
+    }
+
+    function setLoading(isLoading) {
+      document.getElementById("ask-btn").disabled = isLoading;
+      document.getElementById("analyse-btn").disabled = isLoading;
+      if (isLoading) {
+        document.getElementById("output-area").innerHTML =
+          `<p class="thinking">Analysing<span class="dots"></span></p>`;
+      }
+    }
+
+    function renderResponse(data, mode) {
+      const area = document.getElementById("output-area");
+      area.innerHTML = "";
+
+      // Routing output (Mode 2 — only when routing is populated)
+      if (mode === "2" && data.routing && data.routing.recommendations?.length) {
+        area.appendChild(renderRouting(data.routing));
+      }
+
+      // LLM prose
+      if (data.response) {
+        area.appendChild(renderProse(data.response, mode));
+      }
+    }
+
+    function renderProse(text, mode) {
+      const div = document.createElement("div");
+      div.className = "prose-output";
+
+      // FIX 3: replace --- with <hr>
+      const cleaned = text
+        .replace(/^---+$/gm, '<hr class="section-rule">')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // Extract hero number for Mode 1 and 3
+      const randMatch = cleaned.match(/R(\d[\d,]+)/);
+      if ((mode === "1" || mode === "3") && randMatch) {
+        const hero = document.createElement("div");
+        hero.className = "hero-number";
+        hero.textContent = `R${randMatch[1]}`;
+        div.appendChild(hero);
+        const rule = document.createElement("hr");
+        rule.className = "hero-rule";
+        div.appendChild(rule);
+      }
+
+      const prose = document.createElement("div");
+      prose.className = "prose-body";
+      prose.innerHTML = cleaned;
+      div.appendChild(prose);
+
+      return div;
+    }
+
+    function renderRouting(routing) {
+      const div = document.createElement("div");
+      div.className = "routing-output";
+
+      if (routing.summary) {
+        const summary = document.createElement("div");
+        summary.className = "routing-summary";
+        summary.textContent = routing.summary;
+        div.appendChild(summary);
+      }
+
+      if (routing.recommendations?.length) {
+        const list = document.createElement("div");
+        list.className = "routing-list";
+        routing.recommendations.forEach(rec => {
+          const row = document.createElement("div");
+          row.className = "routing-row";
+          row.innerHTML = `
+            <div class="routing-category">${rec.category}</div>
+            <div class="routing-programme">${rec.recommended_programme}</div>
+            <div class="routing-return">R${rec.monthly_return_zar}</div>
+            <div class="routing-friction friction-${rec.friction}">${rec.friction.toUpperCase()}</div>
+            <div class="routing-action">${rec.action}</div>
+            ${rec.signup_url ? `<a class="routing-cta" href="${rec.signup_url}" target="_blank" rel="noopener">Sign up</a>` : ""}
+          `;
+          list.appendChild(row);
+        });
+        div.appendChild(list);
+      }
+
+      return div;
+    }
+
+    async function submitAsk() {
+      const input = document.getElementById("ask-input");
+      const message = input.value.trim();
+      if (!message) return;
+
+      const remaining = getRemaining();
+      if (remaining <= 0) {
+        showError("You've used your 10 daily queries. Come back tomorrow.");
+        return;
+      }
+
+      setLoading(true);
+      input.value = "";
+
+      try {
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message,
+            session_id: getSessionId(),
+            user_spec: {}
+          })
+        });
+
+        if (res.status === 429) {
+          setRemaining(0);
+          showError("You've used your 10 daily queries. Come back tomorrow.");
+          return;
         }
-        if (typeof rec.monthly_return_zar === "number") {
-          html += '<div class="rec-amount">R' + escapeHtml(String(rec.monthly_return_zar)) + "</div>";
+
+        const data = await res.json();
+        setRemaining(data.remaining ?? remaining - 1);
+        renderResponse(data, data.mode ?? "1");
+
+      } catch {
+        showError("LIQ is unavailable right now. Try again in a moment.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function submitAnalyse() {
+      const remaining = getRemaining();
+      if (remaining <= 0) {
+        showError("You've used your 10 daily queries. Come back tomorrow.");
+        return;
+      }
+
+      const categories = {
+        groceries: parseFloat(document.getElementById("cat-groceries").value) || 0,
+        fuel:      parseFloat(document.getElementById("cat-fuel").value) || 0,
+        pharmacy:  parseFloat(document.getElementById("cat-pharmacy").value) || 0,
+        dining:    parseFloat(document.getElementById("cat-dining").value) || 0,
+        clothing:  parseFloat(document.getElementById("cat-clothing").value) || 0,
+        travel:    parseFloat(document.getElementById("cat-travel").value) || 0,
+      };
+
+      const programmes_held = Array.from(
+        document.querySelectorAll("#programmes-held input:checked")
+      ).map(el => el.value);
+
+      setLoading(true);
+
+      try {
+        const res = await fetch(`${API_BASE}/analyse`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: "",
+            user_spec: { categories, programmes_held }
+          })
+        });
+
+        if (res.status === 429) {
+          setRemaining(0);
+          showError("You've used your 10 daily queries. Come back tomorrow.");
+          return;
         }
-        html += frictionTagHtml(rec.friction);
-        if (rec.action) {
-          html += '<div class="out-line">' + escapeHtml(rec.action) + "</div>";
-        }
-        if (rec.vs_current) {
-          html += '<div class="out-line">' + escapeHtml(rec.vs_current) + "</div>";
-        }
-        if (rec.signup_url) {
-          html += '<a class="cta-link" href="' + escapeHtml(rec.signup_url) + '" target="_blank" rel="noopener">Sign up</a>';
-        }
-        html += "</div>";
+
+        const data = await res.json();
+        setRemaining(remaining - 1);
+        renderResponse(data, "2");
+
+      } catch {
+        showError("LIQ is unavailable right now. Try again in a moment.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function showError(msg) {
+      const area = document.getElementById("output-area");
+      area.innerHTML = `<p class="error-msg">${msg}</p>`;
+    }
+
+    function initCollapsible() {
+      document.querySelectorAll(".collapsible-toggle").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const target = document.getElementById(btn.getAttribute("aria-controls"));
+          const expanded = btn.getAttribute("aria-expanded") === "true";
+          btn.setAttribute("aria-expanded", !expanded);
+          target.hidden = expanded;
+          btn.querySelector(".chevron").style.transform = expanded ? "rotate(0deg)" : "rotate(90deg)";
+        });
       });
     }
 
-    if (typeof routing.total_uplift_zar === "number") {
-      html += '<div class="total-uplift">Total uplift: R' + escapeHtml(String(routing.total_uplift_zar)) + "/month</div>";
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      updateCounters(getRemaining());
+      initCollapsible();
 
-    if (data.response) {
-      html += '<details class="full-explanation"><summary>Full explanation</summary><div class="prose">' + renderProse(data.response) + "</div></details>";
-    }
+      document.getElementById("tab-ask").addEventListener("click", () => switchTab("ask"));
+      document.getElementById("tab-review").addEventListener("click", () => switchTab("review"));
 
-    html += "</div>";
-    output.innerHTML = html;
-  }
+      document.getElementById("ask-btn").addEventListener("click", submitAsk);
+      document.getElementById("ask-input").addEventListener("keydown", e => {
+        if (e.key === "Enter") submitAsk();
+      });
 
-  // ─── Error handling ─────────────────────────────────────
-
-  function handleHttpError(status) {
-    if (status === 429) {
-      setSoftMessage("You've used your 10 daily questions. Come back tomorrow.");
-    } else {
-      setSoftMessage("LIQ is unavailable right now. Try again in a moment.");
-    }
-  }
-
-  function handleNetworkError() {
-    setSoftMessage("LIQ is unavailable right now. Try again in a moment.");
-  }
-
-  // ─── Requests ───────────────────────────────────────────
-
-  function postJson(path, body) {
-    return fetch(API_BASE + path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      document.getElementById("analyse-btn").addEventListener("click", submitAnalyse);
     });
-  }
-
-  function sendAsk() {
-    const message = askInput.value.trim();
-    if (!message) return;
-
-    askSend.disabled = true;
-    setLoading();
-
-    postJson("/chat", {
-      message: message,
-      session_id: getSessionId(),
-      user_spec: {},
-    })
-      .then(function (res) {
-        if (!res.ok) {
-          handleHttpError(res.status);
-          return null;
-        }
-        return res.json();
-      })
-      .then(function (data) {
-        if (!data) return;
-        if (typeof data.remaining === "number") renderRemaining(data.remaining);
-        if (!data.response) {
-          setSoftMessage("No advice returned. Try rephrasing your question.");
-          return;
-        }
-        renderChatOutput(data);
-        askInput.value = "";
-      })
-      .catch(handleNetworkError)
-      .finally(function () { askSend.disabled = false; });
-  }
-
-  function collectCategories() {
-    const ids = ["groceries", "fuel", "pharmacy", "dining", "clothing", "travel"];
-    const categories = {};
-    ids.forEach(function (key) {
-      const el = document.getElementById("cat-" + key);
-      const val = parseFloat(el.value);
-      if (!isNaN(val) && val > 0) categories[key] = val;
-    });
-    return categories;
-  }
-
-  function collectHeld() {
-    return Array.from(heldList.querySelectorAll("input[type=checkbox]:checked")).map(function (cb) {
-      return cb.value;
-    });
-  }
-
-  function sendReview() {
-    const categories = collectCategories();
-    if (Object.keys(categories).length === 0) {
-      setSoftMessage("Add at least one monthly spend amount to analyse.");
-      return;
-    }
-
-    reviewSend.disabled = true;
-    setLoading();
-
-    postJson("/analyse", {
-      message: "",
-      user_spec: {
-        categories: categories,
-        programmes_held: collectHeld(),
-      },
-    })
-      .then(function (res) {
-        if (!res.ok) {
-          handleHttpError(res.status);
-          return null;
-        }
-        return res.json();
-      })
-      .then(function (data) {
-        if (!data) return;
-        if (!data.response && (!data.routing || Object.keys(data.routing).length === 0)) {
-          setSoftMessage("No advice returned. Try rephrasing your question.");
-          return;
-        }
-        renderAnalyseOutput(data);
-      })
-      .catch(handleNetworkError)
-      .finally(function () { reviewSend.disabled = false; });
-  }
-
-  // ─── Wire up ────────────────────────────────────────────
-
-  askSend.addEventListener("click", sendAsk);
-  askInput.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") sendAsk();
-  });
-  reviewSend.addEventListener("click", sendReview);
-})();
-</script>
-
+  </script>
 </body>
 </html>
