@@ -150,6 +150,11 @@
     .prose-body { font-size: 14px; line-height: 1.7; color: var(--ink-primary); }
     .prose-body strong { font-weight: 500; }
     .section-rule { border: none; border-top: 1px solid var(--divider-rule); margin: 16px 0; }
+    .prose-h2 { font-family: Rajdhani, sans-serif; font-weight: 500; font-size: 18px; color: var(--ink-primary); margin: 20px 0 8px; }
+    .prose-h3 { font-family: Rajdhani, sans-serif; font-weight: 500; font-size: 16px; color: var(--ink-primary); margin: 16px 0 8px; }
+    .prose-table { border-collapse: collapse; width: 100%; margin: 12px 0 16px; font-family: Inter, sans-serif; font-size: 13px; }
+    .prose-table th, .prose-table td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+    .prose-table th { font-weight: 500; color: var(--ink-secondary); background: var(--bg-surface-2); }
 
     /* Routing */
     .routing-summary { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 500; color: var(--ink-primary); margin-bottom: 16px; }
@@ -355,18 +360,41 @@
       }
     }
 
+    function inlineFormat(s) {
+      return s
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    }
+
+    function renderMarkdownTable(tableLines) {
+      const parseRow = line => line.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+      const headerCells = parseRow(tableLines[0]);
+      const isSeparator = row => /^[\s:|-]+$/.test(row);
+      const bodyStart = tableLines[1] && isSeparator(tableLines[1]) ? 2 : 1;
+      const bodyRows = tableLines.slice(bodyStart).map(parseRow);
+
+      let html = '<table class="prose-table"><thead><tr>';
+      headerCells.forEach(c => { html += `<th>${inlineFormat(c)}</th>`; });
+      html += "</tr></thead><tbody>";
+      bodyRows.forEach(row => {
+        html += "<tr>";
+        row.forEach(c => { html += `<td>${inlineFormat(c)}</td>`; });
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      return html;
+    }
+
     function renderProse(text, mode) {
       const div = document.createElement("div");
       div.className = "prose-output";
 
-      // FIX 3: replace --- with <hr>
-      const cleaned = text
-        .replace(/^---+$/gm, '<hr class="section-rule">')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      // FIX: a "##" that appears mid-sentence (LLM didn't put it on its
+      // own line) is forced onto a new line before block parsing below.
+      const normalized = text.replace(/([^\n])##/g, "$1\n##");
 
-      // Extract hero number for Mode 1 and 3
-      const randMatch = cleaned.match(/R(\d[\d,]+)/);
+      // Extract hero number for Mode 1 and 3 (independent of markdown structure)
+      const randMatch = normalized.match(/R(\d[\d,]+)/);
       if ((mode === "1" || mode === "3") && randMatch) {
         const hero = document.createElement("div");
         hero.className = "hero-number";
@@ -375,6 +403,39 @@
         const rule = document.createElement("hr");
         rule.className = "hero-rule";
         div.appendChild(rule);
+      }
+
+      // Block-level parse: markdown tables, ## / # headings, --- rules.
+      // Everything else passes through with inline bold/italic only.
+      const lines = normalized.split("\n");
+      let cleaned = "";
+      let i = 0;
+      while (i < lines.length) {
+        const trimmed = lines[i].trim();
+
+        if (/^\|.*\|$/.test(trimmed)) {
+          const tableLines = [];
+          while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) {
+            tableLines.push(lines[i].trim());
+            i++;
+          }
+          cleaned += renderMarkdownTable(tableLines);
+          continue;
+        }
+
+        const h3Match = trimmed.match(/^##\s+(.*)/);
+        const h2Match = trimmed.match(/^#\s+(.*)/);
+
+        if (h3Match) {
+          cleaned += `<h3 class="prose-h3">${inlineFormat(h3Match[1])}</h3>`;
+        } else if (h2Match) {
+          cleaned += `<h2 class="prose-h2">${inlineFormat(h2Match[1])}</h2>`;
+        } else if (/^---+$/.test(trimmed)) {
+          cleaned += '<hr class="section-rule">';
+        } else {
+          cleaned += inlineFormat(lines[i]) + "\n";
+        }
+        i++;
       }
 
       const prose = document.createElement("div");
