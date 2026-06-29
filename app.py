@@ -273,6 +273,11 @@ def index():
     return send_from_directory(".", "liq.html")
 
 
+@app.route("/onboarding")
+def onboarding():
+    return send_from_directory(".", "liq-onboarding.html")
+
+
 @app.route("/analyse", methods=["POST"])
 def analyse():
     """

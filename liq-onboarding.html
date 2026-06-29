@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How LoyaltyIQ works</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page:       #F5F7FA;
+      --bg-surface:    #FFFFFF;
+      --bg-surface-2:  #EEF2F7;
+      --border:        #CBD5E1;
+      --border-strong: #94A3B8;
+      --ink-primary:   #111827;
+      --ink-secondary: #4B5563;
+      --ink-muted:     #94A3B8;
+      --accent:        #2563EB;
+      --accent-hover:  #1D4ED8;
+      --accent-subtle: #EFF6FF;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: var(--bg-page);
+      color: var(--ink-primary);
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 32px 64px;
+    }
+
+    /* Header */
+    .liq-header { margin-bottom: 48px; }
+    .liq-wordmark {
+      font-family: Rajdhani, sans-serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      margin-bottom: 6px;
+    }
+    .liq-wordmark .accent { color: var(--accent); }
+    .liq-tagline { font-size: 15px; color: var(--ink-secondary); max-width: 520px; }
+
+    /* Stat bar */
+    .stat-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      background: var(--bg-surface-2);
+      margin-bottom: 64px;
+    }
+    .stat {
+      padding: 20px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-number {
+      font-family: Rajdhani, sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+    }
+
+    /* Moments */
+    .moment {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+    .moment:last-of-type { border-bottom: 1px solid var(--border); }
+
+    .moment-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .moment-heading {
+      font-family: Rajdhani, sans-serif;
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--ink-primary);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .moment-body {
+      font-size: 14px;
+      color: var(--ink-secondary);
+      line-height: 1.7;
+    }
+
+    /* Mock blocks */
+    .mock {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      overflow: hidden;
+    }
+    .mock-section {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mock-section:last-child { border-bottom: none; }
+    .mock-label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .mock-input {
+      background: var(--bg-surface-2);
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      font-style: italic;
+    }
+    .mock-output {
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+    }
+    .mock-hero {
+      font-family: Rajdhani, sans-serif;
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .mock-programme {
+      font-weight: 500;
+      color: var(--ink-primary);
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .mock-desc {
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-bottom: 8px;
+    }
+    .mock-tags {
+      display: flex;
+      gap: 12px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .tag-low { color: var(--accent); }
+    .tag-high { color: #DC2626; }
+    .tag-mid  { color: #D97706; }
+
+    .mock-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 60px 50px;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .mock-row:last-child { border-bottom: none; }
+    .mock-row-cat { color: var(--ink-muted); text-transform: uppercase; font-size: 10px; }
+    .mock-row-prog { color: var(--ink-primary); font-family: Inter, sans-serif; }
+    .mock-row-val { color: var(--accent); font-family: Rajdhani, sans-serif; font-size: 16px; font-weight: 600; }
+
+    .mock-meta {
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      color: var(--ink-muted);
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .mock-field { margin-bottom: 6px; }
+    .mock-field-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ink-muted);
+      margin-bottom: 2px;
+    }
+    .mock-field-value {
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+    .mock-verdict {
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    /* CTA footer */
+    .cta-footer {
+      text-align: center;
+      padding: 64px 0 32px;
+    }
+    .cta-heading {
+      font-family: Rajdhani, sans-serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--ink-primary);
+      margin-bottom: 24px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #ffffff;
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 32px;
+      border: none;
+      border-radius: 0;
+      text-decoration: none;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .cta-btn:hover { background: var(--accent-hover); }
+    .cta-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      display: block;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .container { padding: 32px 16px 48px; }
+      .moment { grid-template-columns: 1fr; gap: 24px; }
+      .stat-bar { grid-template-columns: 1fr; }
+      .stat { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat:last-child { border-bottom: none; }
+      .mock-row { grid-template-columns: 70px 1fr 50px 40px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="liq-header">
+    <div class="liq-wordmark">Loyalty<span class="accent">IQ</span></div>
+    <p style="font-size:13px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px;letter-spacing:.04em;">SOUTH AFRICA'S LOYALTY PROGRAMME OPTIMISER</p>
+    <p class="liq-tagline">Find out exactly what your programmes are worth — and what you're leaving on the table.</p>
+  </header>
+
+  <!-- STAT BAR -->
+  <div class="stat-bar reveal">
+    <div class="stat">
+      <div class="stat-number">10.3</div>
+      <div class="stat-label">programmes held<br>on average</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">R420</div>
+      <div class="stat-label">avg left on the<br>table per month</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">6</div>
+      <div class="stat-label">programmes<br>in our KB</div>
+    </div>
+  </div>
+
+  <!-- MOMENT 1 -->
+  <div class="moment reveal">
+    <div class="moment-copy">
+      <div class="moment-label">Moment 01 — Choice</div>
+      <div class="moment-heading">When you're about to spend</div>
+      <p class="moment-body">You're at Checkers, filling up at Shell, or checking out online. LIQ tells you exactly which card to swipe and what you'll get back — in rands, right now.</p>
+    </div>
+    <div class="mock">
+      <div class="mock-section">
+        <div class="mock-label">You ask</div>
+        <div class="mock-input">"I'm at Checkers spending about R800"</div>
+      </div>
+      <div class="mock-section mock-output">
+        <div class="mock-hero">R200</div>
+        <div class="mock-programme">Shoprite Xtra Savings</div>
+        <div class="mock-desc">Swipe your Xtra Savings card. You'll get R200 back on this shop.</div>
+        <div class="mock-tags">
+          <span class="tag-low">LOW friction</span>
+          <span style="color:var(--ink-muted)">·</span>
+          <span style="color:var(--ink-muted)">Free to join</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOMENT 2 -->
+  <div class="moment reveal">
+    <div class="moment-copy">
+      <div class="moment-label">Moment 02 — Review</div>
+      <div class="moment-heading">When you want the full picture</div>
+      <p class="moment-body">Tell LIQ what you spend each month across groceries, fuel, pharmacy, dining, clothing, and travel. It diffs your spend against our verified programme database and shows you exactly what you're missing — and how easy each fix is.</p>
+    </div>
+    <div class="mock">
+      <div class="mock-section">
+        <div class="mock-label">Monthly uplift available</div>
+        <div class="mock-hero">R680</div>
+        <div style="font-size:10px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-top:2px">per month</div>
+      </div>
+      <div class="mock-section">
+        <div class="mock-row">
+          <span class="mock-row-cat">Groceries</span>
+          <span class="mock-row-prog">Xtra Savings</span>
+          <span class="mock-row-val">R420</span>
+          <span class="tag-low" style="font-size:9px;letter-spacing:.06em">LOW</span>
+        </div>
+        <div class="mock-row">
+          <span class="mock-row-cat">Pharmacy</span>
+          <span class="mock-row-prog">Vitality</span>
+          <span class="mock-row-val">R200</span>
+          <span class="tag-high" style="font-size:9px;letter-spacing:.06em">HIGH</span>
+        </div>
+        <div class="mock-row">
+          <span class="mock-row-cat">Fuel</span>
+          <span class="mock-row-prog">Shell V+</span>
+          <span class="mock-row-val">R180</span>
+          <span class="tag-low" style="font-size:9px;letter-spacing:.06em">LOW</span>
+        </div>
+        <div class="mock-meta">3 changes · 2 are free to make</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOMENT 3 -->
+  <div class="moment reveal">
+    <div class="moment-copy">
+      <div class="moment-label">Moment 03 — Join</div>
+      <div class="moment-heading">When you're weighing up a programme</div>
+      <p class="moment-body">Considering Discovery Vitality? Heard about eBucks? Tell LIQ what you spend and it'll calculate your actual monthly return, flag what you'd need to sign up, and give you a plain breakeven verdict.</p>
+    </div>
+    <div class="mock">
+      <div class="mock-section">
+        <div class="mock-label">You ask</div>
+        <div class="mock-input">"Is Discovery Vitality worth it? I spend R800 at Clicks and R600 on gym."</div>
+      </div>
+      <div class="mock-section mock-output">
+        <div class="mock-hero">~R650</div>
+        <div class="mock-desc">Discovery Vitality returns roughly R650/month at your spend level.</div>
+        <div class="mock-field">
+          <div class="mock-field-label">Friction</div>
+          <div class="mock-field-value" style="color:#DC2626">HIGH — requires Discovery Health or Life policy</div>
+        </div>
+        <div class="mock-field">
+          <div class="mock-field-label">Cost</div>
+          <div class="mock-field-value">R159/month (Vitality Active)</div>
+        </div>
+        <div class="mock-field">
+          <div class="mock-field-label">Verdict</div>
+          <div class="mock-verdict">Net positive if you already have Discovery cover.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA FOOTER -->
+  <div class="cta-footer reveal">
+    <div class="cta-heading">Ready? Start with a question.</div>
+    <a class="cta-btn" href="https://web-production-0a66a.up.railway.app/" target="_blank" rel="noopener">Open LoyaltyIQ →</a>
+    <span class="cta-sub">10 free questions per day · No account needed</span>
+  </div>
+
+</div>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
