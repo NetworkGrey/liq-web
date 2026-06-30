@@ -170,6 +170,19 @@
     .routing-cta { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
     .routing-cta:hover { text-decoration: underline; }
 
+    /* Chat thread */
+    .thread-turn { padding: 20px 0; border-bottom: 1px solid var(--border); }
+    .thread-turn:last-child { border-bottom: none; }
+    .thread-question {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-muted);
+      background: var(--bg-surface-2);
+      border-left: 2px solid var(--border);
+      padding: 7px 10px;
+      margin-bottom: 14px;
+    }
+
     /* States */
     .thinking { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-muted); padding: 16px 0; }
     .error-msg { font-size: 13px; color: var(--friction-high); padding: 12px 0; }
@@ -505,7 +518,8 @@
         tab.setAttribute("aria-selected", isActive);
         panel.hidden = !isActive;
       });
-      clearOutput();           // FIX 2: clear output on tab switch
+      clearOutput();
+      currentAnswerEl = null;
       window.scrollTo(0, 0);  // FIX 1: scroll to top on tab switch
     }
 
@@ -513,17 +527,32 @@
       document.getElementById("output-area").innerHTML = "";
     }
 
+    let currentAnswerEl = null;
+
     function setLoading(isLoading) {
       document.getElementById("ask-btn").disabled = isLoading;
       document.getElementById("analyse-btn").disabled = isLoading;
-      if (isLoading) {
-        document.getElementById("output-area").innerHTML =
-          `<p class="thinking">Analysing<span class="dots"></span></p>`;
-      }
     }
 
-    function renderResponse(data, mode) {
+    function appendTurn(question) {
       const area = document.getElementById("output-area");
+      const turn = document.createElement("div");
+      turn.className = "thread-turn";
+      const q = document.createElement("div");
+      q.className = "thread-question";
+      q.textContent = question;
+      const a = document.createElement("div");
+      a.className = "thread-answer";
+      a.innerHTML = `<p class="thinking">Analysing…</p>`;
+      turn.appendChild(q);
+      turn.appendChild(a);
+      area.appendChild(turn);
+      currentAnswerEl = a;
+      turn.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderResponse(data, mode, targetEl) {
+      const area = targetEl || document.getElementById("output-area");
       area.innerHTML = "";
 
       // Routing output (Mode 2 — only when routing is populated)
@@ -663,12 +692,13 @@
 
       const remaining = getRemaining();
       if (remaining <= 0) {
-        showError("You've used your 10 daily queries. Come back tomorrow.");
+        showError("You've used your daily query limit. Come back tomorrow.");
         return;
       }
 
-      setLoading(true);
       input.value = "";
+      appendTurn(message);
+      setLoading(true);
 
       try {
         const res = await fetch(`${API_BASE}/chat`, {
@@ -683,16 +713,16 @@
 
         if (res.status === 429) {
           setRemaining(0);
-          showError("You've used your 10 daily queries. Come back tomorrow.");
+          currentAnswerEl.innerHTML = `<p class="error-msg">You've used your daily query limit. Come back tomorrow.</p>`;
           return;
         }
 
         const data = await res.json();
         setRemaining(data.remaining ?? remaining - 1);
-        renderResponse(data, data.mode ?? "1");
+        renderResponse(data, data.mode ?? "1", currentAnswerEl);
 
       } catch {
-        showError("LIQ is unavailable right now. Try again in a moment.");
+        if (currentAnswerEl) currentAnswerEl.innerHTML = `<p class="error-msg">LIQ is unavailable right now. Try again in a moment.</p>`;
       } finally {
         setLoading(false);
       }
@@ -701,7 +731,7 @@
     async function submitAnalyse() {
       const remaining = getRemaining();
       if (remaining <= 0) {
-        showError("You've used your 10 daily queries. Come back tomorrow.");
+        showError("You've used your daily query limit. Come back tomorrow.");
         return;
       }
 
@@ -725,6 +755,8 @@
         programmes_held.push(entry);
       });
 
+      const area = document.getElementById("output-area");
+      area.innerHTML = `<p class="thinking">Analysing…</p>`;
       setLoading(true);
 
       try {
@@ -739,7 +771,7 @@
 
         if (res.status === 429) {
           setRemaining(0);
-          showError("You've used your 10 daily queries. Come back tomorrow.");
+          showError("You've used your daily query limit. Come back tomorrow.");
           return;
         }
 
