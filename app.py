@@ -279,6 +279,18 @@ def stats():
     })
 
 
+@app.route("/session", methods=["GET"])
+def session_status():
+    """Return remaining query count for a session without consuming a query."""
+    session_id = request.args.get("session_id", "")
+    if not session_id:
+        return jsonify({"remaining": RATE_LIMIT})
+    prune_sessions()
+    s = get_session(session_id)
+    remaining = max(0, RATE_LIMIT - s["message_count"])
+    return jsonify({"remaining": remaining})
+
+
 @app.route("/ping", methods=["GET", "OPTIONS"])
 def ping():
     return jsonify({"pong": True})

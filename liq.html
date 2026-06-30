@@ -786,6 +786,12 @@
       initCollapsible();
       initDrilldowns();
 
+      // Sync remaining count from server on load — overrides stale localStorage
+      fetch(`${API_BASE}/session?session_id=${encodeURIComponent(getSessionId())}`)
+        .then(r => r.json())
+        .then(d => { if (d.remaining != null) setRemaining(d.remaining); })
+        .catch(() => {});
+
       document.getElementById("tab-ask").addEventListener("click", () => switchTab("ask"));
       document.getElementById("tab-review").addEventListener("click", () => switchTab("review"));
 
