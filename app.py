@@ -23,7 +23,7 @@ MAX_TOKENS      = 2048
 TEMPERATURE     = 0.3
 MAX_INPUT_LEN   = 8000
 CONTEXT_TURNS   = 10       # message pairs kept per session
-SESSION_TTL     = 1800     # 30 minutes in seconds
+SESSION_TTL     = 86400    # 24 hours in seconds — TEMPORARY, revert to 1800 (30 min) before public launch
 RATE_LIMIT      = 100      # messages per day per session — TEMPORARY, raised for testing phase, revert to 10 before public launch
 FRICTION_PENALTY = 50      # rand penalty per friction point in optimiser
 
