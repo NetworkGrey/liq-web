@@ -272,6 +272,22 @@
       .reveal { opacity: 1; transform: none; transition: none; }
     }
 
+    /* Disclaimer banner */
+    .disclaimer-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--ink-muted);
+      padding: 12px 14px;
+      margin-bottom: 24px;
+      border-radius: 0;
+    }
+    .disclaimer-banner .disc-icon { font-size: 14px; color: var(--ink-muted); margin-top: 1px; flex-shrink: 0; line-height: 1.6; }
+    .disclaimer-banner p { font-size: 11px; line-height: 1.6; color: var(--ink-secondary); margin: 0; }
+    .disclaimer-banner strong { color: var(--ink-primary); font-weight: 500; }
+
     /* Mobile */
     @media (max-width: 640px) {
       .container { padding: 32px 16px 48px; }
@@ -400,6 +416,18 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- DISCLAIMER BANNER -->
+  <div class="disclaimer-banner">
+    <span class="disc-icon" aria-hidden="true">ⓘ</span>
+    <p>
+      LIQ provides general information based on publicly available loyalty programme data.
+      It is <strong>not financial advice</strong>, and Network Grey is not a financial advisor.
+      LIQ can make mistakes — always verify details directly with the relevant programme before acting.
+      Network Grey has no commercial affiliation with the loyalty programmes referenced, beyond
+      ordinary publicly available information.
+    </p>
   </div>
 
   <!-- CTA FOOTER -->
