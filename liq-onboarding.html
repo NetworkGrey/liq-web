@@ -94,13 +94,12 @@
     .moment:last-of-type { border-bottom: 1px solid var(--border); }
 
     .moment-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 500;
+      font-family: Rajdhani, sans-serif;
+      font-size: 32px;
+      font-weight: 600;
       color: var(--accent);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
       margin-bottom: 12px;
+      line-height: 1;
     }
     .moment-heading {
       font-family: Rajdhani, sans-serif;
@@ -258,6 +257,27 @@
       display: block;
     }
 
+    /* Disclaimer section */
+    .disclaimer-section {
+      padding: 48px 0 32px;
+      border-top: 1px solid var(--border);
+      margin-top: 16px;
+    }
+    .disclaimer-heading {
+      font-family: Rajdhani, sans-serif;
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+    }
+    .disclaimer-body {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--ink-secondary);
+      max-width: 620px;
+    }
+    .disclaimer-body strong { color: var(--ink-primary); font-weight: 500; }
+
     /* Scroll reveal */
     .reveal {
       opacity: 0;
@@ -320,7 +340,7 @@
       <div class="stat-label">avg left on the<br>table per month</div>
     </div>
     <div class="stat">
-      <div class="stat-number">6</div>
+      <div class="stat-number" id="stat-kb-count">3</div>
       <div class="stat-label">programmes<br>in our KB</div>
     </div>
   </div>
@@ -437,6 +457,18 @@
     <span class="cta-sub">10 free questions per day · No account needed</span>
   </div>
 
+  <!-- DISCLAIMER SECTION -->
+  <div class="disclaimer-section">
+    <div class="disclaimer-heading">Disclaimer</div>
+    <p class="disclaimer-body">
+      LIQ provides general information based on publicly available loyalty programme data.
+      It is <strong>not financial advice</strong>, and Network Grey is not a financial advisor.
+      LIQ can make mistakes — always verify details directly with the relevant programme before acting.
+      Network Grey has no commercial affiliation with the loyalty programmes referenced, beyond
+      ordinary publicly available information.
+    </p>
+  </div>
+
 </div>
 
 <script>
@@ -450,6 +482,16 @@
   }, { threshold: 0.12 });
 
   document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+
+  // Dynamic programme count from KB
+  fetch("https://web-production-0a66a.up.railway.app/stats")
+    .then(r => r.json())
+    .then(d => {
+      if (d.programme_count != null) {
+        document.getElementById("stat-kb-count").textContent = d.programme_count;
+      }
+    })
+    .catch(() => {}); // silently keep the static fallback on failure
 
   // Elements already within the viewport on load won't get an
   // IntersectionObserver callback until the next scroll, so check

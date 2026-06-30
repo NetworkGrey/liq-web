@@ -267,6 +267,15 @@ def health():
     return jsonify({"status": "ok"})
 
 
+@app.route("/stats", methods=["GET"])
+def stats():
+    """Return live KB counts derived from the cached KB."""
+    kb = get_kb()
+    return jsonify({
+        "programme_count": len(kb.get("programmes", [])),
+    })
+
+
 @app.route("/ping", methods=["GET", "OPTIONS"])
 def ping():
     return jsonify({"pong": True})
