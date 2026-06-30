@@ -271,8 +271,11 @@ def health():
 def stats():
     """Return live KB counts derived from the cached KB."""
     kb = get_kb()
+    # Only count programmes with a populated LLM context block — placeholder
+    # records exist for upcoming programmes but have no context written yet.
+    live = [p for p in kb.get("programmes", []) if p.get("LLM context block")]
     return jsonify({
-        "programme_count": len(kb.get("programmes", [])),
+        "programme_count": len(live),
     })
 
 
