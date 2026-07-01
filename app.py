@@ -537,6 +537,26 @@ def stats():
     })
 
 
+@app.route("/debug-routing", methods=["GET"])
+def debug_routing():
+    """Temporary diagnostic — remove before public launch."""
+    kb = get_kb()
+    test_spec = {"categories": {"groceries": 3500, "fuel": 1200}, "programmes_held": []}
+    result = resolve_spend_routing(test_spec, kb)
+    index = _programme_index(kb)
+    sample_earn = kb.get("earn_rates", [])[:3]
+    sample_prog = [{k: v for k, v in p.items() if k in ("Programme name", "_id")} for p in kb.get("programmes", [])[:4]]
+    return jsonify({
+        "routing_result": result,
+        "programme_count": len(kb.get("programmes", [])),
+        "earn_rate_count": len(kb.get("earn_rates", [])),
+        "redemption_count": len(kb.get("redemptions", [])),
+        "earn_by_programme_keys": list(index["earn_rates"].keys()),
+        "sample_programmes": sample_prog,
+        "sample_earn_rates": sample_earn,
+    })
+
+
 @app.route("/session", methods=["GET"])
 def session_status():
     """Return remaining query count for a session without consuming a query."""
