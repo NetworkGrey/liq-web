@@ -322,7 +322,20 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
         return {}
 
     index = _programme_index(kb)
-    programmes_held = set(user_spec.get("programmes_held") or [])
+    # liq.html sends programmes_held as a list of {"name": ..., "tier": ...,
+    # "balance": ...} objects (to capture tier/balance for future use), not
+    # plain strings as originally specified. Normalise both shapes here so
+    # set() never receives an unhashable dict — this previously crashed
+    # /analyse with an uncaught TypeError whenever any "programmes I already
+    # hold" checkbox was ticked, since Ask never sends this field and Review
+    # always does.
+    raw_held = user_spec.get("programmes_held") or []
+    programmes_held = set()
+    for entry in raw_held:
+        if isinstance(entry, str):
+            programmes_held.add(entry)
+        elif isinstance(entry, dict) and entry.get("name"):
+            programmes_held.add(entry["name"])
 
     result_categories = {}
     uncategorised_matches: dict[str, list[str]] = {}
