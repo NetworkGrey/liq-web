@@ -171,23 +171,270 @@ def build_system_prompt(context_blocks: list[str], routing_output: dict | None) 
 
 
 # ─── Spend Routing Engine ─────────────────────────────────────────────────────
-# PLACEHOLDER — to be implemented in the next instruction once UX output
-# format is confirmed. This function will:
-#   1. Accept a user spend profile (categories + monthly amounts)
-#   2. Pull earn rates and redemption values from the KB
-#   3. Calculate ZAR return per programme per category
-#   4. Apply friction scoring
-#   5. Rank and return routing advice
+# Verified against live KB structure 1 July 2026:
+#   - Earn rates: Spend category (24 options) + Earn rate unit (31 free-form
+#     options) is NOT reliably comparable across programmes. ZAR return rate is
+#     only populated on a handful of records (mostly 0 or unset).
+#   - Redemption options: Return value % IS reliably populated for Discovery
+#     Vitality (25% HealthyFood, 25% HealthyCare, etc.) and Clicks ClubCard
+#     (2-4% cashback), using a DIFFERENT category vocabulary than Earn rates
+#     (Groceries/Health / gym/Travel/... vs Grocery/Fuel/Dining/...).
+#   - Shell V+ and Clicks ClubCard put their real rand-comparable rate directly
+#     on Earn rates (R/litre, %) — these resolve without needing the fallback.
 #
-# The LLM receives the output of this function, not raw KB data.
+# Design: for each user spend category, try Earn rates first (only records
+# whose Earn rate unit is directly rand-comparable — a %, or a R/litre-style
+# flat rand rate); if no rand-comparable Earn rates record matches, fall back
+# to Redemption options Return value % using the category-alias map below.
+# Points-based mechanics (Points per rand, Miles per rand, Points per activity,
+# etc.) are NOT converted to Rand — there is no reliable, verified exchange
+# rate for eBucks/Vitality points on a per-category basis, and guessing one
+# would violate the anti-fabrication principle. These are surfaced to the LLM
+# as "not directly comparable" rather than silently omitted or estimated.
+
+CATEGORY_ALIASES: dict[str, dict[str, list[str]]] = {
+    "groceries": {
+        "earn_rates":  ["Grocery"],
+        "redemptions": ["Groceries"],
+    },
+    "fuel": {
+        "earn_rates":  ["Fuel", "Petrol/diesel at participating Engen stations"],
+        "redemptions": [],
+    },
+    "pharmacy": {
+        "earn_rates":  ["Pharmacy (RSA/eSwatini)", "Health / gym"],
+        "redemptions": ["Health / gym"],
+    },
+    "dining": {
+        "earn_rates":  ["Dining"],
+        "redemptions": ["Entertainment"],
+    },
+    "clothing": {
+        "earn_rates":  [],
+        "redemptions": [],
+    },
+    "travel": {
+        "earn_rates":  ["Travel", "Flights"],
+        "redemptions": ["Travel"],
+    },
+    "online_shopping": {
+        "earn_rates":  ["Online"],
+        "redemptions": ["Shopping voucher"],
+    },
+    "baby": {
+        "earn_rates":  ["Baby products (excl. legislated products)"],
+        "redemptions": [],
+    },
+}
+
+RAND_COMPARABLE_UNITS = {
+    "% cashback",
+    "%",
+    "R/litre",
+    "R/litre (max)",
+    "Rand per litre (max)",
+    "ZAR per litre",
+    "Rand back per month (max R150)",
+}
+
+PERCENT_UNITS = {"% cashback", "%"}
+PER_LITRE_UNITS = {
+    "R/litre", "R/litre (max)", "Rand per litre (max)", "ZAR per litre",
+}
+
+
+def _programme_index(kb: dict) -> dict:
+    programmes_by_name = {p.get("Programme name"): p for p in kb.get("programmes", [])}
+
+    earn_by_programme: dict[str, list[dict]] = {}
+    for rate in kb.get("earn_rates", []):
+        for link in rate.get("Programme") or []:
+            name = link.get("name") if isinstance(link, dict) else None
+            if name:
+                earn_by_programme.setdefault(name, []).append(rate)
+
+    redemptions_by_programme: dict[str, list[dict]] = {}
+    for redemption in kb.get("redemptions", []):
+        for link in redemption.get("Programme") or []:
+            name = link.get("name") if isinstance(link, dict) else None
+            if name:
+                redemptions_by_programme.setdefault(name, []).append(redemption)
+
+    return {
+        "programmes": programmes_by_name,
+        "earn_rates": earn_by_programme,
+        "redemptions": redemptions_by_programme,
+    }
+
+
+def _select_name(field_value) -> str | None:
+    """Airtable singleSelect fields arrive as {"id":..,"name":..,"color":..} or None."""
+    if isinstance(field_value, dict):
+        return field_value.get("name")
+    return None
+
+
+def _best_earn_match(earn_rates: list[dict], kb_categories: list[str]) -> dict | None:
+    candidates = []
+    for rate in earn_rates:
+        category = _select_name(rate.get("Spend category"))
+        unit = _select_name(rate.get("Earn rate unit"))
+        if category in kb_categories and unit in RAND_COMPARABLE_UNITS:
+            candidates.append(rate)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda r: r.get("Earn rate value") or 0)
+
+
+def _best_redemption_match(redemptions: list[dict], kb_categories: list[str]) -> dict | None:
+    candidates = [
+        r for r in redemptions
+        if _select_name(r.get("Category")) in kb_categories
+        and r.get("Return value %") is not None
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda r: r.get("Return value %") or 0)
+
 
 def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
     """
-    PLACEHOLDER — spend routing engine.
-    Returns an empty dict until implemented.
-    Replace this function body with the full engine in the next instruction.
+    Deterministic spend routing engine. Diffs user_spec["categories"]
+    (category -> monthly Rand spend) against the KB and returns per-category
+    best-programme recommendations plus a total monthly uplift estimate.
+
+    Returns {} if user_spec has no usable categories (unchanged placeholder
+    behaviour for Mode 1/3 queries that don't need routing).
     """
-    return {}
+    categories = user_spec.get("categories") or {}
+    if not categories:
+        return {}
+
+    index = _programme_index(kb)
+    programmes_held = set(user_spec.get("programmes_held") or [])
+
+    result_categories = {}
+    uncategorised_matches: dict[str, list[str]] = {}
+    total_uplift = 0.0
+    new_programmes_recommended: set[str] = set()
+
+    for user_category, monthly_spend in categories.items():
+        alias = CATEGORY_ALIASES.get(user_category)
+        if not alias:
+            result_categories[user_category] = {
+                "monthly_spend": monthly_spend,
+                "best_programme": None,
+                "return_type": "unmapped_category",
+                "notes": f"'{user_category}' is not a category LIQ currently maps to the KB.",
+            }
+            continue
+
+        best_percent = None
+        best_per_litre = None
+
+        for programme_name, programme in index["programmes"].items():
+            earn_rates = index["earn_rates"].get(programme_name, [])
+            redemptions = index["redemptions"].get(programme_name, [])
+
+            earn_match = _best_earn_match(earn_rates, alias["earn_rates"])
+            source_table = None
+            record = None
+            if earn_match:
+                record, source_table = earn_match, "earn_rates"
+            else:
+                redemption_match = _best_redemption_match(redemptions, alias["redemptions"])
+                if redemption_match:
+                    record, source_table = redemption_match, "redemptions"
+
+            if record is None:
+                for rate in earn_rates:
+                    category = _select_name(rate.get("Spend category"))
+                    unit = _select_name(rate.get("Earn rate unit"))
+                    if category in alias["earn_rates"] and unit not in RAND_COMPARABLE_UNITS:
+                        uncategorised_matches.setdefault(user_category, [])
+                        if programme_name not in uncategorised_matches[user_category]:
+                            uncategorised_matches[user_category].append(programme_name)
+                continue
+
+            if source_table == "earn_rates":
+                unit = _select_name(record.get("Earn rate unit"))
+                value = record.get("Earn rate value") or 0
+                return_type = "percent" if unit in PERCENT_UNITS else "per_litre"
+            else:
+                value = record.get("Return value %") or 0
+                return_type = "percent"
+
+            candidate = {
+                "programme_name": programme_name,
+                "record": record,
+                "source_table": source_table,
+                "return_type": return_type,
+                "value": value,
+            }
+
+            if return_type == "percent":
+                if best_percent is None or value > best_percent["value"]:
+                    best_percent = candidate
+            else:
+                if best_per_litre is None or value > best_per_litre["value"]:
+                    best_per_litre = candidate
+
+        best_overall = best_percent or best_per_litre
+        alternative = best_per_litre if best_percent else None
+
+        if best_overall is None:
+            result_categories[user_category] = {
+                "monthly_spend": monthly_spend,
+                "best_programme": None,
+                "return_type": "no_match",
+                "notes": "No programme in the current verified KB has a priceable rate for this category.",
+            }
+            continue
+
+        programme_name = best_overall["programme_name"]
+        programme = index["programmes"].get(programme_name, {})
+        record = best_overall["record"]
+        return_type = best_overall["return_type"]
+        value = best_overall["value"]
+
+        entry = {
+            "monthly_spend": monthly_spend,
+            "best_programme": programme_name,
+            "return_type": return_type,
+            "return_rate": value,
+            "source_table": best_overall["source_table"],
+            "friction_score": programme.get("Friction score"),
+            "requires_financial_product": programme.get("Requires financial product", False),
+            "notes": record.get("Conditions / notes") or record.get("Notes") or "",
+        }
+
+        if return_type == "percent":
+            estimated_return = round(monthly_spend * (value / 100), 2)
+            entry["estimated_monthly_return"] = estimated_return
+            total_uplift += estimated_return
+            if programme_name not in programmes_held:
+                new_programmes_recommended.add(programme_name)
+
+        if alternative:
+            entry["alternative"] = {
+                "programme": alternative["programme_name"],
+                "return_type": alternative["return_type"],
+                "return_rate": alternative["value"],
+                "notes": "Not directly comparable to the percent-based recommendation above — "
+                         "this is a flat per-litre rate and cannot be priced without a fuel price assumption.",
+            }
+
+        result_categories[user_category] = entry
+
+    friction_penalty_applied = FRICTION_PENALTY * len(new_programmes_recommended)
+    total_uplift_net = round(total_uplift - friction_penalty_applied, 2)
+
+    return {
+        "categories": result_categories,
+        "uncategorised_kb_matches": uncategorised_matches,
+        "total_monthly_uplift": total_uplift_net,
+        "friction_penalty_applied": friction_penalty_applied,
+    }
 
 
 # ─── Mode Detection ───────────────────────────────────────────────────────────
