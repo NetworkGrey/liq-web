@@ -75,7 +75,7 @@ def fetch_airtable_table(table_id: str) -> list[dict]:
         offset = data.get("offset")
         if not offset:
             break
-    return [r["fields"] for r in records]
+    return [{**r["fields"], "_id": r["id"]} for r in records]
 
 
 def load_kb() -> dict:
@@ -244,21 +244,30 @@ PER_LITRE_UNITS = {
 
 
 def _programme_index(kb: dict) -> dict:
-    programmes_by_name = {p.get("Programme name"): p for p in kb.get("programmes", [])}
+    programmes = kb.get("programmes", [])
+    programmes_by_name = {p.get("Programme name"): p for p in programmes}
+    # REST API returns linked fields as record ID arrays; build id→name for resolution.
+    id_to_name = {p.get("_id"): p.get("Programme name") for p in programmes if p.get("_id")}
+
+    def _linked_names(field_value) -> list[str]:
+        """Resolve Programme linked field — handles both REST (str IDs) and MCP (dicts)."""
+        names = []
+        for link in field_value or []:
+            if isinstance(link, dict):
+                names.append(link.get("name"))
+            elif isinstance(link, str):
+                names.append(id_to_name.get(link))
+        return [n for n in names if n]
 
     earn_by_programme: dict[str, list[dict]] = {}
     for rate in kb.get("earn_rates", []):
-        for link in rate.get("Programme") or []:
-            name = link.get("name") if isinstance(link, dict) else None
-            if name:
-                earn_by_programme.setdefault(name, []).append(rate)
+        for name in _linked_names(rate.get("Programme")):
+            earn_by_programme.setdefault(name, []).append(rate)
 
     redemptions_by_programme: dict[str, list[dict]] = {}
     for redemption in kb.get("redemptions", []):
-        for link in redemption.get("Programme") or []:
-            name = link.get("name") if isinstance(link, dict) else None
-            if name:
-                redemptions_by_programme.setdefault(name, []).append(redemption)
+        for name in _linked_names(redemption.get("Programme")):
+            redemptions_by_programme.setdefault(name, []).append(redemption)
 
     return {
         "programmes": programmes_by_name,
@@ -268,9 +277,11 @@ def _programme_index(kb: dict) -> dict:
 
 
 def _select_name(field_value) -> str | None:
-    """Airtable singleSelect fields arrive as {"id":..,"name":..,"color":..} or None."""
+    """Airtable singleSelect fields: REST API returns a plain string; MCP returns a dict."""
     if isinstance(field_value, dict):
         return field_value.get("name")
+    if isinstance(field_value, str):
+        return field_value
     return None
 
 
