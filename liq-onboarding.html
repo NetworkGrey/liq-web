@@ -330,6 +330,47 @@
       .reveal { opacity: 1; transform: none; transition: none; }
     }
 
+    /* Programme marquee bar */
+    .programme-marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      margin-bottom: 40px;
+      background: var(--bg-surface-2);
+    }
+    .programme-marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee-scroll 32s linear infinite;
+    }
+    .programme-marquee-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      letter-spacing: .04em;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+    }
+    .programme-marquee-item::after {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: var(--border-strong);
+      margin-left: 32px;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .programme-marquee-track { animation: none; }
+      .programme-marquee { overflow-x: auto; }
+    }
+
     /* Disclaimer banner */
     .disclaimer-banner {
       display: flex;
@@ -391,6 +432,24 @@
       <li>No jargon, no small print headache, just a straight answer in plain language</li>
       <li>Ask as little or as much as you like — you're always in control of what you share</li>
     </ul>
+  </div>
+
+  <!-- PROGRAMME MARQUEE -->
+  <div class="programme-marquee" aria-hidden="true">
+    <div class="programme-marquee-track">
+      <span class="programme-marquee-item">DISCOVERY VITALITY</span>
+      <span class="programme-marquee-item">FNB EBUCKS</span>
+      <span class="programme-marquee-item">SHELL V+</span>
+      <span class="programme-marquee-item">CLICKS CLUBCARD</span>
+      <span class="programme-marquee-item">SHOPRITE XTRA SAVINGS</span>
+      <span class="programme-marquee-item">ABSA REWARDS</span>
+      <span class="programme-marquee-item">DISCOVERY VITALITY</span>
+      <span class="programme-marquee-item">FNB EBUCKS</span>
+      <span class="programme-marquee-item">SHELL V+</span>
+      <span class="programme-marquee-item">CLICKS CLUBCARD</span>
+      <span class="programme-marquee-item">SHOPRITE XTRA SAVINGS</span>
+      <span class="programme-marquee-item">ABSA REWARDS</span>
+    </div>
   </div>
 
   <!-- MOMENT 1 -->
