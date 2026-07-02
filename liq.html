@@ -1,483 +1,1012 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LoyaltyIQ — what your loyalty programmes are actually worth</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LoyaltyIQ — product interface</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<style>
     :root {
-      --bg-page:        #F5F7FA;
-      --bg-surface:     #FFFFFF;
-      --bg-surface-2:   #EEF2F7;
-      --border:         #CBD5E1;
-      --border-strong:  #94A3B8;
-      --ink-primary:    #111827;
-      --ink-secondary:  #4B5563;
-      --ink-muted:      #94A3B8;
-      --accent:         #2563EB;
-      --accent-hover:   #1D4ED8;
-      --accent-subtle:  #EFF6FF;
-      --friction-low:   #2563EB;
-      --friction-mid:   #D97706;
-      --friction-high:  #DC2626;
-      --divider-rule:   #CBD5E1;
+      --page: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --surface-3: #e5eaf2;
+      --ink: #0f172a;
+      --ink-2: #334155;
+      --ink-3: #64748b;
+      --muted: #94a3b8;
+      --border: #cbd5e1;
+      --border-soft: #dbe3ee;
+      --blue: #1457e6;
+      --blue-hover: #0f49c7;
+      --blue-dark: #0b2e75;
+      --blue-soft: #edf4ff;
+      --shadow: 0 14px 36px rgba(15, 23, 42, .08);
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, .05);
+      --radius: 0;
+      --max: 1120px;
+
+      /* Font stacks */
+      --font-body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-heading: Rajdhani, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+
+      /* Fixed content type scale */
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-md: 17px;
+      --text-lg: 28px;
+      --text-xl: 34px;
+      --text-2xl: 44px;
+
+      /* Functional display tokens */
+      --text-hero: clamp(48px, 6vw, 76px);
+      --text-hero-mobile: 46px;
+      --text-logo: 34px;
+      --text-answer: 48px;
+      --text-answer-mobile: 40px;
+      --text-route: 24px; /* deliberate compact route value, smaller than section headings */
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      background: var(--bg-page);
-      color: var(--ink-primary);
-      font-family: Inter, sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
       min-height: 100vh;
-      padding: 32px 24px 48px;
+      margin: 0;
+      background:
+        linear-gradient(rgba(20,87,230,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,87,230,.035) 1px, transparent 1px),
+        var(--page);
+      background-size: 40px 40px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      max-width: 1220px;
+      margin: 28px auto;
+      padding: 0 22px;
+    }
+
+    .page-card {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .nav {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .wordmark {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--text-xl);
+      letter-spacing: -.02em;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .wordmark span { color: var(--blue); }
+
+    .nav-pill {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 7px 12px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      border-radius: var(--radius);
+    }
+
+    .hero {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 70px 10px 38px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      color: var(--blue);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 auto 20px;
+      max-width: 760px;
+      font-family: var(--font-heading);
+      font-size: var(--text-hero);
+      line-height: .92;
+      letter-spacing: -.035em;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    h1 .accent { color: var(--blue); }
+
+    .hero-copy {
+      max-width: 670px;
+      margin: 0 auto;
+      color: var(--ink-2);
+      font-size: var(--text-md);
+    }
+
+    .section {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 10px;
+    }
+
+    .interface-intro {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .intro-card {
+      min-height: 128px;
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(180deg,#fff,#f9fbff);
+      border-radius: var(--radius);
+      padding: 22px 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intro-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--blue);
+    }
+
+    .intro-card-label {
+      font-family: var(--font-mono);
+      color: var(--blue);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .intro-card-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+
+    .intro-card p {
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      line-height: 1.6;
     }
 
     #app {
-      max-width: 700px;
+      max-width: var(--max);
       margin: 0 auto;
+      padding: 0 10px 48px;
     }
 
-    /* Header */
-    header { margin-bottom: 32px; }
-    .logo { font-family: Rajdhani, sans-serif; font-size: 28px; font-weight: 600; color: var(--ink-primary); }
-    .logo .accent { color: var(--accent); }
-    .tagline { font-size: 13px; color: var(--ink-secondary); margin-top: 4px; }
+    .workspace {
+      max-width: 780px;
+      margin: 18px auto 0;
+    }
 
-    /* Tabs */
-    .tab-bar { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    /* Stacked mode selector */
+    .tab-bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      border: 1px solid var(--border-soft);
+      background: var(--surface-2);
+      box-shadow: var(--shadow-soft);
+    }
+
     .tab {
-      font-family: Rajdhani, sans-serif;
-      font-size: 15px;
-      font-weight: 500;
-      padding: 10px 20px;
-      color: var(--ink-muted);
-      border: none;
-      border-bottom: 2px solid transparent;
-      background: none;
-      cursor: pointer;
-      margin-bottom: -1px;
-    }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .tab:hover:not(.active) { color: var(--ink-secondary); }
-
-    /* Input area */
-    #input-area { margin-bottom: 32px; }
-    label { display: block; font-size: 12px; font-weight: 500; color: var(--ink-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; font-family: 'JetBrains Mono', monospace; }
-
-    .input-row { display: flex; gap: 0; }
-    .input-row input { flex: 1; }
-
-    input[type="text"], input[type="number"] {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 0;
-      padding: 9px 12px;
-      font-family: Inter, sans-serif;
-      font-size: 14px;
-      color: var(--ink-primary);
       width: 100%;
-    }
-    input:focus {
-      outline: 2px solid var(--accent);
-      outline-offset: -1px;
-      border-color: var(--accent);
-    }
-    input::placeholder { color: var(--ink-muted); }
-
-    /* Spend grid */
-    .spend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-bottom: 16px; }
-    .field-group label { margin-bottom: 4px; }
-
-    /* Collapsible */
-    .collapsible { margin-bottom: 16px; }
-    .collapsible-toggle {
-      background: none;
-      border: none;
-      font-family: Inter, sans-serif;
-      font-size: 13px;
-      color: var(--ink-secondary);
+      text-align: left;
+      border: 0;
+      border-left: 4px solid transparent;
+      border-bottom: 1px solid var(--border-soft);
+      background: transparent;
+      color: var(--ink-3);
       cursor: pointer;
-      padding: 0;
+      padding: 20px 20px 18px;
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.01em;
+    }
+
+    .tab::after {
+      content: "Run this mode";
+      display: block;
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      line-height: 1.4;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #tab-ask::after { content: "Before you spend"; }
+    #tab-review::after { content: "Audit monthly spend"; }
+
+    .tab[aria-expanded="true"] { border-bottom-color: transparent; }
+
+    .tab.active {
+      color: var(--ink);
+      background: #fff;
+      border-left-color: var(--blue);
+    }
+
+    .tab:hover:not(.active) {
+      color: var(--ink-2);
+      background: rgba(255,255,255,.6);
+    }
+
+    .panel-shell {
+      border: 0;
+      border-left: 4px solid var(--blue);
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(255,255,255,.98);
+      box-shadow: none;
+    }
+
+    .panel-shell[hidden] { display: none; }
+
+    #panel-ask,
+    #panel-review {
+      padding: 28px;
+    }
+
+    .panel-label {
+      margin: 0 0 18px;
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .08em;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0;
+      align-items: stretch;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      min-height: 50px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      padding: 11px 13px;
+    }
+
+    .input-row input { border-right: 0; }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: -1px;
+      border-color: var(--blue);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    button[id$="-btn"] {
+      min-height: 50px;
+      border: 1px solid var(--blue);
+      border-radius: var(--radius);
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      padding: 11px 24px;
+      box-shadow: 0 12px 24px rgba(20,87,230,.18);
+      transition: background .16s ease, transform .16s ease, box-shadow .16s ease;
+    }
+
+    button[id$="-btn"]:hover {
+      background: var(--blue-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(20,87,230,.23);
+    }
+
+    button[id$="-btn"]:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .counter {
+      margin-top: 12px;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: .02em;
+    }
+
+    .spend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .field-group {
+      padding: 14px;
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(180deg,#fff,#f9fbff);
+    }
+
+    .field-group label { margin-bottom: 7px; }
+
+    .collapsible {
+      margin: 2px 0 18px;
+      border: 1px solid var(--border-soft);
+      background: #fff;
+    }
+
+    .collapsible-toggle {
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-    .collapsible-toggle:hover { color: var(--ink-primary); }
-    .chevron { display: inline-block; transition: transform 0.15s ease; font-size: 16px; line-height: 1; }
-    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-secondary); }
-    .checkbox-grid label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-    /* Buttons */
-    button[id$="-btn"] {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 0;
-      padding: 9px 20px;
-      font-family: Inter, sans-serif;
-      font-size: 13px;
-      font-weight: 500;
+      gap: 9px;
+      padding: 14px 16px;
+      border: 0;
+      background: var(--surface-2);
+      color: var(--ink-2);
       cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      text-align: left;
     }
-    button[id$="-btn"]:hover { background: var(--accent-hover); }
-    button[id$="-btn"]:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* Counter */
-    .counter { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); margin-top: 8px; }
+    .collapsible-toggle:hover { color: var(--ink); background: #e9eff7; }
 
-    /* Output */
-    #output-area { border-top: 1px solid var(--border); padding-top: 24px; min-height: 0; }
-
-    /* Hero number */
-    .hero-number {
-      font-family: Rajdhani, sans-serif;
-      font-size: 48px;
-      font-weight: 600;
-      color: var(--accent);
+    .chevron {
+      display: inline-block;
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: var(--text-md);
       line-height: 1;
-      letter-spacing: -1px;
-      margin-bottom: 8px;
-    }
-    .hero-rule { border: none; border-top: 1px solid var(--border); margin-bottom: 16px; }
-
-    /* Prose */
-    .prose-body { font-size: 14px; line-height: 1.7; color: var(--ink-primary); }
-    .prose-body strong { font-weight: 500; }
-    .section-rule { border: none; border-top: 1px solid var(--divider-rule); margin: 16px 0; }
-    .prose-h2 { font-family: Rajdhani, sans-serif; font-weight: 500; font-size: 18px; color: var(--ink-primary); margin: 20px 0 8px; }
-    .prose-h3 { font-family: Rajdhani, sans-serif; font-weight: 500; font-size: 16px; color: var(--ink-primary); margin: 16px 0 8px; }
-    .prose-table { border-collapse: collapse; width: 100%; margin: 12px 0 16px; font-family: Inter, sans-serif; font-size: 13px; }
-    .prose-table th, .prose-table td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
-    .prose-table th { font-weight: 500; color: var(--ink-secondary); background: var(--bg-surface-2); }
-
-    /* Routing */
-    .routing-summary { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 500; color: var(--ink-primary); margin-bottom: 16px; }
-    .routing-list { border-top: 1px solid var(--border); }
-    .routing-row { display: grid; grid-template-columns: 120px 1fr 80px 70px; gap: 8px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-    .routing-category { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-    .routing-programme { font-weight: 500; color: var(--ink-primary); }
-    .routing-return { font-family: Rajdhani, sans-serif; font-size: 20px; font-weight: 600; color: var(--accent); }
-    .routing-friction { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
-    .friction-low { color: var(--friction-low); }
-    .friction-medium { color: var(--friction-mid); }
-    .friction-high { color: var(--friction-high); }
-    .routing-cta { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; }
-    .routing-cta:hover { text-decoration: underline; }
-
-    /* Chat thread */
-    .thread-turn { padding: 20px 0; border-bottom: 1px solid var(--border); }
-    .thread-turn:last-child { border-bottom: none; }
-    .thread-question {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--ink-muted);
-      background: var(--bg-surface-2);
-      border-left: 2px solid var(--border);
-      padding: 7px 10px;
-      margin-bottom: 14px;
+      transition: transform .15s ease;
     }
 
-    /* States */
-    .thinking { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-muted); padding: 16px 0; }
-    .error-msg { font-size: 13px; color: var(--friction-high); padding: 12px 0; }
+    #programmes-held { padding: 10px 16px 16px; }
 
-    /* Disclaimer banner */
-    .disclaimer-banner {
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+    }
+
+    .checkbox-grid label,
+    .prog-checkbox-label {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      background: var(--bg-surface-2);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--ink-muted);
-      padding: 12px 14px;
-      margin-bottom: 24px;
-      border-radius: 0;
-    }
-    .disclaimer-banner .disc-icon { font-size: 14px; color: var(--ink-muted); margin-top: 1px; flex-shrink: 0; line-height: 1.6; }
-    .disclaimer-banner p { font-size: 11px; line-height: 1.6; color: var(--ink-secondary); margin: 0; }
-    .disclaimer-banner strong { color: var(--ink-primary); font-weight: 500; }
-
-    /* Programme drill-downs */
-    .programme-row { margin-bottom: 4px; }
-    .prog-checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--ink-secondary); padding: 6px 0; }
-    .prog-drilldown {
-      margin: 4px 0 12px 24px;
-      padding: 10px 12px;
-      background: var(--bg-surface-2);
-      border-left: 2px solid var(--border);
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .field-group-sm { flex: 1; min-width: 160px; }
-    .field-group-sm label {
-      display: block;
-      font-size: 10px;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      margin: 0;
+      padding: 8px 0;
+      color: var(--ink-2);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
       font-weight: 500;
-      color: var(--ink-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0;
+      text-transform: none;
     }
+
+    input[type="checkbox"] {
+      accent-color: var(--blue);
+      width: 14px;
+      height: 14px;
+    }
+
+    .programme-row { border-bottom: 1px solid var(--border-soft); }
+    .programme-row:last-child { border-bottom: 0; }
+
+    .prog-drilldown {
+      margin: 0 0 12px 22px;
+      padding: 12px;
+      background: var(--surface-2);
+      border-left: 4px solid var(--blue);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field-group-sm { min-width: 0; }
+
+    .field-group-sm label {
+      margin-bottom: 5px;
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+    }
+
     .field-group-sm select,
     .field-group-sm input {
-      width: 100%;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 0;
-      padding: 6px 8px;
-      font-family: Inter, sans-serif;
-      font-size: 13px;
-      color: var(--ink-primary);
-    }
-    .field-group-sm select:focus,
-    .field-group-sm input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
-    @media (max-width: 600px) {
-      .prog-drilldown { flex-direction: column; gap: 8px; margin-left: 12px; }
+      min-height: 42px;
+      background: var(--surface);
+      font-size: var(--text-sm);
+      padding: 8px 10px;
     }
 
-    /* Footer */
-    footer { max-width: 700px; margin: 48px auto 0; font-size: 11px; color: var(--ink-muted); display: flex; gap: 8px; }
+    #output-area {
+      max-width: var(--max);
+      margin: 24px auto 0;
+      padding: 24px 10px 0;
+      border-top: 1px solid var(--border-soft);
+      min-height: 0;
+    }
+
+    .thread-turn {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .thread-turn:last-child { margin-bottom: 0; }
+
+    .thread-question {
+      margin: 0;
+      padding: 14px 18px;
+      background: var(--surface-2);
+      border-left: 4px solid var(--blue);
+      color: var(--ink-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: 1.55;
+    }
+
+    .thread-answer { padding: 22px 20px; }
+
+    .prose-output {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .thread-answer .prose-output { border: 0; padding: 0; margin: 0; box-shadow: none; }
+
+    .hero-number {
+      font-family: var(--font-heading);
+      font-size: var(--text-answer);
+      line-height: .9;
+      letter-spacing: -.02em;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+
+    .hero-rule,
+    .section-rule {
+      border: 0;
+      border-top: 1px solid var(--border-soft);
+      margin: 16px 0;
+    }
+
+    .prose-body {
+      color: var(--ink);
+      font-size: var(--text-base);
+      line-height: 1.72;
+      white-space: pre-wrap;
+    }
+
+    .prose-body strong { font-weight: 700; }
+    .prose-body em { color: var(--ink-2); }
+
+    .prose-h2,
+    .prose-h3 {
+      font-family: var(--font-heading);
+      color: var(--ink);
+      font-weight: 700;
+      letter-spacing: -.01em;
+      line-height: 1.1;
+    }
+
+    .prose-h2 { font-size: var(--text-xl); margin: 22px 0 10px; }
+    .prose-h3 { font-size: var(--text-lg); margin: 18px 0 8px; }
+
+    .prose-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 18px;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      white-space: normal;
+    }
+
+    .prose-table th,
+    .prose-table td {
+      border: 1px solid var(--border-soft);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .prose-table th {
+      background: var(--surface-2);
+      color: var(--ink-2);
+      font-weight: 700;
+    }
+
+    .routing-output {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .routing-summary {
+      padding: 18px 18px 16px;
+      border-left: 4px solid var(--blue);
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      line-height: 1.15;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .routing-list { border-top: 1px solid var(--border-soft); }
+
+    .routing-row {
+      display: grid;
+      grid-template-columns: 118px minmax(140px,1fr) 86px 76px minmax(120px,1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-soft);
+      font-size: var(--text-sm);
+    }
+
+    .routing-row:last-child { border-bottom: 0; }
+
+    .routing-category {
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .routing-programme { color: var(--ink); font-weight: 700; }
+
+    .routing-return {
+      color: var(--blue);
+      font-family: var(--font-heading);
+      font-size: var(--text-route);
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .routing-friction {
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .friction-low,
+    .friction-medium,
+    .friction-high { color: var(--blue); }
+
+    .routing-action { color: var(--ink-2); }
+
+    .routing-cta {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    .routing-cta:hover { text-decoration: underline; }
+
+    .thinking,
+    .error-msg {
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--blue);
+      background: #fff;
+      padding: 16px 18px;
+      color: var(--ink-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: .02em;
+    }
+
+    .error-msg { color: var(--ink); }
+
+    .disclaimer-banner {
+      max-width: var(--max);
+      margin: 34px auto 0;
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--blue);
+      border-radius: var(--radius);
+    }
+
+    .disclaimer-banner .disc-icon {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      color: var(--blue);
+      font-size: var(--text-sm);
+      line-height: 1;
+      font-family: var(--font-mono);
+    }
+
+    .disclaimer-banner p {
+      margin: 0;
+      color: var(--ink-2);
+      font-size: var(--text-xs);
+      line-height: 1.65;
+    }
+
+    .disclaimer-banner strong { color: var(--ink); font-weight: 600; }
+
+    .site-footer {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 24px 10px 32px;
+      color: var(--ink-3);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      letter-spacing: .02em;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .footer-brand,
+    .footer-links {
+      display: flex;
+      gap: 8px 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .footer-links a {
+      color: var(--ink-3);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover { color: var(--blue); text-decoration: underline; }
+
     .sep { color: var(--border); }
 
-    /* Accessibility */
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    @media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+    :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .chevron,
+      button[id$="-btn"] { transition: none; }
+    }
 
-    /* Mobile */
-    @media (max-width: 600px) {
-      body { padding: 20px 16px 40px; }
-      .spend-grid { grid-template-columns: 1fr; }
-      .routing-row { grid-template-columns: 1fr 1fr; }
-      .hero-number { font-size: 36px; }
+    @media (max-width: 920px) {
+      .hero { padding-top: 56px; }
+      .interface-intro { grid-template-columns: 1fr; }
+      .workspace { grid-template-columns: 1fr; }
+      /* Keep Ask / Review stacked at all viewport widths. */
+      .site-footer { flex-direction: column; }
+    }
+
+    @media (max-width: 760px) {
+      .shell { margin: 14px auto; padding: 0 14px; }
+      .nav { padding: 22px 10px 0; }
+      .nav-pill { display: none; }
+      .hero { padding: 46px 10px 30px; }
+      h1 { font-size: var(--text-hero-mobile); }
+      .hero-copy { font-size: var(--text-base); }
+      #app { padding-bottom: 34px; }
+      #panel-ask,
+      #panel-review { padding: 20px; }
+      .input-row { grid-template-columns: 1fr; }
+      .input-row input { border-right: 1px solid var(--border); border-bottom: 0; }
+      button[id$="-btn"] { width: 100%; }
+      .spend-grid,
+      .prog-drilldown { grid-template-columns: 1fr; }
+      .routing-row { grid-template-columns: 1fr 1fr; align-items: start; }
+      .routing-action,
+      .routing-cta { grid-column: 1 / -1; }
+      .hero-number { font-size: var(--text-answer-mobile); }
+      .site-footer { padding-bottom: 24px; }
+    }
+
+    @media (max-width: 520px) {
+      .tab-bar { grid-template-columns: 1fr; }
+      .tab { border-top: 0; border-left: 4px solid transparent; border-right: 0; border-bottom: 1px solid var(--border-soft); }
+      .tab.active { border-top-color: transparent; border-left-color: var(--blue); }
+      .tab[aria-expanded="true"] { border-bottom-color: transparent; }
+      .intro-card { padding: 18px; }
     }
   </style>
 </head>
 <body>
-
-  <div id="app">
-
-    <!-- HEADER -->
-    <header>
-      <div class="logo">Loyalty<span class="accent">IQ</span></div>
-      <p class="tagline">Find out what your loyalty programmes are actually worth.</p>
-    </header>
-
-    <!-- DISCLAIMER BANNER -->
-    <div class="disclaimer-banner">
-      <span class="disc-icon" aria-hidden="true">ⓘ</span>
-      <p>
-        LIQ provides general information based on publicly available loyalty programme data.
-        It is <strong>not financial advice</strong>, and Network Grey is not a financial advisor.
-        LIQ can make mistakes — always verify details directly with the relevant programme before acting.
-        Network Grey has no commercial affiliation with the loyalty programmes referenced, beyond
-        ordinary publicly available information.
-      </p>
-    </div>
-
-    <!-- INPUT AREA -->
-    <section id="input-area">
-
-      <!-- TABS -->
-      <div class="tab-bar" role="tablist">
-        <button class="tab active" role="tab" id="tab-ask" aria-selected="true" aria-controls="panel-ask">Ask</button>
-        <button class="tab" role="tab" id="tab-review" aria-selected="false" aria-controls="panel-review">Review</button>
-      </div>
-
-      <!-- ASK PANEL -->
-      <div id="panel-ask" role="tabpanel" aria-labelledby="tab-ask">
-        <label for="ask-input">Where are you shopping, or which programme are you considering?</label>
-        <div class="input-row">
-          <input type="text" id="ask-input" placeholder="e.g. I'm at Checkers spending about R800" autocomplete="off">
-          <button id="ask-btn" type="button">Ask</button>
-        </div>
-        <div id="ask-counter" class="counter" aria-live="polite"></div>
-      </div>
-
-      <!-- REVIEW PANEL -->
-      <div id="panel-review" role="tabpanel" aria-labelledby="tab-review" hidden>
-        <p class="panel-label">Enter your monthly spend per category.</p>
-        <div class="spend-grid">
-          <div class="field-group">
-            <label for="cat-groceries">Groceries</label>
-            <input type="number" id="cat-groceries" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label for="cat-fuel">Fuel</label>
-            <input type="number" id="cat-fuel" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label for="cat-pharmacy">Pharmacy &amp; health</label>
-            <input type="number" id="cat-pharmacy" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label for="cat-dining">Dining out</label>
-            <input type="number" id="cat-dining" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label for="cat-clothing">Clothing</label>
-            <input type="number" id="cat-clothing" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label for="cat-travel">Travel</label>
-            <input type="number" id="cat-travel" placeholder="0" min="0" inputmode="numeric">
-          </div>
-        </div>
-
-        <!-- Programmes held — collapsible -->
-        <div class="collapsible">
-          <button class="collapsible-toggle" type="button" aria-expanded="false" aria-controls="programmes-held">
-            <span class="chevron">›</span> Programmes I already hold
-          </button>
-          <div id="programmes-held" hidden>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="FNB eBucks" data-prog-key="fnbebucks">
-                FNB eBucks
-              </label>
-              <div class="prog-drilldown" data-prog-key="fnbebucks" hidden>
-                <div class="field-group-sm">
-                  <label for="fnbebucks-tier">Account tier (optional)</label>
-                  <select id="fnbebucks-tier" class="prog-tier-select">
-                    <option value="">Not sure / skip</option>
-                    <option value="Easy">Easy</option>
-                    <option value="Premier">Premier</option>
-                    <option value="Private Clients">Private Clients</option>
-                    <option value="Private Wealth">Private Wealth</option>
-                    <option value="RMB Private Bank">RMB Private Bank</option>
-                  </select>
-                </div>
-                <div class="field-group-sm">
-                  <label for="fnbebucks-points">Current eBucks balance (optional)</label>
-                  <input type="number" id="fnbebucks-points" class="prog-points-input" placeholder="Optional — e.g. 4500" min="0" inputmode="numeric">
-                </div>
-              </div>
-            </div>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="Shoprite Xtra Savings" data-prog-key="xtra">
-                Shoprite Xtra Savings
-              </label>
-            </div>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="Emirates Skywards" data-prog-key="skywards">
-                Emirates Skywards
-              </label>
-              <div class="prog-drilldown" data-prog-key="skywards" hidden>
-                <div class="field-group-sm">
-                  <label for="skywards-tier">Tier (optional)</label>
-                  <select id="skywards-tier" class="prog-tier-select">
-                    <option value="">Not sure / skip</option>
-                    <option value="Blue">Blue</option>
-                    <option value="Silver">Silver</option>
-                    <option value="Gold">Gold</option>
-                    <option value="Platinum">Platinum</option>
-                  </select>
-                </div>
-                <div class="field-group-sm">
-                  <label for="skywards-points">Current Skywards Miles balance (optional)</label>
-                  <input type="number" id="skywards-points" class="prog-points-input" placeholder="e.g. 25000" min="0" inputmode="numeric">
-                </div>
-              </div>
-            </div>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="Shell V+" data-prog-key="shellvplus">
-                Shell V+
-              </label>
-              <div class="prog-drilldown" data-prog-key="shellvplus" hidden>
-                <div class="field-group-sm">
-                  <label for="shellvplus-tier">Tier (optional)</label>
-                  <select id="shellvplus-tier" class="prog-tier-select">
-                    <option value="">Not sure / skip</option>
-                    <option value="V+ Regular">V+ Regular</option>
-                    <option value="V+ Super">V+ Super</option>
-                    <option value="V+ Premium">V+ Premium</option>
-                    <option value="V+ Ultra">V+ Ultra</option>
-                    <option value="V+ Ultra Plus">V+ Ultra Plus</option>
-                    <option value="V+ Ultra *****">V+ Ultra *****</option>
-                  </select>
-                </div>
-                <div class="field-group-sm">
-                  <label for="shellvplus-points">Current ZAR cashback balance this period (optional)</label>
-                  <input type="number" id="shellvplus-points" class="prog-points-input" placeholder="e.g. 150" min="0" inputmode="numeric">
-                </div>
-              </div>
-            </div>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="YumDealz" data-prog-key="yumdealz">
-                YumDealz
-              </label>
-              <div class="prog-drilldown" data-prog-key="yumdealz" hidden>
-                <div class="field-group-sm">
-                  <label for="yumdealz-points">Current stamps (optional)</label>
-                  <input type="number" id="yumdealz-points" class="prog-points-input" placeholder="e.g. 8" min="0" inputmode="numeric">
-                </div>
-              </div>
-            </div>
-
-            <div class="programme-row">
-              <label class="prog-checkbox-label">
-                <input type="checkbox" class="prog-checkbox" value="Discovery Vitality" data-prog-key="vitality">
-                Discovery Vitality
-              </label>
-              <div class="prog-drilldown" data-prog-key="vitality" hidden>
-                <div class="field-group-sm">
-                  <label for="vitality-tier">Status (optional)</label>
-                  <select id="vitality-tier" class="prog-tier-select">
-                    <option value="">Not sure / skip</option>
-                    <option value="Blue">Blue</option>
-                    <option value="Bronze">Bronze</option>
-                    <option value="Silver">Silver</option>
-                    <option value="Gold">Gold</option>
-                    <option value="Diamond">Diamond</option>
-                  </select>
-                </div>
-                <div class="field-group-sm">
-                  <label for="vitality-points">Current Vitality points this year (optional)</label>
-                  <input type="number" id="vitality-points" class="prog-points-input" placeholder="e.g. 32000" min="0" inputmode="numeric">
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <button id="analyse-btn" type="button">Analyse</button>
-        <div id="review-counter" class="counter" aria-live="polite"></div>
-      </div>
-
-    </section>
-
-    <!-- OUTPUT AREA -->
-    <section id="output-area" aria-live="polite" aria-label="LIQ response">
-      <!-- Populated by JS -->
-    </section>
-
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    <span>Built by Network Grey</span>
-    <span class="sep">·</span>
-    <span>Powered by Anthropic Claude</span>
-  </footer>
-
-  <script>
+<div class="shell">
+<main class="page-card">
+<nav aria-label="LoyaltyIQ product navigation" class="nav">
+<div class="wordmark">Loyalty<span>IQ</span></div>
+<div class="nav-pill">Product interface</div>
+</nav>
+<section aria-labelledby="product-title" class="hero">
+<div class="eyebrow">Independent loyalty optimiser</div>
+<h1 id="product-title">Ask <span class="accent">LoyaltyIQ.</span></h1>
+<p class="hero-copy">Find out which programme to use, what rewards may be worth, and where value could be missed.</p>
+</section>
+<section aria-label="How the product interface works" class="section">
+<div class="interface-intro">
+<article class="intro-card">
+<div class="intro-card-label">Choice</div>
+<div class="intro-card-title">Before you spend</div>
+<p>Ask which card or programme gives the best return before you pay.</p>
+</article>
+<article class="intro-card">
+<div class="intro-card-label">Review</div>
+<div class="intro-card-title">See the gaps</div>
+<p>Enter monthly spend to estimate where rewards may improve.</p>
+</article>
+<article class="intro-card">
+<div class="intro-card-label">Trust</div>
+<div class="intro-card-title">Rules first</div>
+<p>Verified rules drive the maths. AI explains the result.</p>
+</article>
+</div>
+</section>
+<div id="app">
+<section class="workspace" id="input-area"><div class="tab-bar" role="tablist"><button aria-controls="panel-ask" aria-expanded="true" aria-selected="true" class="tab active" id="tab-ask" role="tab">Ask</button><div aria-labelledby="tab-ask" class="panel-shell" id="panel-ask" role="tabpanel">
+<label for="ask-input">Where are you shopping, or which programme are you considering?</label>
+<div class="input-row">
+<input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
+<button id="ask-btn" type="button">Ask</button>
+</div>
+<div aria-live="polite" class="counter" id="ask-counter"></div>
+</div><button aria-controls="panel-review" aria-expanded="false" aria-selected="false" class="tab" id="tab-review" role="tab">Review</button><div aria-labelledby="tab-review" class="panel-shell" hidden="" id="panel-review" role="tabpanel">
+<p class="panel-label">Enter your monthly spend per category.</p>
+<div class="spend-grid">
+<div class="field-group">
+<label for="cat-groceries">Groceries</label>
+<input id="cat-groceries" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+<div class="field-group">
+<label for="cat-fuel">Fuel</label>
+<input id="cat-fuel" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+<div class="field-group">
+<label for="cat-pharmacy">Pharmacy &amp; health</label>
+<input id="cat-pharmacy" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+<div class="field-group">
+<label for="cat-dining">Dining out</label>
+<input id="cat-dining" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+<div class="field-group">
+<label for="cat-clothing">Clothing</label>
+<input id="cat-clothing" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+<div class="field-group">
+<label for="cat-travel">Travel</label>
+<input id="cat-travel" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
+</div>
+<div class="collapsible">
+<button aria-controls="programmes-held" aria-expanded="false" class="collapsible-toggle" type="button">
+<span class="chevron">›</span> Programmes I already hold
+                </button>
+<div hidden="" id="programmes-held">
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="fnbebucks" type="checkbox" value="FNB eBucks"/>
+                      FNB eBucks
+                    </label>
+<div class="prog-drilldown" data-prog-key="fnbebucks" hidden="">
+<div class="field-group-sm">
+<label for="fnbebucks-tier">Account tier (optional)</label>
+<select class="prog-tier-select" id="fnbebucks-tier">
+<option value="">Not sure / skip</option>
+<option value="Easy">Easy</option>
+<option value="Premier">Premier</option>
+<option value="Private Clients">Private Clients</option>
+<option value="Private Wealth">Private Wealth</option>
+<option value="RMB Private Bank">RMB Private Bank</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="fnbebucks-points">Current eBucks balance (optional)</label>
+<input class="prog-points-input" id="fnbebucks-points" inputmode="numeric" min="0" placeholder="Optional — e.g. 4500" type="number"/>
+</div>
+</div>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="xtra" type="checkbox" value="Shoprite Xtra Savings"/>
+                      Shoprite Xtra Savings
+                    </label>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="clicks" type="checkbox" value="Clicks ClubCard"/>
+                      Clicks ClubCard
+                    </label>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="shellvplus" type="checkbox" value="Shell V+"/>
+                      Shell V+
+                    </label>
+<div class="prog-drilldown" data-prog-key="shellvplus" hidden="">
+<div class="field-group-sm">
+<label for="shellvplus-tier">Tier (optional)</label>
+<select class="prog-tier-select" id="shellvplus-tier">
+<option value="">Not sure / skip</option>
+<option value="V+ Regular">V+ Regular</option>
+<option value="V+ Super">V+ Super</option>
+<option value="V+ Premium">V+ Premium</option>
+<option value="V+ Ultra">V+ Ultra</option>
+<option value="V+ Ultra Plus">V+ Ultra Plus</option>
+<option value="V+ Ultra *****">V+ Ultra *****</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="shellvplus-points">Current ZAR cashback balance this period (optional)</label>
+<input class="prog-points-input" id="shellvplus-points" inputmode="numeric" min="0" placeholder="e.g. 150" type="number"/>
+</div>
+</div>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="absa" type="checkbox" value="Absa Rewards"/>
+                      Absa Rewards
+                    </label>
+<div class="prog-drilldown" data-prog-key="absa" hidden="">
+<div class="field-group-sm">
+<label for="absa-tier">Tier (optional)</label>
+<select class="prog-tier-select" id="absa-tier">
+<option value="">Not sure / skip</option>
+<option value="Tier 1">Tier 1</option>
+<option value="Tier 2">Tier 2</option>
+<option value="Tier 3">Tier 3</option>
+<option value="Tier 4">Tier 4</option>
+<option value="Tier 5">Tier 5</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="absa-points">Current Absa Rewards balance (optional)</label>
+<input class="prog-points-input" id="absa-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
+</div>
+</div>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="vitality" type="checkbox" value="Discovery Vitality"/>
+                      Discovery Vitality
+                    </label>
+<div class="prog-drilldown" data-prog-key="vitality" hidden="">
+<div class="field-group-sm">
+<label for="vitality-tier">Status (optional)</label>
+<select class="prog-tier-select" id="vitality-tier">
+<option value="">Not sure / skip</option>
+<option value="Blue">Blue</option>
+<option value="Bronze">Bronze</option>
+<option value="Silver">Silver</option>
+<option value="Gold">Gold</option>
+<option value="Diamond">Diamond</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="vitality-points">Current Vitality points this year (optional)</label>
+<input class="prog-points-input" id="vitality-points" inputmode="numeric" min="0" placeholder="e.g. 32000" type="number"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<button id="analyse-btn" type="button">Analyse</button>
+<div aria-live="polite" class="counter" id="review-counter"></div>
+</div></div></section>
+<section aria-label="LoyaltyIQ response" aria-live="polite" id="output-area">
+<!-- Populated by JS -->
+</section>
+<div class="disclaimer-banner caveat-bottom">
+<span aria-hidden="true" class="disc-icon">i</span>
+<p>
+<strong>Disclaimer.</strong> LoyaltyIQ provides general information based on publicly available loyalty programme data.
+            It is <strong>not financial advice</strong>, and Network Grey (Pty) Ltd is not a financial advisor.
+            LoyaltyIQ can make mistakes — always verify details directly with the relevant programme before acting.
+            Network Grey (Pty) Ltd has no commercial affiliation with the loyalty programmes referenced, beyond ordinary publicly available information.
+          </p>
+</div>
+</div>
+<footer class="site-footer">
+<div class="footer-brand">
+<span>LoyaltyIQ</span>
+<span class="sep">·</span>
+<span>Network Grey (Pty) Ltd</span>
+<span class="sep">·</span>
+<span>Independent loyalty programme information</span>
+</div>
+<div aria-label="Footer links" class="footer-links">
+<a aria-label="Facebook placeholder" href="#">Facebook</a>
+<a aria-label="Instagram placeholder" href="#">Instagram</a>
+<a aria-label="LinkedIn placeholder" href="#">LinkedIn</a>
+<span class="sep">·</span>
+<a href="#">Terms &amp; Conditions</a>
+<a href="#">Privacy Policy</a>
+<a href="#">Cookie Policy</a>
+</div>
+</footer>
+</main>
+</div>
+<script>
     const API_BASE = "https://web-production-0a66a.up.railway.app";
     const DAILY_LIMIT = 100;
 
@@ -509,18 +1038,20 @@
     }
 
     function switchTab(active) {
-      // active = "ask" | "review"
+      // active = "ask" | "review"; selected panel expands directly below its tab.
       ["ask", "review"].forEach(t => {
         const tab = document.getElementById(`tab-${t}`);
         const panel = document.getElementById(`panel-${t}`);
         const isActive = t === active;
         tab.classList.toggle("active", isActive);
         tab.setAttribute("aria-selected", isActive);
+        tab.setAttribute("aria-expanded", isActive);
         panel.hidden = !isActive;
       });
       clearOutput();
       currentAnswerEl = null;
-      window.scrollTo(0, 0);  // FIX 1: scroll to top on tab switch
+      const activeTab = document.getElementById(`tab-${active}`);
+      activeTab.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function clearOutput() {
@@ -722,7 +1253,7 @@
         renderResponse(data, data.mode ?? "1", currentAnswerEl);
 
       } catch {
-        if (currentAnswerEl) currentAnswerEl.innerHTML = `<p class="error-msg">LIQ is unavailable right now. Try again in a moment.</p>`;
+        if (currentAnswerEl) currentAnswerEl.innerHTML = `<p class="error-msg">LoyaltyIQ is unavailable right now. Try again in a moment.</p>`;
       } finally {
         setLoading(false);
       }
@@ -780,7 +1311,7 @@
         renderResponse(data, "2");
 
       } catch {
-        showError("LIQ is unavailable right now. Try again in a moment.");
+        showError("LoyaltyIQ is unavailable right now. Try again in a moment.");
       } finally {
         setLoading(false);
       }
