@@ -20,6 +20,18 @@
       --accent:        #2563EB;
       --accent-hover:  #1D4ED8;
       --accent-subtle: #EFF6FF;
+
+      /* type scale */
+      --text-xs:   11px;  /* labels, mono captions, fine print */
+      --text-sm:   13px;  /* body secondary, tagline, notes */
+      --text-base: 14px;  /* body default */
+      --text-md:   16px;  /* emphasised inline values */
+      --text-lg:   24px;  /* section sub-heading */
+      --text-xl:   32px;  /* wordmark, hero stat numbers */
+      --text-2xl:  36px;  /* moment headings, largest on page */
+
+      /* content rail */
+      --content-width: 620px;
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -28,7 +40,7 @@
       background: var(--bg-page);
       color: var(--ink-primary);
       font-family: Inter, sans-serif;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1.6;
       margin: 0;
       padding: 0;
@@ -44,13 +56,13 @@
     .liq-header { margin-bottom: 48px; }
     .liq-wordmark {
       font-family: Rajdhani, sans-serif;
-      font-size: 32px;
+      font-size: var(--text-xl);
       font-weight: 600;
       color: var(--ink-primary);
       margin-bottom: 6px;
     }
     .liq-wordmark .accent { color: var(--accent); }
-    .liq-tagline { font-size: 15px; color: var(--ink-secondary); max-width: 520px; }
+    .liq-tagline { font-size: var(--text-sm); color: var(--ink-secondary); max-width: var(--content-width); }
 
     /* Stat bar */
     .stat-bar {
@@ -67,7 +79,7 @@
     .stat:last-child { border-right: none; }
     .stat-number {
       font-family: Rajdhani, sans-serif;
-      font-size: 36px;
+      font-size: var(--text-2xl);
       font-weight: 600;
       color: var(--accent);
       line-height: 1;
@@ -75,7 +87,7 @@
     }
     .stat-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--ink-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -95,7 +107,7 @@
 
     .moment-label {
       font-family: Rajdhani, sans-serif;
-      font-size: 32px;
+      font-size: var(--text-xl);
       font-weight: 600;
       color: var(--accent);
       margin-bottom: 12px;
@@ -103,14 +115,14 @@
     }
     .moment-heading {
       font-family: Rajdhani, sans-serif;
-      font-size: 24px;
+      font-size: var(--text-lg);
       font-weight: 500;
       color: var(--ink-primary);
       line-height: 1.2;
       margin-bottom: 12px;
     }
     .moment-body {
-      font-size: 14px;
+      font-size: var(--text-base);
       color: var(--ink-secondary);
       line-height: 1.7;
     }
@@ -120,7 +132,7 @@
       background: var(--bg-surface);
       border: 1px solid var(--border);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: var(--text-sm);
       overflow: hidden;
     }
     .mock-section {
@@ -129,7 +141,7 @@
     }
     .mock-section:last-child { border-bottom: none; }
     .mock-label {
-      font-size: 9px;
+      font-size: var(--text-xs);
       font-weight: 500;
       color: var(--ink-muted);
       letter-spacing: 0.1em;
@@ -141,7 +153,7 @@
       padding: 8px 10px;
       border: 1px solid var(--border);
       font-family: Inter, sans-serif;
-      font-size: 13px;
+      font-size: var(--text-sm);
       color: var(--ink-secondary);
       font-style: italic;
     }
@@ -151,7 +163,7 @@
     }
     .mock-hero {
       font-family: Rajdhani, sans-serif;
-      font-size: 36px;
+      font-size: var(--text-2xl);
       font-weight: 600;
       color: var(--accent);
       line-height: 1;
@@ -161,19 +173,19 @@
       font-weight: 500;
       color: var(--ink-primary);
       font-family: Inter, sans-serif;
-      font-size: 13px;
+      font-size: var(--text-sm);
       margin-bottom: 4px;
     }
     .mock-desc {
       font-family: Inter, sans-serif;
-      font-size: 12px;
+      font-size: var(--text-sm);
       color: var(--ink-secondary);
       margin-bottom: 8px;
     }
     .mock-tags {
       display: flex;
       gap: 12px;
-      font-size: 10px;
+      font-size: var(--text-xs);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -188,16 +200,16 @@
       align-items: center;
       padding: 6px 0;
       border-bottom: 1px solid var(--border);
-      font-size: 11px;
+      font-size: var(--text-xs);
     }
     .mock-row:last-child { border-bottom: none; }
-    .mock-row-cat { color: var(--ink-muted); text-transform: uppercase; font-size: 10px; }
+    .mock-row-cat { color: var(--ink-muted); text-transform: uppercase; font-size: var(--text-xs); }
     .mock-row-prog { color: var(--ink-primary); font-family: Inter, sans-serif; }
-    .mock-row-val { color: var(--accent); font-family: Rajdhani, sans-serif; font-size: 16px; font-weight: 600; }
+    .mock-row-val { color: var(--accent); font-family: Rajdhani, sans-serif; font-size: var(--text-md); font-weight: 600; }
 
     .mock-meta {
       font-family: Inter, sans-serif;
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--ink-muted);
       padding-top: 8px;
       border-top: 1px solid var(--border);
@@ -206,7 +218,7 @@
 
     .mock-field { margin-bottom: 6px; }
     .mock-field-label {
-      font-size: 9px;
+      font-size: var(--text-xs);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: var(--ink-muted);
@@ -214,12 +226,12 @@
     }
     .mock-field-value {
       font-family: Inter, sans-serif;
-      font-size: 12px;
+      font-size: var(--text-sm);
       color: var(--ink-secondary);
     }
     .mock-verdict {
       font-family: Inter, sans-serif;
-      font-size: 12px;
+      font-size: var(--text-sm);
       color: var(--ink-primary);
       font-weight: 500;
     }
@@ -230,7 +242,7 @@
     }
     .cta-heading {
       font-family: Rajdhani, sans-serif;
-      font-size: 28px;
+      font-size: var(--text-xl);
       font-weight: 500;
       color: var(--ink-primary);
       margin-bottom: 24px;
@@ -240,7 +252,7 @@
       background: var(--accent);
       color: #ffffff;
       font-family: Inter, sans-serif;
-      font-size: 14px;
+      font-size: var(--text-base);
       font-weight: 500;
       padding: 12px 32px;
       border: none;
@@ -252,7 +264,7 @@
     .cta-btn:hover { background: var(--accent-hover); }
     .cta-sub {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: var(--text-xs);
       color: var(--ink-muted);
       display: block;
     }
@@ -261,11 +273,11 @@
     .manifesto {
       padding: 48px 0 40px;
       border-top: 1px solid var(--border);
-      max-width: 620px;
+      max-width: var(--content-width);
     }
     .manifesto-lead {
       font-family: Inter, sans-serif;
-      font-size: 18px;
+      font-size: var(--text-lg);
       font-weight: 400;
       line-height: 1.7;
       color: var(--ink-primary);
@@ -281,7 +293,7 @@
     }
     .manifesto-list li {
       font-family: Inter, sans-serif;
-      font-size: 14px;
+      font-size: var(--text-base);
       line-height: 1.6;
       color: var(--ink-secondary);
       padding-left: 16px;
@@ -303,16 +315,16 @@
     }
     .disclaimer-heading {
       font-family: Rajdhani, sans-serif;
-      font-size: 32px;
+      font-size: var(--text-xl);
       font-weight: 600;
       color: var(--ink-primary);
       margin-bottom: 16px;
     }
     .disclaimer-body {
-      font-size: 13px;
+      font-size: var(--text-sm);
       line-height: 1.7;
       color: var(--ink-secondary);
-      max-width: 620px;
+      max-width: var(--content-width);
     }
     .disclaimer-body strong { color: var(--ink-primary); font-weight: 500; }
 
@@ -346,7 +358,7 @@
     }
     .programme-marquee-item {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
+      font-size: var(--text-sm);
       letter-spacing: .04em;
       color: var(--ink-secondary);
       white-space: nowrap;
@@ -383,8 +395,8 @@
       margin-bottom: 24px;
       border-radius: 0;
     }
-    .disclaimer-banner .disc-icon { font-size: 14px; color: var(--ink-muted); margin-top: 1px; flex-shrink: 0; line-height: 1.6; }
-    .disclaimer-banner p { font-size: 11px; line-height: 1.6; color: var(--ink-secondary); margin: 0; }
+    .disclaimer-banner .disc-icon { font-size: var(--text-base); color: var(--ink-muted); margin-top: 1px; flex-shrink: 0; line-height: 1.6; }
+    .disclaimer-banner p { font-size: var(--text-xs); line-height: 1.6; color: var(--ink-secondary); margin: 0; }
     .disclaimer-banner strong { color: var(--ink-primary); font-weight: 500; }
 
     /* Mobile */
@@ -404,7 +416,7 @@
   <!-- HEADER -->
   <header class="liq-header">
     <div class="liq-wordmark">Loyalty<span class="accent">IQ</span></div>
-    <p style="font-size:13px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px;letter-spacing:.04em;">SOUTH AFRICA'S LOYALTY PROGRAMME OPTIMISER</p>
+    <p style="font-size:var(--text-sm);color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-bottom:8px;letter-spacing:.04em;">SOUTH AFRICA'S LOYALTY PROGRAMME OPTIMISER</p>
     <p class="liq-tagline">Find out exactly what your programmes are worth — and what you're leaving on the table.</p>
   </header>
 
@@ -488,26 +500,26 @@
       <div class="mock-section">
         <div class="mock-label">Monthly uplift available</div>
         <div class="mock-hero">R680</div>
-        <div style="font-size:10px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-top:2px">per month</div>
+        <div style="font-size:var(--text-xs);color:var(--ink-muted);font-family:'JetBrains Mono',monospace;margin-top:2px">per month</div>
       </div>
       <div class="mock-section">
         <div class="mock-row">
           <span class="mock-row-cat">Groceries</span>
           <span class="mock-row-prog">Xtra Savings</span>
           <span class="mock-row-val">R420</span>
-          <span class="tag-low" style="font-size:9px;letter-spacing:.06em">LOW</span>
+          <span class="tag-low" style="font-size:var(--text-xs);letter-spacing:.06em">LOW</span>
         </div>
         <div class="mock-row">
           <span class="mock-row-cat">Pharmacy</span>
           <span class="mock-row-prog">Vitality</span>
           <span class="mock-row-val">R200</span>
-          <span class="tag-high" style="font-size:9px;letter-spacing:.06em">HIGH</span>
+          <span class="tag-high" style="font-size:var(--text-xs);letter-spacing:.06em">HIGH</span>
         </div>
         <div class="mock-row">
           <span class="mock-row-cat">Fuel</span>
           <span class="mock-row-prog">Shell V+</span>
           <span class="mock-row-val">R180</span>
-          <span class="tag-low" style="font-size:9px;letter-spacing:.06em">LOW</span>
+          <span class="tag-low" style="font-size:var(--text-xs);letter-spacing:.06em">LOW</span>
         </div>
         <div class="mock-meta">3 changes · 2 are free to make</div>
       </div>
