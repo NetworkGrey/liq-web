@@ -202,15 +202,15 @@ CATEGORY_ALIASES: dict[str, dict[str, list[str]]] = {
         "redemptions": [],
     },
     "pharmacy": {
-        "earn_rates":  ["Pharmacy (RSA/eSwatini)", "Health / gym"],
-        "redemptions": ["Health / gym"],
+        "earn_rates":  ["Pharmacy (RSA/eSwatini)"],
+        "redemptions": [],
     },
     "dining": {
         "earn_rates":  ["Dining"],
-        "redemptions": ["Entertainment"],
+        "redemptions": [],
     },
     "clothing": {
-        "earn_rates":  [],
+        "earn_rates":  ["Clothing"],
         "redemptions": [],
     },
     "travel": {
@@ -285,27 +285,94 @@ def _select_name(field_value) -> str | None:
     return None
 
 
-def _best_earn_match(earn_rates: list[dict], kb_categories: list[str]) -> dict | None:
+def _tier_index(kb: dict) -> dict:
+    """Map Tier record _id -> Tier name, for resolving Earn rates' Tier link field."""
+    return {t.get("_id"): t.get("Tier name") for t in kb.get("tiers", []) if t.get("_id")}
+
+
+def _record_tier_name(record: dict, tier_names: dict) -> str | None:
+    """Resolve a single record's Tier link field to a tier name, or None if untiered."""
+    tier_field = record.get("Tier") or []
+    for link in tier_field:
+        if isinstance(link, dict):
+            return link.get("name")
+        elif isinstance(link, str):
+            return tier_names.get(link)
+    return None
+
+
+def _best_earn_match(
+    earn_rates: list[dict],
+    kb_categories: list[str],
+    tier_names: dict,
+    held_tier: str | None,
+    is_held: bool,
+) -> tuple[dict | None, bool]:
+    """Returns (best_match, tier_unspecified_flag)."""
     candidates = []
+    tier_gated_exists = False
     for rate in earn_rates:
         category = _select_name(rate.get("Spend category"))
         unit = _select_name(rate.get("Earn rate unit"))
-        if category in kb_categories and unit in RAND_COMPARABLE_UNITS:
-            candidates.append(rate)
+        if category not in kb_categories or unit not in RAND_COMPARABLE_UNITS:
+            continue
+        record_tier = _record_tier_name(rate, tier_names)
+        if record_tier is not None:
+            tier_gated_exists = True
+        if is_held and held_tier is not None:
+            if record_tier is not None and record_tier != held_tier:
+                continue
+        candidates.append(rate)
     if not candidates:
-        return None
-    return max(candidates, key=lambda r: r.get("Earn rate value") or 0)
+        return None, False
+    if is_held and held_tier is None and tier_gated_exists:
+        return None, True  # tier_unspecified
+    if is_held and held_tier is not None:
+        candidates = [
+            r for r in candidates
+            if _record_tier_name(r, tier_names) is None
+            or _record_tier_name(r, tier_names) == held_tier
+        ]
+        if not candidates:
+            return None, False
+    return max(candidates, key=lambda r: r.get("Earn rate value") or 0), False
 
 
-def _best_redemption_match(redemptions: list[dict], kb_categories: list[str]) -> dict | None:
-    candidates = [
-        r for r in redemptions
-        if _select_name(r.get("Category")) in kb_categories
-        and r.get("Return value %") is not None
-    ]
+def _best_redemption_match(
+    redemptions: list[dict],
+    kb_categories: list[str],
+    tier_names: dict,
+    held_tier: str | None,
+    is_held: bool,
+) -> tuple[dict | None, bool]:
+    """Returns (best_match, tier_unspecified_flag)."""
+    candidates = []
+    tier_gated_exists = False
+    for r in redemptions:
+        if _select_name(r.get("Category")) not in kb_categories:
+            continue
+        if r.get("Return value %") is None:
+            continue
+        record_tier = _record_tier_name(r, tier_names)
+        if record_tier is not None:
+            tier_gated_exists = True
+        if is_held and held_tier is not None:
+            if record_tier is not None and record_tier != held_tier:
+                continue
+        candidates.append(r)
     if not candidates:
-        return None
-    return max(candidates, key=lambda r: r.get("Return value %") or 0)
+        return None, False
+    if is_held and held_tier is None and tier_gated_exists:
+        return None, True  # tier_unspecified
+    if is_held and held_tier is not None:
+        candidates = [
+            r for r in candidates
+            if _record_tier_name(r, tier_names) is None
+            or _record_tier_name(r, tier_names) == held_tier
+        ]
+        if not candidates:
+            return None, False
+    return max(candidates, key=lambda r: r.get("Return value %") or 0), False
 
 
 def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
@@ -322,20 +389,18 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
         return {}
 
     index = _programme_index(kb)
+    tier_names = _tier_index(kb)
     # liq.html sends programmes_held as a list of {"name": ..., "tier": ...,
-    # "balance": ...} objects (to capture tier/balance for future use), not
-    # plain strings as originally specified. Normalise both shapes here so
-    # set() never receives an unhashable dict — this previously crashed
-    # /analyse with an uncaught TypeError whenever any "programmes I already
-    # hold" checkbox was ticked, since Ask never sends this field and Review
-    # always does.
+    # "balance": ...} objects. Normalise to dict[programme_name -> held_tier]
+    # so tier-aware matching can filter earn rate records to the user's actual
+    # tier rather than returning the best rate across all tiers.
     raw_held = user_spec.get("programmes_held") or []
-    programmes_held = set()
+    programmes_held: dict[str, str | None] = {}
     for entry in raw_held:
         if isinstance(entry, str):
-            programmes_held.add(entry)
+            programmes_held[entry] = None
         elif isinstance(entry, dict) and entry.get("name"):
-            programmes_held.add(entry["name"])
+            programmes_held[entry["name"]] = entry.get("tier") or None
 
     result_categories = {}
     uncategorised_matches: dict[str, list[str]] = {}
@@ -360,24 +425,42 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             earn_rates = index["earn_rates"].get(programme_name, [])
             redemptions = index["redemptions"].get(programme_name, [])
 
-            earn_match = _best_earn_match(earn_rates, alias["earn_rates"])
+            is_held = programme_name in programmes_held
+            held_tier = programmes_held.get(programme_name)
+
+            earn_match, earn_tier_unspecified = _best_earn_match(
+                earn_rates, alias["earn_rates"], tier_names, held_tier, is_held
+            )
             source_table = None
             record = None
+            tier_unspecified = False
             if earn_match:
                 record, source_table = earn_match, "earn_rates"
+            elif earn_tier_unspecified:
+                tier_unspecified = True
             else:
-                redemption_match = _best_redemption_match(redemptions, alias["redemptions"])
+                redemption_match, redemption_tier_unspecified = _best_redemption_match(
+                    redemptions, alias["redemptions"], tier_names, held_tier, is_held
+                )
                 if redemption_match:
                     record, source_table = redemption_match, "redemptions"
+                elif redemption_tier_unspecified:
+                    tier_unspecified = True
 
             if record is None:
-                for rate in earn_rates:
-                    category = _select_name(rate.get("Spend category"))
-                    unit = _select_name(rate.get("Earn rate unit"))
-                    if category in alias["earn_rates"] and unit not in RAND_COMPARABLE_UNITS:
-                        uncategorised_matches.setdefault(user_category, [])
-                        if programme_name not in uncategorised_matches[user_category]:
-                            uncategorised_matches[user_category].append(programme_name)
+                if tier_unspecified:
+                    uncategorised_matches.setdefault(user_category, [])
+                    label = f"{programme_name} (rate depends on your tier — specify tier for a priced return)"
+                    if label not in uncategorised_matches[user_category]:
+                        uncategorised_matches[user_category].append(label)
+                else:
+                    for rate in earn_rates:
+                        category = _select_name(rate.get("Spend category"))
+                        unit = _select_name(rate.get("Earn rate unit"))
+                        if category in alias["earn_rates"] and unit not in RAND_COMPARABLE_UNITS:
+                            uncategorised_matches.setdefault(user_category, [])
+                            if programme_name not in uncategorised_matches[user_category]:
+                                uncategorised_matches[user_category].append(programme_name)
                 continue
 
             if source_table == "earn_rates":
