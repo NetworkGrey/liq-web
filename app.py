@@ -290,6 +290,13 @@ def _tier_index(kb: dict) -> dict:
     return {t.get("_id"): t.get("Tier name") for t in kb.get("tiers", []) if t.get("_id")}
 
 
+def _norm_name(name: str | None) -> str:
+    """Case/whitespace-insensitive key for matching user-submitted programme
+    names against Airtable's canonical Programme name. Comparison-only,
+    never used for display or as a KB lookup key elsewhere."""
+    return (name or "").strip().lower()
+
+
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
     """Resolve a single record's Tier link field to a tier name, or None if untiered."""
     tier_field = record.get("Tier") or []
@@ -398,9 +405,9 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
     programmes_held: dict[str, str | None] = {}
     for entry in raw_held:
         if isinstance(entry, str):
-            programmes_held[entry] = None
+            programmes_held[_norm_name(entry)] = None
         elif isinstance(entry, dict) and entry.get("name"):
-            programmes_held[entry["name"]] = entry.get("tier") or None
+            programmes_held[_norm_name(entry["name"])] = entry.get("tier") or None
 
     result_categories = {}
     uncategorised_matches: dict[str, list[str]] = {}
@@ -425,8 +432,8 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             earn_rates = index["earn_rates"].get(programme_name, [])
             redemptions = index["redemptions"].get(programme_name, [])
 
-            is_held = programme_name in programmes_held
-            held_tier = programmes_held.get(programme_name)
+            is_held = _norm_name(programme_name) in programmes_held
+            held_tier = programmes_held.get(_norm_name(programme_name))
 
             earn_match, earn_tier_unspecified = _best_earn_match(
                 earn_rates, alias["earn_rates"], tier_names, held_tier, is_held
@@ -519,7 +526,7 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             estimated_return = round(monthly_spend * (value / 100), 2)
             entry["estimated_monthly_return"] = estimated_return
             total_uplift += estimated_return
-            if programme_name not in programmes_held:
+            if _norm_name(programme_name) not in programmes_held:
                 new_programmes_recommended.add(programme_name)
 
         if alternative:
