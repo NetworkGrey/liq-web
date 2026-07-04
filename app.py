@@ -31,6 +31,7 @@ ALLOWED_ORIGINS = [
     "https://liq-web-production.up.railway.app",
     "https://networkgrey.co.za",
     "https://www.networkgrey.co.za",
+    "https://liq.networkgrey.co.za",
     "http://localhost:5000",
     "http://127.0.0.1:5000",
 ]
