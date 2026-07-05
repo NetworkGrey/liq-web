@@ -507,9 +507,10 @@
       font-size: var(--text-sm);
       font-weight: 700;
       padding: 0 18px;
-      cursor: pointer;
+      cursor: default;
       white-space: nowrap;
     }
+    .signin-btn:disabled { opacity: 1; }
 
     .wallet-grid {
       display: grid;
@@ -922,7 +923,7 @@
 <p class="signin-title">Sign in to unlock Review</p>
 <p class="signin-copy">Free to sign in, no card upload required.</p>
 </div>
-<button class="signin-btn" onclick="console.log('placeholder, no OAuth wired yet')" type="button">Continue with Google</button>
+<button class="signin-btn" disabled="" type="button">Continue with Google</button>
 </div>
 <p class="ask-selector-label">Your card wallet, up to 10</p>
 <div class="wallet-grid">
