@@ -346,6 +346,41 @@ def _best_earn_match(
     return max(candidates, key=lambda r: r.get("Earn rate value") or 0), False
 
 
+def _best_bank_match(
+    earn_rates: list[dict], tier_names: dict, held_tier: str | None
+) -> tuple[dict | None, bool]:
+    """Category-independent check for a held programme's general-spend cash
+    back mechanic (Spend category == 'Bank / non-partner'). Only called for
+    programmes the user actually holds, never aspirationally. A held
+    programme's Bank/non-partner rate competes on equal footing with that
+    same programme's category-specific rate — it is not a fallback
+    restricted to categories with no other match, that's intentional, don't
+    restrict it to the gap-filling case. Returns (best_match,
+    tier_unspecified_flag), same contract as _best_earn_match, since
+    Bank/non-partner records can themselves be tier-gated (e.g. ABSA
+    Rewards) and picking the best across all tiers when the user's tier
+    is unknown would misrepresent the return."""
+    candidates = [
+        r for r in earn_rates
+        if _select_name(r.get("Spend category")) == "Bank / non-partner"
+        and _select_name(r.get("Earn rate unit")) in RAND_COMPARABLE_UNITS
+    ]
+    if not candidates:
+        return None, False
+    tier_gated_exists = any(_record_tier_name(r, tier_names) is not None for r in candidates)
+    if held_tier is None and tier_gated_exists:
+        return None, True  # tier_unspecified
+    if held_tier is not None:
+        candidates = [
+            r for r in candidates
+            if _record_tier_name(r, tier_names) is None
+            or _record_tier_name(r, tier_names) == held_tier
+        ]
+        if not candidates:
+            return None, False
+    return max(candidates, key=lambda r: r.get("Earn rate value") or 0), False
+
+
 def _best_redemption_match(
     redemptions: list[dict],
     kb_categories: list[str],
@@ -439,6 +474,37 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             earn_match, earn_tier_unspecified = _best_earn_match(
                 earn_rates, alias["earn_rates"], tier_names, held_tier, is_held
             )
+
+            # Bank/non-partner: category-independent general-spend cash back,
+            # checked only for held programmes, never aspirationally. Competes
+            # directly against the category-specific match below — a held
+            # programme's own Bank/non-partner rate can beat that same
+            # programme's own category-specific rate. Intentional, not a bug.
+            if is_held:
+                bank_match, bank_tier_unspecified = _best_bank_match(earn_rates, tier_names, held_tier)
+                if bank_match:
+                    bank_unit = _select_name(bank_match.get("Earn rate unit"))
+                    bank_value = bank_match.get("Earn rate value") or 0
+                    bank_return_type = "percent" if bank_unit in PERCENT_UNITS else "per_litre"
+                    bank_candidate = {
+                        "programme_name": programme_name,
+                        "record": bank_match,
+                        "source_table": "earn_rates",
+                        "return_type": bank_return_type,
+                        "value": bank_value,
+                    }
+                    if bank_return_type == "percent":
+                        if best_percent is None or bank_value > best_percent["value"]:
+                            best_percent = bank_candidate
+                    else:
+                        if best_per_litre is None or bank_value > best_per_litre["value"]:
+                            best_per_litre = bank_candidate
+                elif bank_tier_unspecified:
+                    uncategorised_matches.setdefault(user_category, [])
+                    label = f"{programme_name} (Bank / non-partner rate depends on your tier — specify tier for a priced return)"
+                    if label not in uncategorised_matches[user_category]:
+                        uncategorised_matches[user_category].append(label)
+
             source_table = None
             record = None
             tier_unspecified = False
@@ -522,6 +588,14 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             "requires_financial_product": programme.get("Requires financial product", False),
             "notes": record.get("Conditions / notes") or record.get("Notes") or "",
         }
+
+        # Cap amount is free text (e.g. "R150/month" or "20% of monthly
+        # spend"), not a structured number — flag it in the response notes
+        # rather than attempting to parse and enforce it against the sum.
+        cap_amount = record.get("Cap amount")
+        if cap_amount:
+            cap_note = f"Capped: {cap_amount}, not enforced in this total, check the source."
+            entry["notes"] = f"{entry['notes']} {cap_note}".strip()
 
         if return_type == "percent":
             estimated_return = round(monthly_spend * (value / 100), 2)
