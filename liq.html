@@ -485,6 +485,23 @@
       margin: 4px 0 4px;
     }
 
+    .ask-merchant-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ask-merchant-name {
+      padding: 8px 0 2px;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .prog-checkbox-label.ask-merchant-sub {
+      padding: 2px 0 2px 14px;
+    }
+
     .signin-banner {
       border-left: 4px solid var(--blue);
       background: var(--blue-soft);
@@ -904,17 +921,20 @@
 <label for="ask-input">Where are you shopping, or which loyalty programme are you considering?</label>
 <p class="ask-selector-label">Pick the loyalty programmes you hold, optional.</p>
 <div class="checkbox-grid ask-checkbox-grid">
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="FNB eBucks"/> FNB eBucks</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Clicks ClubCard"/> Clicks ClubCard</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Shell V+"/> Shell V+</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Absa Rewards"/> Absa Rewards</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Discovery Vitality"/> Discovery Vitality</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Capitec Live Better"/> Capitec Live Better</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="UCount Rewards"/> UCount Rewards</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference"/> MyDifference</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference PLUS"/> MyDifference PLUS</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="SAA Voyager"/> SAA Voyager</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Better Rewards"/> Better Rewards</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="FNB eBucks"/> FNB</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Clicks ClubCard"/> Clicks</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Shell V+"/> Shell</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Absa Rewards"/> Absa</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Discovery Vitality"/> Discovery</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Capitec Live Better"/> Capitec</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="UCount Rewards"/> Standard Bank</label>
+<div class="ask-merchant-group">
+<div class="ask-merchant-name">Woolworths</div>
+<label class="prog-checkbox-label ask-merchant-sub"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference"/> MyDifference</label>
+<label class="prog-checkbox-label ask-merchant-sub"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference PLUS"/> MyDifference PLUS</label>
+</div>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="SAA Voyager"/> SAA</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Better Rewards"/> Dis-Chem</label>
 </div>
 <div class="input-row">
 <input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
@@ -981,10 +1001,12 @@
 <label for="fnbebucks-tier">Account tier (optional)</label>
 <select class="prog-tier-select" id="fnbebucks-tier">
 <option value="">Not sure / skip</option>
-<option value="Easy">Easy</option>
-<option value="Premier">Premier</option>
-<option value="Private Clients">Private Clients</option>
-<option value="Private Wealth">Private Wealth</option>
+<option value="FNB Easy PAYU">FNB Easy PAYU</option>
+<option value="FNB Easy Bundle">FNB Easy Bundle</option>
+<option value="FNB Aspire">FNB Aspire</option>
+<option value="FNB Premier">FNB Premier</option>
+<option value="FNB Private Clients">FNB Private Clients</option>
+<option value="FNB Private Wealth">FNB Private Wealth</option>
 <option value="RMB Private Bank">RMB Private Bank</option>
 </select>
 </div>
