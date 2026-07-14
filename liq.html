@@ -905,12 +905,15 @@
 <p class="ask-selector-label">Pick up to 2 loyalty programmes you hold, optional, up to 10 available in Review.</p>
 <div class="checkbox-grid ask-checkbox-grid">
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="FNB eBucks"/> FNB eBucks</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Shoprite Xtra Savings"/> Shoprite Xtra Savings</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Clicks ClubCard"/> Clicks ClubCard</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Shell V+"/> Shell V+</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Absa Rewards"/> Absa Rewards</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Discovery Vitality"/> Discovery Vitality</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Capitec Live Better"/> Capitec Live Better</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="UCount Rewards"/> UCount Rewards</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference"/> MyDifference</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference PLUS"/> MyDifference PLUS</label>
+<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="SAA Voyager"/> SAA Voyager</label>
 </div>
 <div class="input-row">
 <input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
@@ -989,12 +992,6 @@
 <input class="prog-points-input" id="fnbebucks-points" inputmode="numeric" min="0" placeholder="Optional — e.g. 4500" type="number"/>
 </div>
 </div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="xtra" type="checkbox" value="Shoprite Xtra Savings"/>
-                      Shoprite Xtra Savings
-                    </label>
 </div>
 <div class="programme-row">
 <label class="prog-checkbox-label">
@@ -1077,6 +1074,74 @@
 <input class="prog-checkbox" data-prog-key="capitec" type="checkbox" value="Capitec Live Better"/>
                       Capitec Live Better
                     </label>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="ucount" type="checkbox" value="UCount Rewards"/>
+                      UCount Rewards
+                    </label>
+<div class="prog-drilldown" data-prog-key="ucount" hidden="">
+<div class="field-group-sm">
+<label for="ucount-tier">Tier (optional)</label>
+<select class="prog-tier-select" id="ucount-tier">
+<option value="">Not sure / skip</option>
+<option value="Tier 1">Tier 1</option>
+<option value="Tier 2">Tier 2</option>
+<option value="Tier 3">Tier 3</option>
+<option value="Tier 4">Tier 4</option>
+<option value="Tier 5">Tier 5</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="ucount-points">Current UCount Rewards points balance (optional)</label>
+<input class="prog-points-input" id="ucount-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
+</div>
+</div>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="mydifference" type="checkbox" value="MyDifference"/>
+                      MyDifference
+                    </label>
+<div class="prog-drilldown" data-prog-key="mydifference" hidden="">
+<div class="field-group-sm">
+<label for="mydifference-tier">Tier (optional)</label>
+<select class="prog-tier-select" id="mydifference-tier">
+<option value="">Not sure / skip</option>
+<option value="Loyal">Loyal</option>
+<option value="Ambassador">Ambassador</option>
+<option value="VIP">VIP</option>
+</select>
+</div>
+</div>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="mydifferenceplus" type="checkbox" value="MyDifference PLUS"/>
+                      MyDifference PLUS
+                    </label>
+</div>
+<div class="programme-row">
+<label class="prog-checkbox-label">
+<input class="prog-checkbox" data-prog-key="voyager" type="checkbox" value="SAA Voyager"/>
+                      SAA Voyager
+                    </label>
+<div class="prog-drilldown" data-prog-key="voyager" hidden="">
+<div class="field-group-sm">
+<label for="voyager-tier">Tier (optional)</label>
+<select class="prog-tier-select" id="voyager-tier">
+<option value="">Not sure / skip</option>
+<option value="Blue">Blue</option>
+<option value="Silver">Silver</option>
+<option value="Gold">Gold</option>
+<option value="Platinum">Platinum</option>
+</select>
+</div>
+<div class="field-group-sm">
+<label for="voyager-points">Current Voyager Miles balance (optional)</label>
+<input class="prog-points-input" id="voyager-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
+</div>
+</div>
 </div>
 </div>
 </div>
