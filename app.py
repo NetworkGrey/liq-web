@@ -148,12 +148,17 @@ You operate in three modes depending on the query:
 """
 
 
-def build_system_prompt(context_blocks: list[str], routing_output: dict | None) -> str:
+def build_system_prompt(
+    context_blocks: list[str],
+    routing_output: dict | None,
+    held_programmes: list[dict] | None = None,
+) -> str:
     """
     Assemble the full system prompt for a query:
     - Base persona and rules
     - Relevant programme LLM context blocks
-    - Pre-computed routing output (if Mode 1 or 2)
+    - User's stated held programmes (fact, every mode, independent of routing)
+    - Pre-computed routing output (Mode 2 only, when the deterministic engine ran)
     """
     prompt = LIQ_SYSTEM_PROMPT_BASE
 
@@ -161,6 +166,17 @@ def build_system_prompt(context_blocks: list[str], routing_output: dict | None) 
         prompt += "\n\n## VERIFIED PROGRAMME KB DATA\n"
         for block in context_blocks:
             prompt += f"\n{block}\n"
+
+    if held_programmes:
+        prompt += "\n\n## USER'S HELD PROGRAMMES (stated by user, treat as fact)\n"
+        for h in held_programmes:
+            tier_note = f" (tier: {h['tier']})" if h["tier"] else ""
+            prompt += f"- {h['name']}{tier_note}\n"
+        prompt += (
+            "\nRoute recommendations among these held programmes first. "
+            "Only discuss programmes the user doesn't hold if they explicitly "
+            "ask about joining something new or ask for a comparison."
+        )
 
     if routing_output:
         prompt += (
@@ -296,6 +312,23 @@ def _norm_name(name: str | None) -> str:
     names against Airtable's canonical Programme name. Comparison-only,
     never used for display or as a KB lookup key elsewhere."""
     return (name or "").strip().lower()
+
+
+def _held_programmes_display(user_spec: dict) -> list[dict]:
+    """
+    Extract user-stated held programmes for the system prompt, independent of
+    resolve_spend_routing()'s internal matching logic. Original names
+    preserved, not normalised, since this is shown to the LLM verbatim, not
+    used for KB lookups. Returns [] if none provided.
+    """
+    raw_held = user_spec.get("programmes_held") or []
+    held = []
+    for entry in raw_held:
+        if isinstance(entry, str) and entry.strip():
+            held.append({"name": entry.strip(), "tier": None})
+        elif isinstance(entry, dict) and entry.get("name"):
+            held.append({"name": entry["name"], "tier": entry.get("tier") or None})
+    return held
 
 
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
@@ -790,7 +823,8 @@ def analyse():
             if p.get("LLM context block")
         ]
 
-        system_prompt = build_system_prompt(context_blocks, routing)
+        held_programmes = _held_programmes_display(user_spec)
+        system_prompt = build_system_prompt(context_blocks, routing, held_programmes)
 
         user_content = message or "Analyse my spend profile and return routing advice."
         if routing:
@@ -852,6 +886,7 @@ def chat():
     kb = get_kb()
     mode = detect_mode(message, user_spec)
     routing = resolve_spend_routing(user_spec, kb) if mode == "2" else {}
+    held_programmes = _held_programmes_display(user_spec)
 
     context_blocks = [
         p.get("LLM context block", "")
@@ -859,7 +894,7 @@ def chat():
         if p.get("LLM context block")
     ]
 
-    system_prompt = build_system_prompt(context_blocks, routing or None)
+    system_prompt = build_system_prompt(context_blocks, routing or None, held_programmes)
 
     history = list(session["history"])
     history.append({"role": "user", "content": message})
