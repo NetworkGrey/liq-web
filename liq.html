@@ -902,7 +902,7 @@
 <div id="app">
 <section class="workspace" id="input-area"><div class="tab-bar" role="tablist"><button aria-controls="panel-ask" aria-expanded="true" aria-selected="true" class="tab active" id="tab-ask" role="tab">Ask</button><div aria-labelledby="tab-ask" class="panel-shell" id="panel-ask" role="tabpanel">
 <label for="ask-input">Where are you shopping, or which loyalty programme are you considering?</label>
-<p class="ask-selector-label">Pick up to 2 loyalty programmes you hold, optional, up to 10 available in Review.</p>
+<p class="ask-selector-label">Pick the loyalty programmes you hold, optional.</p>
 <div class="checkbox-grid ask-checkbox-grid">
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="FNB eBucks"/> FNB eBucks</label>
 <label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Clicks ClubCard"/> Clicks ClubCard</label>
@@ -1520,13 +1520,15 @@
       });
     }
 
+    const ASK_SELECTOR_CAP = Infinity; // TEMPORARY, testing phase, revert to 2 before public launch
+
     function initAskSelectorCap() {
       const boxes = document.querySelectorAll(".ask-prog-checkbox");
       boxes.forEach(cb => {
         cb.addEventListener("change", () => {
           const checkedCount = document.querySelectorAll(".ask-prog-checkbox:checked").length;
           boxes.forEach(other => {
-            if (!other.checked) other.disabled = checkedCount >= 2;
+            if (!other.checked) other.disabled = checkedCount >= ASK_SELECTOR_CAP;
           });
         });
       });
