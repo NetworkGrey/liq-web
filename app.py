@@ -5,6 +5,7 @@ Built by Network Grey | Powered by Anthropic Claude
 """
 
 import os
+import re
 import json
 import uuid
 import html
@@ -154,12 +155,14 @@ def build_system_prompt(
     context_blocks: list[str],
     routing_output: dict | None,
     held_programmes: list[dict] | None = None,
+    merchant_facts: list[dict] | None = None,
 ) -> str:
     """
     Assemble the full system prompt for a query:
     - Base persona and rules
     - Relevant programme LLM context blocks
     - User's stated held programmes (fact, every mode, independent of routing)
+    - Deterministic merchant/programme partnership verification (Mode 1 only)
     - Pre-computed routing output (Mode 2 only, when the deterministic engine ran)
     """
     prompt = LIQ_SYSTEM_PROMPT_BASE
@@ -179,6 +182,12 @@ def build_system_prompt(
             "Only discuss programmes the user doesn't hold if they explicitly "
             "ask about joining something new or ask for a comparison."
         )
+
+    if merchant_facts:
+        prompt += "\n\n## MERCHANT VERIFICATION (verified against KB, settled fact, do not override)\n"
+        for f in merchant_facts:
+            status = "confirmed partner" if f["confirmed"] else "NOT a confirmed partner"
+            prompt += f"- {f['merchant']} / {f['programme']}: {status}\n"
 
     if routing_output:
         prompt += (
@@ -244,6 +253,20 @@ CATEGORY_ALIASES: dict[str, dict[str, list[str]]] = {
         "earn_rates":  ["Baby products (excl. legislated products)"],
         "redemptions": [],
     },
+}
+
+PARTNER_ALIASES = {
+    # Hand-curated common SA colloquial names -> canonical Partner name as it
+    # appears in Airtable. Deliberately small and conservative. Only add an
+    # alias here if it maps unambiguously to exactly one real-world merchant.
+    # Ambiguous short forms ("Virgin" -> Atlantic/Active/Australia, "BA") are
+    # deliberately excluded, guessing among them reintroduces the exact
+    # fabrication risk this feature exists to close. Extend by hand, not
+    # automatically.
+    "woolies": "Woolworths",
+    "dischem": "Dis-Chem",
+    "dis chem": "Dis-Chem",
+    "pnp": "Pick n Pay",
 }
 
 RAND_COMPARABLE_UNITS = {
@@ -331,6 +354,104 @@ def _held_programmes_display(user_spec: dict) -> list[dict]:
         elif isinstance(entry, dict) and entry.get("name"):
             held.append({"name": entry["name"], "tier": entry.get("tier") or None})
     return held
+
+
+def _detect_mentioned_partners(
+    message: str, held_programme_names: list[str], kb: dict
+) -> list[dict]:
+    """
+    Deterministic, non-LLM detection of merchant mentions in free text,
+    checked against the user's held programmes' actual Partner records.
+    Returns [{"merchant": str, "programme": str, "confirmed": bool}, ...]
+    for each detected (merchant, held programme) pair. Empty list means no
+    confident match, callers must inject nothing in that case, silence is
+    correct, not a positive or negative claim.
+
+    Conservative by design: exact/word-boundary matching against real Partner
+    records, plus the small PARTNER_ALIASES table. No fuzzy matching, no edit
+    distance. An unmatched mention falls back to the general KNOWLEDGE
+    DISCIPLINE prompt rules.
+    """
+    # (?<!\w)...(?!\w) rather than \b...\b: real Partner names end in
+    # punctuation (e.g. "Pick n Pay asap!"), and a trailing \b never matches
+    # after a non-word character, so \b would silently never fire for those.
+    def _boundary(term: str) -> str:
+        return rf"(?<!\w){re.escape(term)}(?!\w)"
+
+    lowered = " " + message.lower() + " "
+
+    for alias, canonical in PARTNER_ALIASES.items():
+        if re.search(_boundary(alias), lowered):
+            lowered += f" {canonical.lower()} "
+
+    partner_names = sorted(
+        {
+            p.get("Partner name", "").strip()
+            for p in kb.get("partners", [])
+            if p.get("Partner name")
+        },
+        key=len,
+        reverse=True,  # longest first, so "Uber Eats" is consumed before "Uber"
+    )
+
+    detected_names = []
+    for name in partner_names:
+        pattern = _boundary(name.lower())
+        if re.search(pattern, lowered):
+            detected_names.append(name)
+            lowered = re.sub(pattern, " ", lowered)  # consume so shorter overlapping names don't also fire
+
+    if not detected_names:
+        return []
+
+    # Partner -> Programme link field is "Programmes". REST returns linked
+    # fields as bare record ID strings, MCP returns {id, name} dicts — same
+    # dual-shape handling as _programme_index().
+    programme_name_by_id = {
+        p.get("_id"): p.get("Programme name", "")
+        for p in kb.get("programmes", [])
+        if p.get("_id")
+    }
+    canonical_programmes = {
+        _norm_name(p.get("Programme name"))
+        for p in kb.get("programmes", [])
+        if p.get("Programme name")
+    }
+
+    def _linked_programme_names(field_value) -> set[str]:
+        names = set()
+        for link in field_value or []:
+            if isinstance(link, dict):
+                pname = link.get("name") or programme_name_by_id.get(link.get("id"), "")
+            else:
+                pname = programme_name_by_id.get(link, "")
+            if pname:
+                names.add(_norm_name(pname))
+        return names
+
+    results = []
+    for name in detected_names:
+        records = [
+            p for p in kb.get("partners", [])
+            if p.get("Partner name", "").strip() == name
+        ]
+        linked_programmes = set()
+        for r in records:
+            linked_programmes |= _linked_programme_names(r.get("Programmes"))
+
+        for held in held_programme_names:
+            # Only assert a fact for a held programme that resolves to a real KB
+            # Programme record. An unrecognised name cannot be verified either
+            # way — stay silent rather than emit a false "NOT a partner".
+            if _norm_name(held) not in canonical_programmes:
+                continue
+            results.append({
+                "merchant": name,
+                "programme": held,
+                "confirmed": _norm_name(held) in linked_programmes,
+            })
+
+    return results
 
 
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
@@ -890,13 +1011,20 @@ def chat():
     routing = resolve_spend_routing(user_spec, kb) if mode == "2" else {}
     held_programmes = _held_programmes_display(user_spec)
 
+    merchant_facts = []
+    if mode == "1":
+        held_names = [h["name"] for h in held_programmes]
+        merchant_facts = _detect_mentioned_partners(message, held_names, kb)
+
     context_blocks = [
         p.get("LLM context block", "")
         for p in kb["programmes"]
         if p.get("LLM context block")
     ]
 
-    system_prompt = build_system_prompt(context_blocks, routing or None, held_programmes)
+    system_prompt = build_system_prompt(
+        context_blocks, routing or None, held_programmes, merchant_facts
+    )
 
     history = list(session["history"])
     history.append({"role": "user", "content": message})
