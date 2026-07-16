@@ -538,6 +538,52 @@ def _detect_conflict_facts(programme_name: str, kb: dict) -> list[str]:
     return facts
 
 
+def _check_partial_conflict_mention(reply: str, conflict_facts: list[str]) -> str:
+    """
+    Deterministic post-generation check, no LLM call. If a Mode 3 response
+    mentions SOME but not ALL of the Rand values in a known conflict fact,
+    that's the unhedged-fabrication pattern, a flat confident figure
+    standing in for a disputed one, not omission. Appends a plain correction
+    in that case only.
+
+    Deliberately does not append the raw Conditions/notes text verbatim,
+    that field carries internal KB-authoring metadata ("[unverified:
+    conflicting sources]", capture dates) not meant for user-facing copy.
+    Builds a generic correction from the extracted values instead, works
+    for any future tagged conflict without depending on each note reading
+    cleanly as user-facing prose.
+
+    Two matching variants checked per value (with/without comma) to reduce
+    false negatives from minor formatting drift. Not exhaustive, fuzzy
+    phrasing beyond that isn't handled, accepted limitation, flag if it
+    proves to matter in practice.
+
+    Mentioning NONE of the values (omission) or ALL of them (correctly
+    hedged) are both left untouched. Neither is the failure this targets.
+    """
+    corrections = []
+    for fact in conflict_facts:
+        values = re.findall(r"R[\d,]+", fact)
+        if len(values) < 2:
+            continue  # not a multi-value conflict, nothing to check
+
+        mentioned = []
+        for v in values:
+            forms = {v, v.replace(",", "")}
+            if any(f in reply for f in forms):
+                mentioned.append(v)
+
+        if 0 < len(mentioned) < len(values):
+            corrections.append(
+                f"Correction: this figure is disputed between sources, {' vs '.join(values)}, not resolved."
+            )
+
+    if corrections:
+        reply = reply.rstrip() + "\n\n" + " ".join(corrections)
+
+    return reply
+
+
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
     """Resolve a single record's Tier link field to a tier name, or None if untiered."""
     tier_field = record.get("Tier") or []
@@ -1128,6 +1174,8 @@ def chat():
             messages=history,
         )
         reply = response.content[0].text
+        if mode == "3" and conflict_facts:
+            reply = _check_partial_conflict_mention(reply, conflict_facts)
 
         session["history"].append({"role": "user", "content": message})
         session["history"].append({"role": "assistant", "content": reply})
