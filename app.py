@@ -156,6 +156,7 @@ def build_system_prompt(
     routing_output: dict | None,
     held_programmes: list[dict] | None = None,
     merchant_facts: list[dict] | None = None,
+    conflict_facts: list[str] | None = None,
 ) -> str:
     """
     Assemble the full system prompt for a query:
@@ -163,6 +164,7 @@ def build_system_prompt(
     - Relevant programme LLM context blocks
     - User's stated held programmes (fact, every mode, independent of routing)
     - Deterministic merchant/programme partnership verification (Mode 1 only)
+    - Known unresolved data conflicts for the evaluated programme (Mode 3 only)
     - Pre-computed routing output (Mode 2 only, when the deterministic engine ran)
     """
     prompt = LIQ_SYSTEM_PROMPT_BASE
@@ -188,6 +190,11 @@ def build_system_prompt(
         for f in merchant_facts:
             status = "confirmed partner" if f["confirmed"] else "NOT a confirmed partner"
             prompt += f"- {f['merchant']} / {f['programme']}: {status}\n"
+
+    if conflict_facts:
+        prompt += "\n\n## KNOWN UNRESOLVED CONFLICTS (state both values, do not silently pick one)\n"
+        for fact in conflict_facts:
+            prompt += f"- {fact}\n"
 
     if routing_output:
         prompt += (
@@ -267,6 +274,15 @@ PARTNER_ALIASES = {
     "dischem": "Dis-Chem",
     "dis chem": "Dis-Chem",
     "pnp": "Pick n Pay",
+}
+
+PROGRAMME_ALIASES = {
+    # Hand-curated common shorthand -> canonical Programme name as it appears
+    # in Airtable. Small and conservative, same discipline as PARTNER_ALIASES.
+    "ebucks": "FNB eBucks",
+    "vitality": "Discovery Vitality",
+    "live better": "Capitec Live Better",
+    "voyager": "SAA Voyager",
 }
 
 RAND_COMPARABLE_UNITS = {
@@ -452,6 +468,74 @@ def _detect_mentioned_partners(
             })
 
     return results
+
+
+def _detect_evaluated_programme(message: str, kb: dict) -> str | None:
+    """
+    Deterministic, non-LLM detection of which programme a Mode 3 query is
+    evaluating. Returns the canonical Programme name (matches
+    _programme_index()'s keys) or None if detection isn't confident.
+
+    Conservative by design, same principle as _detect_mentioned_partners():
+    exact/word-boundary matching against real Programme names plus the small
+    curated alias table above, no fuzzy matching. If the message names zero
+    programmes or more than one, returns None. An unconfident grounding
+    target is worse than none, silence is correct here, not a failure.
+    """
+    lowered = " " + message.lower() + " "
+
+    for alias, canonical in PROGRAMME_ALIASES.items():
+        if re.search(rf"\b{re.escape(alias)}\b", lowered):
+            lowered += f" {canonical.lower()} "
+
+    programme_names = sorted(
+        {p.get("Programme name", "").strip() for p in kb["programmes"] if p.get("Programme name")},
+        key=len,
+        reverse=True,  # longest first: "MyDifference PLUS" before "MyDifference"
+    )
+
+    matched = []
+    for name in programme_names:
+        pattern = rf"\b{re.escape(name.lower())}\b"
+        if re.search(pattern, lowered):
+            matched.append(name)
+            lowered = re.sub(pattern, " ", lowered)  # consume, avoid overlap double-count
+
+    if len(matched) != 1:
+        return None
+
+    return matched[0]
+
+
+def _detect_conflict_facts(programme_name: str, kb: dict) -> list[str]:
+    """
+    For a Mode 3-evaluated programme, find any Earn rate records flagged with
+    a non-blank Conflict group (records sharing an identical Conflict group
+    value are deliberately co-existing, unresolved facts per the field's own
+    description, not a superseded pair). Returns each unique conflict's
+    Conditions / notes text verbatim, deduplicated by Conflict group value,
+    for injection as a fact the model must state rather than silently resolve.
+
+    Reuses _programme_index()'s already-resolved earn_rates lookup, same
+    infrastructure resolve_spend_routing() runs on for Mode 2, not new
+    plumbing. Returns [] if the programme has no tagged conflicts, the normal
+    case for nearly every programme and every query, silence is correct here.
+    """
+    index = _programme_index(kb)
+    records = index.get("earn_rates", {}).get(programme_name, [])
+
+    seen_groups = set()
+    facts = []
+    for r in records:
+        group = (r.get("Conflict group") or "").strip()
+        if not group or group in seen_groups:
+            continue
+        seen_groups.add(group)
+        note = (r.get("Conditions / notes") or "").strip()
+        if note:
+            facts.append(note)
+
+    return facts
 
 
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
@@ -1016,6 +1100,12 @@ def chat():
         held_names = [h["name"] for h in held_programmes]
         merchant_facts = _detect_mentioned_partners(message, held_names, kb)
 
+    conflict_facts = []
+    if mode == "3":
+        evaluated_programme = _detect_evaluated_programme(message, kb)
+        if evaluated_programme:
+            conflict_facts = _detect_conflict_facts(evaluated_programme, kb)
+
     context_blocks = [
         p.get("LLM context block", "")
         for p in kb["programmes"]
@@ -1023,7 +1113,7 @@ def chat():
     ]
 
     system_prompt = build_system_prompt(
-        context_blocks, routing or None, held_programmes, merchant_facts
+        context_blocks, routing or None, held_programmes, merchant_facts, conflict_facts
     )
 
     history = list(session["history"])
