@@ -200,6 +200,47 @@
 
     .divider-dot { color: var(--muted); }
 
+    .moment-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .moment-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--blue);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 7px 14px;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .moment-cta:hover {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .moment-cta.disabled {
+      border: 1px dashed var(--muted);
+      color: var(--ink-3);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .moment-cta-note {
+      font-family: "JetBrains Mono", monospace;
+      font-size: var(--text-xs);
+      color: var(--ink-3);
+    }
+
     .section {
       max-width: var(--max);
       margin: 0 auto;
@@ -686,10 +727,6 @@
         <div class="eyebrow">South Africa's loyalty programme optimiser</div>
         <h1>Stop guessing.<br><span class="accent">Start getting more.</span></h1>
         <p class="hero-copy">LoyaltyIQ shows which loyalty programmes give you value, where to swipe, and what you may be missing.</p>
-        <div class="btn-row">
-          <a class="primary-btn" href="https://web-production-0a66a.up.railway.app/" target="_blank" rel="noopener">Open LoyaltyIQ <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="micro-row"><span>5 free questions per day</span></div>
       </header>
 
       <section class="section reveal" aria-label="Key statistics">
@@ -716,17 +753,47 @@
         <p class="footnote">* Estimated from publicly available South African loyalty research and LoyaltyIQ modelling. Individual results depend on spending behaviour and loyalty programme participation.</p>
       </section>
 
-      <section class="section intro-grid reveal">
-        <div class="intro-copy">
-          <h2>Most rewards are hidden in the rules.</h2>
-          <p>LoyaltyIQ compares your spending against verified loyalty programme rules and reward rates from South Africa's leading loyalty programmes.</p>
+      <div class="trust-wrap reveal" aria-label="Why trust LoyaltyIQ">
+        <div class="trust-dark">
+          <div class="trust-title">
+            <h2>Why trust LoyaltyIQ?</h2>
+            <p>LoyaltyIQ compares your spending against verified loyalty programme rules and reward rates from South Africa's leading loyalty programmes. Verified rules and deterministic calculations produce the numbers. Artificial intelligence explains the result.</p>
+          </div>
         </div>
-        <div class="principles">
-          <div class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6 9 17l-5-5"/></svg>Independent and not affiliated with any programme</div>
-          <div class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>Built on verified programme data</div>
-          <div class="principle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>You choose how much to share</div>
+        <div class="trust-light">
+          <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg><strong>Verified loyalty programme rules</strong><p>Rules and rates are structured before calculation.</p></div>
+          <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 10h2"/><path d="M14 10h2"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg><strong>Deterministic calculations</strong><p>The reward engine calculates values consistently.</p></div>
+          <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg><strong>AI explains the result</strong><p>It explains the answer without inventing figures.</p></div>
+          <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6 6 18"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/></svg><strong>No sponsorship bias</strong><p>No paid recommendations or preferred programmes.</p></div>
         </div>
-      </section>
+      </div>
+
+      <div class="programme-carousel" aria-label="Programmes analysed carousel">
+        <div class="programme-track">
+          <div class="programme"><span class="programme-mark"></span>Discovery Vitality</div>
+          <div class="programme"><span class="programme-mark"></span>FNB eBucks</div>
+          <div class="programme"><span class="programme-mark"></span>Shell V+</div>
+          <div class="programme"><span class="programme-mark"></span>Clicks ClubCard</div>
+          <div class="programme"><span class="programme-mark"></span>Absa Rewards</div>
+          <div class="programme"><span class="programme-mark"></span>Capitec Live Better</div>
+          <div class="programme"><span class="programme-mark"></span>UCount Rewards</div>
+          <div class="programme"><span class="programme-mark"></span>MyDifference</div>
+          <div class="programme"><span class="programme-mark"></span>MyDifference PLUS</div>
+          <div class="programme"><span class="programme-mark"></span>SAA Voyager</div>
+          <div class="programme"><span class="programme-mark"></span>Better Rewards</div>
+          <div class="programme"><span class="programme-mark"></span>Discovery Vitality</div>
+          <div class="programme"><span class="programme-mark"></span>FNB eBucks</div>
+          <div class="programme"><span class="programme-mark"></span>Shell V+</div>
+          <div class="programme"><span class="programme-mark"></span>Clicks ClubCard</div>
+          <div class="programme"><span class="programme-mark"></span>Absa Rewards</div>
+          <div class="programme"><span class="programme-mark"></span>Capitec Live Better</div>
+          <div class="programme"><span class="programme-mark"></span>UCount Rewards</div>
+          <div class="programme"><span class="programme-mark"></span>MyDifference</div>
+          <div class="programme"><span class="programme-mark"></span>MyDifference PLUS</div>
+          <div class="programme"><span class="programme-mark"></span>SAA Voyager</div>
+          <div class="programme"><span class="programme-mark"></span>Better Rewards</div>
+        </div>
+      </div>
 
       <section class="section moments">
         <div class="moments-head">
@@ -750,6 +817,10 @@
               <div class="muted">Approx. 15% back on qualifying items.</div>
               <div class="tag-row"><span class="tag good">Low effort</span><span class="tag">Free to join</span></div>
             </div>
+            <div class="moment-cta-row">
+              <a class="moment-cta" href="https://liq.networkgrey.co.za/liq-ask/">Ask now <span aria-hidden="true">→</span></a>
+              <span class="moment-cta-note">5 free questions per day</span>
+            </div>
           </article>
 
           <article class="moment-card reveal">
@@ -770,6 +841,9 @@
               </div>
               <div class="tag-row"><span class="tag">4 recommendations</span><span class="tag">2 no extra sign-up</span></div>
             </div>
+            <div class="moment-cta-row">
+              <a class="moment-cta" href="https://liq.networkgrey.co.za/liq-ask/">Review now <span aria-hidden="true">→</span></a>
+            </div>
           </article>
 
           <article class="moment-card reveal">
@@ -786,51 +860,12 @@
                 <div class="join-item"><div class="label">Cost</div><div class="join-value">R159 / month</div></div>
                 <div class="join-item"><div class="label">Requirement</div><div class="join-value">Discovery product required</div></div>
               </div>
-              <div class="verdict"><strong>Verdict:</strong> likely worthwhile if you're already a Discovery customer.</div>
+              <div class="verdict">Estimated net difference: <strong>+R151/month</strong> if you already hold a qualifying Discovery product.</div>
+            </div>
+            <div class="moment-cta-row">
+              <span class="moment-cta disabled" aria-disabled="true">Coming soon</span>
             </div>
           </article>
-        </div>
-
-        <div class="trust-wrap reveal" aria-label="Why trust LoyaltyIQ">
-          <div class="trust-dark">
-            <div class="trust-title">
-              <h2>Why trust LoyaltyIQ?</h2>
-              <p>Verified rules and deterministic calculations produce the numbers. Artificial intelligence explains the result.</p>
-            </div>
-          </div>
-          <div class="trust-light">
-            <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg><strong>Verified loyalty programme rules</strong><p>Rules and rates are structured before calculation.</p></div>
-            <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 10h2"/><path d="M14 10h2"/><path d="M8 14h2"/><path d="M14 14h2"/><path d="M8 18h2"/><path d="M14 18h2"/></svg><strong>Deterministic calculations</strong><p>The reward engine calculates values consistently.</p></div>
-            <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/></svg><strong>AI explains the result</strong><p>It explains the answer without inventing figures.</p></div>
-            <div class="trust-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6 6 18"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/></svg><strong>No sponsorship bias</strong><p>No paid recommendations or preferred programmes.</p></div>
-          </div>
-        </div>
-
-        <div class="programme-carousel" aria-label="Programmes analysed carousel">
-          <div class="programme-track">
-            <div class="programme"><span class="programme-mark"></span>Discovery Vitality</div>
-            <div class="programme"><span class="programme-mark"></span>FNB eBucks</div>
-            <div class="programme"><span class="programme-mark"></span>Shell V+</div>
-            <div class="programme"><span class="programme-mark"></span>Clicks ClubCard</div>
-            <div class="programme"><span class="programme-mark"></span>Absa Rewards</div>
-            <div class="programme"><span class="programme-mark"></span>Capitec Live Better</div>
-            <div class="programme"><span class="programme-mark"></span>UCount Rewards</div>
-            <div class="programme"><span class="programme-mark"></span>MyDifference</div>
-            <div class="programme"><span class="programme-mark"></span>MyDifference PLUS</div>
-            <div class="programme"><span class="programme-mark"></span>SAA Voyager</div>
-            <div class="programme"><span class="programme-mark"></span>Better Rewards</div>
-            <div class="programme"><span class="programme-mark"></span>Discovery Vitality</div>
-            <div class="programme"><span class="programme-mark"></span>FNB eBucks</div>
-            <div class="programme"><span class="programme-mark"></span>Shell V+</div>
-            <div class="programme"><span class="programme-mark"></span>Clicks ClubCard</div>
-            <div class="programme"><span class="programme-mark"></span>Absa Rewards</div>
-            <div class="programme"><span class="programme-mark"></span>Capitec Live Better</div>
-            <div class="programme"><span class="programme-mark"></span>UCount Rewards</div>
-            <div class="programme"><span class="programme-mark"></span>MyDifference</div>
-            <div class="programme"><span class="programme-mark"></span>MyDifference PLUS</div>
-            <div class="programme"><span class="programme-mark"></span>SAA Voyager</div>
-            <div class="programme"><span class="programme-mark"></span>Better Rewards</div>
-          </div>
         </div>
 
         <div class="cta reveal">
