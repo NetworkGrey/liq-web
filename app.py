@@ -1012,7 +1012,7 @@ def chat():
     held_programmes = _held_programmes_display(user_spec)
 
     merchant_facts = []
-    if mode == "1":
+    if mode in ("1", "3"):
         held_names = [h["name"] for h in held_programmes]
         merchant_facts = _detect_mentioned_partners(message, held_names, kb)
 
