@@ -1073,6 +1073,12 @@ def onboarding():
     return send_from_directory(".", "liq-onboarding.html")
 
 
+@app.route("/wallet")
+def wallet():
+    # No auth enforced during beta — same inert sign-in placeholder pattern as Review/Join.
+    return send_from_directory("wallet", "index.html")
+
+
 @app.route("/analyse", methods=["POST"])
 def analyse():
     """
