@@ -118,7 +118,10 @@
       text-transform: uppercase;
       color: var(--ink-3);
       border-radius: var(--radius);
+      text-decoration: none;
     }
+
+    .nav-links { display: flex; align-items: center; gap: 10px; }
 
     .hero {
       max-width: var(--max);
@@ -1000,7 +1003,10 @@
 <main class="page-card">
 <nav aria-label="LoyaltyIQ product navigation" class="nav">
 <div class="wordmark">Loyalty<span>IQ</span></div>
+<div class="nav-links">
+<a class="nav-pill" href="https://web-production-0a66a.up.railway.app/wallet">My Cards</a>
 <div class="nav-pill">Product interface</div>
+</div>
 </nav>
 <section aria-labelledby="product-title" class="hero">
 <div class="eyebrow">Independent loyalty optimiser</div>
