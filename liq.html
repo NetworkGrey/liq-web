@@ -371,6 +371,14 @@
 
     button[id$="-btn"]:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
 
+    button.btn-secondary {
+      background: #fff;
+      color: var(--ink-2);
+      border-color: var(--border);
+      box-shadow: none;
+    }
+    button.btn-secondary:hover { background: var(--surface-2); color: var(--ink); transform: none; box-shadow: none; }
+
     .counter {
       margin-top: 12px;
       color: var(--ink-3);
@@ -454,7 +462,8 @@
       text-transform: none;
     }
 
-    input[type="checkbox"] {
+    input[type="checkbox"],
+    input[type="radio"] {
       accent-color: var(--blue);
       width: 14px;
       height: 14px;
@@ -566,6 +575,53 @@
     }
     .join-title { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-lg); color: var(--ink); margin: 0; }
     .join-body { padding: 0 20px 20px; font-family: var(--font-body); font-size: var(--text-sm); color: var(--ink-2); }
+
+    .join-locked {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+      padding: 32px 20px 8px;
+      color: var(--ink-3);
+    }
+    .join-locked-icon { color: var(--muted); }
+    .join-locked-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--text-base);
+      color: var(--ink-2);
+      margin: 6px 0 0;
+    }
+    .join-locked-reason {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--ink-3);
+      margin: 0;
+      max-width: 420px;
+    }
+    .join-locked-cta { margin: 14px 0 4px; }
+
+    .join-held-section {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-soft);
+    }
+    .join-recap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      margin: 10px 0 14px;
+    }
+    .join-confirm-prompt {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--ink);
+      margin: 12px 0 10px;
+    }
+    .join-confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    #join-evaluate-btn { margin-top: 18px; }
 
     .field-group-sm { min-width: 0; }
 
@@ -1233,11 +1289,9 @@
 </div></div><section class="join-section">
 <div class="join-header">
 <p class="join-eyebrow">Join</p>
-<p class="join-title">Coming soon</p>
+<p class="join-title" id="join-title">Evaluate a new programme</p>
 </div>
-<div class="join-body">
-<p>Evaluate whether a new loyalty programme is worth joining, based on your spend. In development.</p>
-</div>
+<div class="join-body" id="join-body"></div>
 </section></section>
 <section aria-label="LoyaltyIQ response" aria-live="polite" id="output-area">
 <!-- Populated by JS -->
@@ -1301,6 +1355,8 @@
       const text = `${n} / ${DAILY_LIMIT} queries remaining`;
       document.getElementById("ask-counter").textContent = text;
       document.getElementById("review-counter").textContent = text;
+      const joinCounter = document.getElementById("join-counter");
+      if (joinCounter) joinCounter.textContent = text;
     }
 
     function switchTab(active) {
@@ -1674,6 +1730,8 @@
         const data = await res.json();
         setRemaining(remaining - 1);
         renderResponse(data, "2");
+        markReviewCompleted(programmes_held);
+        renderJoinSection();
 
       } catch {
         showError("LoyaltyIQ is unavailable right now. Try again in a moment.");
@@ -1695,6 +1753,290 @@
           if (drilldown) drilldown.hidden = !cb.checked;
         });
       });
+    }
+
+    // ─── Join: session-gated single-programme evaluation ────────────────────
+
+    // Verified-only pool. `label` is each programme's Airtable `Common name`
+    // field value (pulled live at build time, not the mockup's illustrative
+    // text) — `value` is the canonical Programme name, the only thing ever
+    // submitted to the backend.
+    const JOIN_PROGRAMMES = [
+      { value: "Discovery Vitality", label: "Discovery Vitality" },
+      { value: "FNB eBucks", label: "FNB eBucks" },
+      { value: "Shell V+", label: "Shell V+" },
+      { value: "Clicks ClubCard", label: "Clicks ClubCard" },
+      { value: "ABSA Rewards", label: "ABSA Rewards" },
+      { value: "Capitec Live Better", label: "Capitec Live Better" },
+      { value: "UCount Rewards", label: "Standard Bank UCount" },
+      { value: "MyDifference", label: "Woolworths MyDifference" },
+      { value: "MyDifference PLUS", label: "Woolworths MyDifference PLUS" },
+      { value: "Better Rewards", label: "Dis-Chem" },
+    ];
+
+    // Same held-programme catalog as Review's grid, reproduced here (with
+    // join-prefixed ids) so Join's edit grid doesn't share DOM ids with Review's.
+    const HELD_PROGRAMME_CATALOG = [
+      { key: "fnbebucks", value: "FNB eBucks", label: "FNB eBucks",
+        tiers: ["FNB Easy PAYU", "FNB Easy Bundle", "FNB Aspire", "FNB Premier", "FNB Private Clients", "FNB Private Wealth", "RMB Private Bank"],
+        pointsLabel: "Current eBucks balance (optional)" },
+      { key: "clicks", value: "Clicks ClubCard", label: "Clicks ClubCard" },
+      { key: "shellvplus", value: "Shell V+", label: "Shell V+",
+        tiers: ["V+ Regular", "V+ Super", "V+ Premium", "V+ Ultra", "V+ Ultra Plus", "V+ Ultra *****"],
+        pointsLabel: "Current ZAR cashback balance this period (optional)" },
+      { key: "absa", value: "Absa Rewards", label: "Absa Rewards",
+        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
+        pointsLabel: "Current Absa Rewards balance (optional)" },
+      { key: "vitality", value: "Discovery Vitality", label: "Discovery Vitality",
+        tiers: ["Blue", "Bronze", "Silver", "Gold", "Diamond"],
+        pointsLabel: "Current Vitality points this year (optional)" },
+      { key: "capitec", value: "Capitec Live Better", label: "Capitec Live Better" },
+      { key: "ucount", value: "UCount Rewards", label: "UCount Rewards",
+        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
+        pointsLabel: "Current UCount Rewards points balance (optional)" },
+      { key: "mydifference", value: "MyDifference", label: "MyDifference",
+        tiers: ["Loyal", "Ambassador", "VIP"] },
+      { key: "mydifferenceplus", value: "MyDifference PLUS", label: "MyDifference PLUS" },
+      { key: "voyager", value: "SAA Voyager", label: "SAA Voyager",
+        tiers: ["Blue", "Silver", "Gold", "Platinum"],
+        pointsLabel: "Current Voyager Miles balance (optional)" },
+      { key: "betterrewards", value: "Better Rewards", label: "Better Rewards" },
+    ];
+
+    function getReviewState() {
+      let completed = false;
+      let held = [];
+      try {
+        completed = sessionStorage.getItem("liq_review_completed") === "1";
+        held = JSON.parse(sessionStorage.getItem("liq_review_held_programmes") || "[]");
+      } catch {}
+      return { completed, held };
+    }
+
+    function markReviewCompleted(programmesHeld) {
+      try {
+        sessionStorage.setItem("liq_review_completed", "1");
+        sessionStorage.setItem("liq_review_held_programmes", JSON.stringify(programmesHeld));
+      } catch {}
+    }
+
+    let joinHeldProgrammes = [];
+    let joinHeldConfirmed = false;
+
+    // Re-derives Join's entire UI from current session state every time it's
+    // called. Never assumes a prior render is still valid — this is the one
+    // gate check, run on load, on bfcache restores, and right after a Review
+    // submission succeeds, rather than a one-shot first-visit check.
+    function renderJoinSection() {
+      const { completed, held } = getReviewState();
+      joinHeldProgrammes = held;
+      joinHeldConfirmed = false;
+      const body = document.getElementById("join-body");
+      if (!completed) {
+        body.innerHTML = renderJoinLockedHtml();
+        document.getElementById("join-goto-review-btn").addEventListener("click", () => switchTab("review"));
+        return;
+      }
+      body.innerHTML = renderJoinPickerHtml();
+      wireJoinUnlocked();
+    }
+
+    function renderJoinLockedHtml() {
+      return `
+        <div class="join-locked">
+          <div class="join-locked-icon" aria-hidden="true">
+            <svg fill="none" height="28" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" width="28">
+              <rect height="10" rx="2" width="16" x="4" y="11"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <p class="join-locked-title">Complete a Review first</p>
+          <p class="join-locked-reason">Join needs the spend profile and held programmes from Review to evaluate a new one against them.</p>
+          <button class="join-locked-cta" id="join-goto-review-btn" type="button">Go to Review</button>
+        </div>
+      `;
+    }
+
+    function renderJoinPickerHtml() {
+      const radios = JOIN_PROGRAMMES.map(p =>
+        `<label class="prog-checkbox-label"><input class="join-prog-radio" name="join-programme" type="radio" value="${p.value}"/> ${p.label}</label>`
+      ).join("");
+
+      return `
+        <p class="ask-selector-label">Which programme are you considering?</p>
+        <div class="checkbox-grid" id="join-programme-grid">${radios}</div>
+        <div class="join-held-section" id="join-held-section"></div>
+        <button disabled="" id="join-evaluate-btn" type="button">Evaluate now</button>
+        <div aria-live="polite" class="counter" id="join-counter"></div>
+      `;
+    }
+
+    function renderJoinHeldRecap() {
+      const section = document.getElementById("join-held-section");
+      const slots = joinHeldProgrammes.map(p => {
+        const meta = HELD_PROGRAMME_CATALOG.find(c => c.value === p.name);
+        const label = meta ? meta.label : p.name;
+        return `<div class="wallet-slot wallet-filled">${label}</div>`;
+      }).join("");
+
+      section.innerHTML = `
+        <p class="ask-selector-label">Your held programmes</p>
+        <div class="wallet-grid join-recap-grid">${slots}</div>
+        <p class="join-confirm-prompt">Confirm you hold these cards?</p>
+        <div class="join-confirm-actions">
+          <button id="join-confirm-yes-btn" type="button">Yes</button>
+          <button class="btn-secondary" id="join-confirm-addmore-btn" type="button">Add more cards</button>
+        </div>
+      `;
+
+      document.getElementById("join-confirm-yes-btn").addEventListener("click", () => {
+        joinHeldConfirmed = true;
+        updateJoinEvaluateState();
+      });
+      document.getElementById("join-confirm-addmore-btn").addEventListener("click", renderJoinHeldEditGrid);
+    }
+
+    function renderJoinHeldEditGrid() {
+      const section = document.getElementById("join-held-section");
+      const heldByValue = {};
+      joinHeldProgrammes.forEach(p => { heldByValue[p.name] = p; });
+
+      const rows = HELD_PROGRAMME_CATALOG.map(c => {
+        const id = `join-edit-${c.key}`;
+        const existing = heldByValue[c.value];
+        const checked = existing ? "checked" : "";
+        let drilldown = "";
+        if (c.tiers || c.pointsLabel) {
+          const tierOptions = (c.tiers || []).map(t =>
+            `<option value="${t}" ${existing && existing.tier === t ? "selected" : ""}>${t}</option>`
+          ).join("");
+          drilldown = `
+            <div class="prog-drilldown" data-prog-key="${c.key}" ${checked ? "" : "hidden"}>
+              ${c.tiers ? `
+              <div class="field-group-sm">
+                <label for="${id}-tier">Tier (optional)</label>
+                <select class="join-edit-tier-select" id="${id}-tier">
+                  <option value="">Not sure / skip</option>
+                  ${tierOptions}
+                </select>
+              </div>` : ""}
+              ${c.pointsLabel ? `
+              <div class="field-group-sm">
+                <label for="${id}-points">${c.pointsLabel}</label>
+                <input class="join-edit-points-input" id="${id}-points" inputmode="numeric" min="0" type="number" value="${existing && existing.balance != null ? existing.balance : ""}"/>
+              </div>` : ""}
+            </div>`;
+        }
+
+        return `
+          <div class="programme-row">
+            <label class="prog-checkbox-label">
+              <input class="join-edit-prog-checkbox" data-prog-key="${c.key}" id="${id}" type="checkbox" value="${c.value}" ${checked}/>
+              ${c.label}
+            </label>
+            ${drilldown}
+          </div>`;
+      }).join("");
+
+      section.innerHTML = `
+        <p class="ask-selector-label">Loyalty programmes I already hold</p>
+        <div id="join-edit-grid">${rows}</div>
+        <div class="join-confirm-actions">
+          <button class="btn-secondary" id="join-back-to-confirm-btn" type="button">Back to confirm</button>
+        </div>
+      `;
+
+      document.querySelectorAll(".join-edit-prog-checkbox").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const key = cb.dataset.progKey;
+          const drilldown = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"]`);
+          if (drilldown) drilldown.hidden = !cb.checked;
+        });
+      });
+
+      document.getElementById("join-back-to-confirm-btn").addEventListener("click", () => {
+        const updated = [];
+        document.querySelectorAll(".join-edit-prog-checkbox:checked").forEach(cb => {
+          const key = cb.dataset.progKey;
+          const entry = { name: cb.value };
+          const tierSelect = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-tier-select`);
+          if (tierSelect && tierSelect.value) entry.tier = tierSelect.value;
+          const pointsInput = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-points-input`);
+          if (pointsInput && pointsInput.value) entry.balance = parseFloat(pointsInput.value);
+          updated.push(entry);
+        });
+        joinHeldProgrammes = updated;
+        joinHeldConfirmed = false;
+        renderJoinHeldRecap();
+        updateJoinEvaluateState();
+      });
+    }
+
+    function updateJoinEvaluateState() {
+      const btn = document.getElementById("join-evaluate-btn");
+      if (!btn) return;
+      const hasSelection = !!document.querySelector(".join-prog-radio:checked");
+      btn.disabled = !(hasSelection && joinHeldConfirmed);
+    }
+
+    function wireJoinUnlocked() {
+      renderJoinHeldRecap();
+      document.querySelectorAll(".join-prog-radio").forEach(r => {
+        r.addEventListener("change", updateJoinEvaluateState);
+      });
+      updateCounters(getRemaining());
+      document.getElementById("join-evaluate-btn").addEventListener("click", submitJoinEvaluate);
+      updateJoinEvaluateState();
+    }
+
+    async function submitJoinEvaluate() {
+      const selected = document.querySelector(".join-prog-radio:checked");
+      if (!selected) return;
+
+      const remaining = getRemaining();
+      if (remaining <= 0) {
+        showError("You've used your daily query limit. Come back tomorrow.");
+        return;
+      }
+
+      // Canonical Programme name embedded in natural language — detect_mode()
+      // needs "worth it" for Mode 3, _detect_evaluated_programme() needs the
+      // exact Programme name (not Common name) to ground the evaluation.
+      const message = `Is ${selected.value} worth it?`;
+
+      const area = document.getElementById("output-area");
+      area.innerHTML = `<p class="thinking">Analysing…</p>`;
+      area.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      setLoading(true);
+      document.getElementById("join-evaluate-btn").disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message,
+            session_id: getSessionId(),
+            user_spec: { programmes_held: joinHeldProgrammes }
+          })
+        });
+
+        if (res.status === 429) {
+          setRemaining(0);
+          showError("You've used your daily query limit. Come back tomorrow.");
+          return;
+        }
+
+        const data = await res.json();
+        setRemaining(data.remaining ?? remaining - 1);
+        renderResponse(data, data.mode ?? "3");
+
+      } catch {
+        showError("LoyaltyIQ is unavailable right now. Try again in a moment.");
+      } finally {
+        setLoading(false);
+        updateJoinEvaluateState();
+      }
     }
 
     const ASK_SELECTOR_CAP = Infinity; // TEMPORARY, testing phase, revert to 2 before public launch
@@ -1728,6 +2070,7 @@
       initCollapsible();
       initDrilldowns();
       initAskSelectorCap();
+      renderJoinSection();
 
       // Sync remaining count from server on load — overrides stale localStorage
       fetch(`${API_BASE}/session?session_id=${encodeURIComponent(getSessionId())}`)
@@ -1744,6 +2087,13 @@
       });
 
       document.getElementById("analyse-btn").addEventListener("click", submitAnalyse);
+    });
+
+    // bfcache restores (back-button navigation) don't re-fire DOMContentLoaded,
+    // so Join's gate would otherwise show whatever was rendered before
+    // navigating away — always re-derive it fresh from session state.
+    window.addEventListener("pageshow", () => {
+      renderJoinSection();
     });
   </script>
 </body>
