@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>IndexedDB storage test</title>
+</head>
+<body>
+<p id="status">Loading…</p>
+<script>
+(function () {
+  var statusEl = document.getElementById("status");
+  function show(text) { statusEl.textContent = "Stored value: " + text; }
+
+  if (!window.indexedDB) {
+    show("none (IndexedDB not available)");
+    return;
+  }
+
+  var openReq = indexedDB.open("liq_storage_test", 1);
+
+  openReq.onupgradeneeded = function (e) {
+    e.target.result.createObjectStore("kv");
+  };
+
+  openReq.onerror = function () {
+    show("none (open failed: " + (openReq.error && openReq.error.message) + ")");
+  };
+
+  openReq.onsuccess = function () {
+    var db = openReq.result;
+    var store = db.transaction("kv", "readwrite").objectStore("kv");
+    var getReq = store.get("test_value");
+
+    getReq.onsuccess = function () {
+      if (getReq.result) {
+        show(getReq.result);
+        return;
+      }
+      var value = new Date().toISOString();
+      var putReq = store.put(value, "test_value");
+      putReq.onsuccess = function () { show(value + " (just written)"); };
+      putReq.onerror = function () {
+        show("none (write failed: " + (putReq.error && putReq.error.message) + ")");
+      };
+    };
+
+    getReq.onerror = function () {
+      show("none (read failed: " + (getReq.error && getReq.error.message) + ")");
+    };
+  };
+})();
+</script>
+</body>
+</html>
