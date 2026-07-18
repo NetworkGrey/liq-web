@@ -1480,7 +1480,7 @@
 
         if (/^\|.*\|$/.test(trimmed)) {
           const tableLines = [];
-          while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) {
+          while (i < lines.length ? /^\|.*\|$/.test(lines[i].trim()) : false) {
             tableLines.push(lines[i].trim());
             i++;
           }
@@ -1914,7 +1914,7 @@
         let drilldown = "";
         if (c.tiers || c.pointsLabel) {
           const tierOptions = (c.tiers || []).map(t =>
-            `<option value="${t}" ${existing && existing.tier === t ? "selected" : ""}>${t}</option>`
+            `<option value="${t}" ${existing ? (existing.tier === t ? "selected" : "") : ""}>${t}</option>`
           ).join("");
           drilldown = `
             <div class="prog-drilldown" data-prog-key="${c.key}" ${checked ? "" : "hidden"}>
@@ -1929,7 +1929,7 @@
               ${c.pointsLabel ? `
               <div class="field-group-sm">
                 <label for="${id}-points">${c.pointsLabel}</label>
-                <input class="join-edit-points-input" id="${id}-points" inputmode="numeric" min="0" type="number" value="${existing && existing.balance != null ? existing.balance : ""}"/>
+                <input class="join-edit-points-input" id="${id}-points" inputmode="numeric" min="0" type="number" value="${existing ? (existing.balance != null ? existing.balance : "") : ""}"/>
               </div>` : ""}
             </div>`;
         }
