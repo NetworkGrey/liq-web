@@ -1028,12 +1028,6 @@ def onboarding():
     return send_from_directory(".", "liq-onboarding.html")
 
 
-@app.route("/storage-test")
-def storage_test():
-    # Disposable: cross-origin IndexedDB persistence spike, delete once answered.
-    return send_from_directory(".", "storage-test.html")
-
-
 @app.route("/analyse", methods=["POST"])
 def analyse():
     """
