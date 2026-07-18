@@ -688,6 +688,30 @@ def _best_bank_match(
     return max(candidates, key=lambda r: r.get("Earn rate value") or 0), False
 
 
+def _bank_stepwise_value(spend_band_schedule: str, monthly_spend: float) -> float | None:
+    """Resolves a Bank Stepwise Earn value from a record's Spend band schedule
+    JSON (list of {min, max, value} dicts, max=None on the open-ended top band)
+    given a monthly spend amount. Returns None if monthly_spend is negative or
+    the schedule is malformed. Not wired into resolve_spend_routing() — this
+    mechanic requires a Product segment + monthly spend input the app does not
+    yet collect; wiring is blocked on the LIQ guardrail/input-surface decision.
+    """
+    if monthly_spend < 0:
+        return None
+    try:
+        bands = json.loads(spend_band_schedule)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    for band in bands:
+        lo = band.get("min")
+        hi = band.get("max")
+        if lo is None:
+            continue
+        if monthly_spend >= lo and (hi is None or monthly_spend <= hi):
+            return band.get("value")
+    return None
+
+
 def _best_redemption_match(
     redemptions: list[dict],
     kb_categories: list[str],
