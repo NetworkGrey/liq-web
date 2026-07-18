@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LoyaltyIQ — My Cards</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<style>
+    :root {
+      --page: #f5f7fa;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --ink: #0f172a;
+      --ink-2: #334155;
+      --ink-3: #64748b;
+      --muted: #94a3b8;
+      --border: #cbd5e1;
+      --border-soft: #dbe3ee;
+      --blue: #1457e6;
+      --blue-hover: #0f49c7;
+      --blue-soft: #edf4ff;
+      --shadow: 0 14px 36px rgba(15, 23, 42, .08);
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, .05);
+      --radius: 0;
+      --max: 1120px;
+      --font-body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-heading: Rajdhani, sans-serif;
+      --font-mono: "JetBrains Mono", monospace;
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-base: 15px;
+      --text-md: 17px;
+      --text-lg: 28px;
+      --text-xl: 34px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(20,87,230,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,87,230,.035) 1px, transparent 1px),
+        var(--page);
+      background-size: 40px 40px;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    .shell { max-width: 1220px; margin: 28px auto; padding: 0 22px; }
+
+    .page-card {
+      background: rgba(255,255,255,.94);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .nav {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 22px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .wordmark {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--text-xl);
+      letter-spacing: -.02em;
+      line-height: 1;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .wordmark span { color: var(--blue); }
+
+    .nav-pill {
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 7px 12px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      border-radius: var(--radius);
+      text-decoration: none;
+    }
+
+    .wallet-hero { max-width: var(--max); margin: 0 auto; padding: 28px 22px 8px; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin: 0 0 6px;
+    }
+
+    h1 { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-xl); color: var(--ink); margin: 0 0 6px; }
+
+    .wallet-subhead { color: var(--ink-2); font-size: var(--text-base); }
+
+    .signin-banner {
+      max-width: var(--max);
+      margin: 18px auto 0;
+      border-left: 4px solid var(--blue);
+      background: var(--blue-soft);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .signin-title { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-base); color: var(--ink); margin: 0; }
+    .signin-copy { font-family: var(--font-body); font-size: var(--text-xs); color: var(--ink-2); margin: 2px 0 0; }
+    .signin-btn {
+      min-height: 40px;
+      border: 1px solid var(--blue);
+      background: var(--blue);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      padding: 0 18px;
+      cursor: default;
+      white-space: nowrap;
+    }
+    .signin-btn:disabled { opacity: 1; }
+
+    .device-notice {
+      max-width: var(--max);
+      margin: 14px auto 0;
+      padding: 16px 18px;
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--ink-3);
+      background: var(--surface-2);
+      color: var(--ink-2);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+    }
+
+    #wallet-body { max-width: var(--max); margin: 0 auto; padding: 22px; }
+
+    .wallet-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .ask-selector-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    button[id$="-btn"] {
+      min-height: 44px;
+      border: 1px solid var(--blue);
+      border-radius: var(--radius);
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      padding: 10px 20px;
+      box-shadow: 0 12px 24px rgba(20,87,230,.18);
+      transition: background .16s ease, transform .16s ease;
+    }
+    button[id$="-btn"]:hover { background: var(--blue-hover); transform: translateY(-1px); }
+    button[id$="-btn"]:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    button.btn-secondary {
+      background: #fff;
+      color: var(--ink-2);
+      border-color: var(--border);
+      box-shadow: none;
+    }
+    button.btn-secondary:hover { background: var(--surface-2); color: var(--ink); transform: none; }
+
+    .wallet-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+
+    .wallet-card-tile {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .wallet-card-image { display: block; width: 100%; height: 110px; object-fit: cover; background: var(--surface-2); }
+
+    .wallet-card-label {
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--ink-3);
+      letter-spacing: .02em;
+    }
+
+    .wallet-empty-msg { color: var(--muted); font-size: var(--text-sm); font-style: italic; }
+
+    .storage-blocked {
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--ink-3);
+      background: #fff;
+      padding: 20px;
+    }
+    .storage-blocked-title { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-md); color: var(--ink); margin: 0 0 6px; }
+    .storage-blocked-body { color: var(--ink-2); font-size: var(--text-sm); line-height: 1.6; }
+
+    .modal-overlay,
+    .editor-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10;
+    }
+    .modal-overlay[hidden],
+    .editor-overlay[hidden] { display: none; }
+
+    .modal-card {
+      max-width: 420px;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+    .modal-title { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-md); color: var(--ink); margin: 0 0 10px; }
+    .modal-body { color: var(--ink-2); font-size: var(--text-sm); line-height: 1.6; margin: 0 0 18px; }
+
+    .editor-panel {
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .editor-title { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-md); color: var(--ink); margin: 0 0 14px; }
+
+    .editor-canvas-wrap {
+      position: relative;
+      display: inline-block;
+      background: repeating-conic-gradient(#e5eaf2 0% 25%, #fff 0% 50%) 50% / 16px 16px;
+      touch-action: none;
+    }
+    .editor-canvas-wrap canvas { display: block; }
+
+    .crop-box {
+      position: absolute;
+      border: 2px solid var(--blue);
+      background: rgba(20,87,230,.12);
+      cursor: move;
+      touch-action: none;
+    }
+    .crop-handle {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: var(--blue);
+      border: 2px solid #fff;
+      touch-action: none;
+    }
+    .crop-handle[data-handle="nw"] { left: -9px; top: -9px; cursor: nwse-resize; }
+    .crop-handle[data-handle="ne"] { right: -9px; top: -9px; cursor: nesw-resize; }
+    .crop-handle[data-handle="sw"] { left: -9px; bottom: -9px; cursor: nesw-resize; }
+    .crop-handle[data-handle="se"] { right: -9px; bottom: -9px; cursor: nwse-resize; }
+
+    .editor-controls { display: flex; gap: 10px; margin-top: 14px; }
+    .editor-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+
+    .editor-error {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-left: 4px solid var(--ink-3);
+      background: var(--surface-2);
+      color: var(--ink-2);
+      font-size: var(--text-xs);
+    }
+</style>
+</head>
+<body>
+<div class="shell">
+<main class="page-card">
+<nav aria-label="LoyaltyIQ navigation" class="nav">
+<a class="wordmark" href="/">Loyalty<span>IQ</span></a>
+<a class="nav-pill" href="/">Product interface</a>
+</nav>
+
+<section class="wallet-hero">
+<div class="eyebrow">My Cards</div>
+<h1>Your wallet.</h1>
+<p class="wallet-subhead">Card images captured here, cropped and stripped of metadata, stored only on this device.</p>
+</section>
+
+<div class="signin-banner">
+<div>
+<p class="signin-title">Sign in to sync across devices</p>
+<p class="signin-copy">Not available yet — cards stay on this device for now.</p>
+</div>
+<button class="signin-btn" disabled="" type="button">Continue with Google</button>
+</div>
+
+<div class="device-notice">Your card images stay on this device and are never uploaded, synced, or visible to us. Clearing your browser data removes them, there is no backup.</div>
+
+<div id="wallet-body">
+<p class="wallet-empty-msg">Loading…</p>
+</div>
+
+</main>
+</div>
+
+<div class="modal-overlay" hidden="" id="notice-modal">
+<div class="modal-card">
+<p class="modal-title">Before you add a card</p>
+<p class="modal-body">Your card images stay on this device and are never uploaded, synced, or visible to us. Clearing your browser data removes them, there is no backup.</p>
+<button id="notice-ack-btn" type="button">Got it</button>
+</div>
+</div>
+
+<div class="editor-overlay" hidden="" id="editor-overlay">
+<div class="editor-panel">
+<p class="editor-title">Crop and rotate</p>
+<div class="editor-canvas-wrap" id="editor-canvas-wrap">
+<canvas id="editor-canvas"></canvas>
+<div class="crop-box" id="crop-box">
+<div class="crop-handle" data-handle="nw"></div>
+<div class="crop-handle" data-handle="ne"></div>
+<div class="crop-handle" data-handle="sw"></div>
+<div class="crop-handle" data-handle="se"></div>
+</div>
+</div>
+<div class="editor-controls">
+<button class="btn-secondary" id="rotate-left-btn" type="button">Rotate left</button>
+<button class="btn-secondary" id="rotate-right-btn" type="button">Rotate right</button>
+</div>
+<div class="editor-actions">
+<button class="btn-secondary" id="editor-cancel-btn" type="button">Cancel</button>
+<button id="editor-save-btn" type="button">Save card</button>
+</div>
+<p class="editor-error" hidden="" id="editor-error"></p>
+</div>
+</div>
+
+<input accept="image/*" capture="environment" hidden="" id="file-input" type="file"/>
+
+<script>
+    // ─── Storage layer: typed, versioned, first-party IndexedDB ────────────
+    //
+    // Card record shape (documented here, not enforced by a schema language —
+    // this file has no build step or type checker):
+    //   { id: string, createdAt: string (ISO 8601), image: Blob, width: number, height: number }
+    //
+    // Invariant: the `image` Blob is ALWAYS a canvas-rendered re-export, never
+    // the original captured File — that's what guarantees EXIF/metadata is
+    // stripped before anything touches storage. See AGENTS.md.
+
+    const DB_NAME = "liq_wallet";
+    const DB_VERSION = 1;
+    const STORE_NAME = "cards";
+
+    let dbPromise = null;
+
+    function openWalletDb() {
+      if (dbPromise) return dbPromise;
+      dbPromise = new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+          reject(new Error("IndexedDB not available in this browser"));
+          return;
+        }
+        let req;
+        try {
+          req = indexedDB.open(DB_NAME, DB_VERSION);
+        } catch (e) {
+          reject(e);
+          return;
+        }
+        req.onupgradeneeded = function (e) {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: "id" });
+          }
+        };
+        req.onsuccess = function () { resolve(req.result); };
+        req.onerror = function () { reject(req.error || new Error("IndexedDB open failed")); };
+        req.onblocked = function () { reject(new Error("IndexedDB open blocked")); };
+      });
+      return dbPromise;
+    }
+
+    function listCards() {
+      return openWalletDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+          const tx = db.transaction(STORE_NAME, "readonly");
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = function () {
+            resolve(req.result.slice().sort(function (a, b) { return a.createdAt.localeCompare(b.createdAt); }));
+          };
+          req.onerror = function () { reject(req.error || new Error("Failed to read cards")); };
+        });
+      });
+    }
+
+    function saveCard(record) {
+      return openWalletDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+          let tx;
+          try {
+            tx = db.transaction(STORE_NAME, "readwrite");
+          } catch (e) {
+            reject(e);
+            return;
+          }
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.put(record);
+          req.onerror = function () { reject(req.error || new Error("Failed to save card")); };
+          tx.oncomplete = function () { resolve(); };
+          tx.onabort = function () { reject(tx.error || new Error("Save transaction aborted")); };
+          tx.onerror = function () { reject(tx.error || new Error("Save transaction failed")); };
+        });
+      });
+    }
+
+    // ─── Wallet list ─────────────────────────────────────────────────────────
+
+    function renderStorageBlocked(container) {
+      container.innerHTML =
+        '<div class="storage-blocked">' +
+        '<p class="storage-blocked-title">Storage isn’t available</p>' +
+        '<p class="storage-blocked-body">This browser (or this browsing mode) has blocked or doesn’t support local storage. Cards can’t be saved here — nothing has been saved.</p>' +
+        "</div>";
+    }
+
+    function renderWalletShell(container) {
+      container.innerHTML =
+        '<div class="wallet-list-header">' +
+        '<p class="ask-selector-label">Stored on this device</p>' +
+        '<button id="add-card-btn" type="button">+ Add card</button>' +
+        "</div>" +
+        '<div class="wallet-card-grid" id="wallet-card-grid"></div>' +
+        '<p class="wallet-empty-msg" hidden="" id="wallet-empty-msg"></p>';
+    }
+
+    function refreshCardGrid() {
+      const grid = document.getElementById("wallet-card-grid");
+      const emptyMsg = document.getElementById("wallet-empty-msg");
+      return listCards().then(function (cards) {
+        grid.innerHTML = "";
+        if (!cards.length) {
+          emptyMsg.hidden = false;
+          emptyMsg.textContent = "No cards yet.";
+          return;
+        }
+        emptyMsg.hidden = true;
+        cards.forEach(function (card) {
+          const tile = document.createElement("div");
+          tile.className = "wallet-card-tile";
+          const img = document.createElement("img");
+          img.className = "wallet-card-image";
+          img.src = URL.createObjectURL(card.image);
+          img.alt = "Stored card";
+          const label = document.createElement("p");
+          label.className = "wallet-card-label";
+          label.textContent = "Stored on this device";
+          tile.appendChild(img);
+          tile.appendChild(label);
+          grid.appendChild(tile);
+        });
+      }, function () {
+        grid.innerHTML = "";
+        emptyMsg.hidden = false;
+        emptyMsg.textContent = "Couldn’t read your cards from storage.";
+      });
+    }
+
+    // ─── Add-card editor: capture → crop/rotate → canvas re-render → save ────
+
+    const EDITOR_MAX_DISPLAY_WIDTH = 460; // CSS px
+
+    let editorState = null;
+
+    function openEditor(file) {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        editorState = { rotation: 0, naturalImg: img };
+        document.getElementById("editor-error").hidden = true;
+        document.getElementById("editor-overlay").hidden = false;
+        renderEditorCanvas();
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        showEditorError("Couldn’t read that image. Nothing was saved.");
+      };
+      img.src = url;
+    }
+
+    function buildRotatedCanvas(img, rotationDeg) {
+      const canvas = document.createElement("canvas");
+      const rad = (rotationDeg * Math.PI) / 180;
+      const swap = rotationDeg % 180 !== 0;
+      canvas.width = swap ? img.naturalHeight : img.naturalWidth;
+      canvas.height = swap ? img.naturalWidth : img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(rad);
+      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+      return canvas;
+    }
+
+    function renderEditorCanvas() {
+      const rotated = buildRotatedCanvas(editorState.naturalImg, editorState.rotation);
+      editorState.rotatedCanvas = rotated;
+
+      const scale = Math.min(1, EDITOR_MAX_DISPLAY_WIDTH / rotated.width);
+      const displayW = Math.round(rotated.width * scale);
+      const displayH = Math.round(rotated.height * scale);
+      editorState.scale = rotated.width / displayW;
+
+      const canvasEl = document.getElementById("editor-canvas");
+      canvasEl.width = displayW;
+      canvasEl.height = displayH;
+      const ctx = canvasEl.getContext("2d");
+      ctx.clearRect(0, 0, displayW, displayH);
+      ctx.drawImage(rotated, 0, 0, displayW, displayH);
+
+      const cropW = Math.round(displayW * 0.9);
+      const cropH = Math.round(displayH * 0.9);
+      editorState.crop = {
+        x: Math.round((displayW - cropW) / 2),
+        y: Math.round((displayH - cropH) / 2),
+        w: cropW,
+        h: cropH,
+      };
+      positionCropBox();
+    }
+
+    function positionCropBox() {
+      const box = document.getElementById("crop-box");
+      const c = editorState.crop;
+      box.style.left = c.x + "px";
+      box.style.top = c.y + "px";
+      box.style.width = c.w + "px";
+      box.style.height = c.h + "px";
+    }
+
+    function clampCrop(crop, bounds) {
+      crop.w = Math.max(24, Math.min(crop.w, bounds.w));
+      crop.h = Math.max(24, Math.min(crop.h, bounds.h));
+      crop.x = Math.max(0, Math.min(crop.x, bounds.w - crop.w));
+      crop.y = Math.max(0, Math.min(crop.y, bounds.h - crop.h));
+      return crop;
+    }
+
+    function initCropBoxInteraction() {
+      const box = document.getElementById("crop-box");
+      let dragMode = null;
+      let startPointer = null;
+      let startCrop = null;
+
+      function onDown(e) {
+        dragMode = e.target.dataset.handle || "move";
+        startPointer = { x: e.clientX, y: e.clientY };
+        startCrop = Object.assign({}, editorState.crop);
+        box.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      }
+
+      function onMove(e) {
+        if (!dragMode || !editorState) return;
+        const dx = e.clientX - startPointer.x;
+        const dy = e.clientY - startPointer.y;
+        const canvasEl = document.getElementById("editor-canvas");
+        const bounds = { w: canvasEl.width, h: canvasEl.height };
+        let crop = Object.assign({}, startCrop);
+
+        if (dragMode === "move") {
+          crop.x = startCrop.x + dx;
+          crop.y = startCrop.y + dy;
+        } else {
+          if (dragMode.indexOf("e") !== -1) crop.w = startCrop.w + dx;
+          if (dragMode.indexOf("s") !== -1) crop.h = startCrop.h + dy;
+          if (dragMode.indexOf("w") !== -1) { crop.x = startCrop.x + dx; crop.w = startCrop.w - dx; }
+          if (dragMode.indexOf("n") !== -1) { crop.y = startCrop.y + dy; crop.h = startCrop.h - dy; }
+        }
+
+        editorState.crop = clampCrop(crop, bounds);
+        positionCropBox();
+      }
+
+      function onUp() { dragMode = null; }
+
+      box.addEventListener("pointerdown", onDown);
+      box.addEventListener("pointermove", onMove);
+      box.addEventListener("pointerup", onUp);
+      box.addEventListener("pointercancel", onUp);
+    }
+
+    function showEditorError(msg) {
+      const el = document.getElementById("editor-error");
+      el.textContent = msg;
+      el.hidden = false;
+    }
+
+    function closeEditor() {
+      document.getElementById("editor-overlay").hidden = true;
+      document.getElementById("editor-error").hidden = true;
+      editorState = null;
+    }
+
+    function handleEditorSave() {
+      const crop = editorState.crop;
+      const scale = editorState.scale;
+      const sx = Math.round(crop.x * scale);
+      const sy = Math.round(crop.y * scale);
+      const sw = Math.round(crop.w * scale);
+      const sh = Math.round(crop.h * scale);
+
+      const outCanvas = document.createElement("canvas");
+      outCanvas.width = sw;
+      outCanvas.height = sh;
+      const ctx = outCanvas.getContext("2d");
+      ctx.drawImage(editorState.rotatedCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+      // toBlob() re-export is the metadata-stripping step: canvas pixel data
+      // carries no EXIF channel, so this output is guaranteed EXIF-free
+      // regardless of what the original captured file contained. The
+      // original File/Blob is never touched again after this point.
+      outCanvas.toBlob(function (blob) {
+        if (!blob) {
+          showEditorError("Couldn’t process that image. Nothing was saved.");
+          return;
+        }
+        const record = {
+          id: window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2),
+          createdAt: new Date().toISOString(),
+          image: blob,
+          width: sw,
+          height: sh,
+        };
+        saveCard(record).then(function () {
+          closeEditor();
+          return refreshCardGrid();
+        }, function () {
+          showEditorError("Couldn’t save that card — storage failed. Nothing was saved.");
+        });
+      }, "image/jpeg", 0.92);
+    }
+
+    function wireAddCard() {
+      document.getElementById("add-card-btn").addEventListener("click", function () {
+        document.getElementById("file-input").click();
+      });
+      document.getElementById("file-input").addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        e.target.value = "";
+        if (file) openEditor(file);
+      });
+      document.getElementById("rotate-left-btn").addEventListener("click", function () {
+        editorState.rotation = (editorState.rotation + 270) % 360;
+        renderEditorCanvas();
+      });
+      document.getElementById("rotate-right-btn").addEventListener("click", function () {
+        editorState.rotation = (editorState.rotation + 90) % 360;
+        renderEditorCanvas();
+      });
+      document.getElementById("editor-cancel-btn").addEventListener("click", closeEditor);
+      document.getElementById("editor-save-btn").addEventListener("click", handleEditorSave);
+      initCropBoxInteraction();
+    }
+
+    // ─── Device-only notice (first-visit modal, always-on banner) ──────────
+
+    function initNoticeModal() {
+      let seen = false;
+      try { seen = localStorage.getItem("liq_wallet_notice_ack") === "1"; } catch (e) {}
+      if (!seen) {
+        document.getElementById("notice-modal").hidden = false;
+      }
+      document.getElementById("notice-ack-btn").addEventListener("click", function () {
+        try { localStorage.setItem("liq_wallet_notice_ack", "1"); } catch (e) {}
+        document.getElementById("notice-modal").hidden = true;
+      });
+    }
+
+    // ─── Bootstrap ───────────────────────────────────────────────────────────
+
+    document.addEventListener("DOMContentLoaded", function () {
+      initNoticeModal();
+      const body = document.getElementById("wallet-body");
+      openWalletDb().then(function () {
+        renderWalletShell(body);
+        refreshCardGrid();
+        wireAddCard();
+      }, function () {
+        renderStorageBlocked(body);
+      });
+    });
+</script>
+</body>
+</html>
