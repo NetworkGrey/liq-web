@@ -704,17 +704,33 @@
 
     .routing-list { border-top: 1px solid var(--border-soft); }
 
+    .routing-friction-note {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--ink-3);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
     .routing-row {
-      display: grid;
-      grid-template-columns: 118px minmax(140px,1fr) 86px 76px minmax(120px,1fr) auto;
-      gap: 10px;
-      align-items: center;
       padding: 13px 16px;
       border-bottom: 1px solid var(--border-soft);
       font-size: var(--text-sm);
     }
 
     .routing-row:last-child { border-bottom: 0; }
+
+    .routing-row-main {
+      display: grid;
+      grid-template-columns: 118px minmax(140px,1fr) 76px 90px 110px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .routing-row-empty .routing-row-main { grid-template-columns: 118px 1fr; }
 
     .routing-category {
       color: var(--ink-3);
@@ -726,6 +742,10 @@
     }
 
     .routing-programme { color: var(--ink); font-weight: 700; }
+
+    .routing-empty-msg { color: var(--muted); font-style: italic; }
+
+    .routing-rate { color: var(--ink-2); }
 
     .routing-return {
       color: var(--blue);
@@ -748,16 +768,51 @@
     .friction-medium,
     .friction-high { color: var(--blue); }
 
-    .routing-action { color: var(--ink-2); }
-
-    .routing-cta {
-      color: var(--blue);
-      text-decoration: none;
-      font-size: var(--text-sm);
-      font-weight: 700;
+    .routing-flags {
+      margin-top: 8px;
+      color: var(--ink-2);
+      font-size: var(--text-xs);
     }
 
-    .routing-cta:hover { text-decoration: underline; }
+    .routing-notes {
+      margin-top: 6px;
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+    }
+
+    .routing-alternative {
+      margin-top: 6px;
+      padding-left: 10px;
+      border-left: 2px solid var(--border);
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+      line-height: 1.5;
+    }
+
+    .routing-uncategorised {
+      border-top: 1px solid var(--border-soft);
+      padding: 14px 16px;
+      background: var(--surface-2);
+    }
+
+    .routing-uncategorised-title {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin: 0 0 6px;
+    }
+
+    .routing-uncategorised-row {
+      font-size: var(--text-xs);
+      color: var(--ink-2);
+      margin: 2px 0;
+    }
+
+    .routing-uncategorised-row strong { color: var(--ink); }
 
     .thinking,
     .error-msg {
@@ -869,9 +924,8 @@
       button[id$="-btn"] { width: 100%; }
       .spend-grid,
       .prog-drilldown { grid-template-columns: 1fr; }
-      .routing-row { grid-template-columns: 1fr 1fr; align-items: start; }
-      .routing-action,
-      .routing-cta { grid-column: 1 / -1; }
+      .routing-row-main { grid-template-columns: 1fr 1fr; align-items: start; }
+      .routing-row-main .routing-friction { grid-column: 1 / -1; }
       .hero-number { font-size: var(--text-answer-mobile); }
       .site-footer { padding-bottom: 24px; }
     }
@@ -1299,7 +1353,7 @@
       area.innerHTML = "";
 
       // Routing output (Mode 2 — only when routing is populated)
-      if (mode === "2" && data.routing && data.routing.recommendations?.length) {
+      if (mode === "2" && data.routing && data.routing.categories && Object.keys(data.routing.categories).length) {
         area.appendChild(renderRouting(data.routing));
       }
 
@@ -1395,34 +1449,128 @@
       return div;
     }
 
+    // Escapes a value for safe innerHTML interpolation. Needed here because
+    // category keys in routing.categories come straight from the request's
+    // user_spec.categories object — the shipped frontend only ever sends the
+    // six known keys, but /analyse is a public endpoint and nothing stops a
+    // raw request from putting arbitrary text in that key.
+    function escapeHtml(value) {
+      const div = document.createElement("div");
+      div.textContent = value == null ? "" : String(value);
+      return div.innerHTML;
+    }
+
+    // resolve_spend_routing() (app.py) only ever emits "percent" and
+    // "per_litre" for a priced category (grep-verified against every
+    // return_type literal in that function) — the fallback covers any
+    // future addition without silently rendering "undefined".
+    function formatReturnRate(returnType, rate) {
+      switch (returnType) {
+        case "percent": return `${rate}%`;
+        case "per_litre": return `R${rate}/litre`;
+        default: return `${rate} ${escapeHtml(returnType)}`;
+      }
+    }
+
+    // Friction score's Airtable field description documents a 0–3 scale,
+    // but live data already has a record at 4 (UCount Rewards) — bucket with
+    // an open-ended top end rather than a closed 1-5 range so it doesn't
+    // silently mis-bucket the next outlier.
+    function frictionBucket(score) {
+      if (score == null) return null;
+      if (score <= 1) return "low";
+      if (score === 2) return "medium";
+      return "high";
+    }
+
+    function renderAlternativeHtml(alt) {
+      const rateText = formatReturnRate(alt.return_type, alt.return_rate);
+      const notes = alt.notes ? ` — ${escapeHtml(alt.notes)}` : "";
+      return `<div class="routing-alternative">Alternative: <strong>${escapeHtml(alt.programme)}</strong> — ${rateText}${notes}</div>`;
+    }
+
+    function renderRoutingRow(categoryName, cat) {
+      const row = document.createElement("div");
+      row.className = "routing-row";
+
+      if (!cat.best_programme) {
+        row.classList.add("routing-row-empty");
+        row.innerHTML = `
+          <div class="routing-row-main">
+            <div class="routing-category">${escapeHtml(categoryName)}</div>
+            <div class="routing-empty-msg">No priceable match</div>
+          </div>
+          ${cat.notes ? `<div class="routing-notes">${escapeHtml(cat.notes)}</div>` : ""}
+        `;
+        return row;
+      }
+
+      const rateText = formatReturnRate(cat.return_type, cat.return_rate);
+      const returnText = cat.estimated_monthly_return != null ? `R${cat.estimated_monthly_return}` : "—";
+      const bucket = frictionBucket(cat.friction_score);
+      const frictionHtml = bucket
+        ? `<div class="routing-friction friction-${bucket}" title="Friction score: ${cat.friction_score}">${bucket.toUpperCase()}</div>`
+        : "<div></div>";
+
+      row.innerHTML = `
+        <div class="routing-row-main">
+          <div class="routing-category">${escapeHtml(categoryName)}</div>
+          <div class="routing-programme">${escapeHtml(cat.best_programme)}</div>
+          <div class="routing-rate">${rateText}</div>
+          <div class="routing-return">${returnText}</div>
+          ${frictionHtml}
+        </div>
+        ${cat.requires_financial_product ? `<div class="routing-flags">⚠️ Requires a new financial product</div>` : ""}
+        ${cat.notes ? `<div class="routing-notes">${escapeHtml(cat.notes)}</div>` : ""}
+        ${cat.alternative ? renderAlternativeHtml(cat.alternative) : ""}
+      `;
+      return row;
+    }
+
+    function renderUncategorised(entries) {
+      const div = document.createElement("div");
+      div.className = "routing-uncategorised";
+      const title = document.createElement("p");
+      title.className = "routing-uncategorised-title";
+      title.textContent = "Also confirmed, not priced";
+      div.appendChild(title);
+      entries.forEach(([categoryName, matches]) => {
+        const row = document.createElement("p");
+        row.className = "routing-uncategorised-row";
+        row.innerHTML = `<strong>${escapeHtml(categoryName)}:</strong> ${escapeHtml(matches.join(", "))}`;
+        div.appendChild(row);
+      });
+      return div;
+    }
+
     function renderRouting(routing) {
       const div = document.createElement("div");
       div.className = "routing-output";
 
-      if (routing.summary) {
+      if (routing.total_monthly_uplift != null) {
         const summary = document.createElement("div");
         summary.className = "routing-summary";
-        summary.textContent = routing.summary;
+        const penaltyNote = routing.friction_penalty_applied
+          ? `<span class="routing-friction-note">Friction penalty applied: R${routing.friction_penalty_applied}</span>`
+          : "";
+        summary.innerHTML = `Estimated monthly uplift: R${routing.total_monthly_uplift}${penaltyNote}`;
         div.appendChild(summary);
       }
 
-      if (routing.recommendations?.length) {
+      const categoryEntries = Object.entries(routing.categories || {});
+      if (categoryEntries.length) {
         const list = document.createElement("div");
         list.className = "routing-list";
-        routing.recommendations.forEach(rec => {
-          const row = document.createElement("div");
-          row.className = "routing-row";
-          row.innerHTML = `
-            <div class="routing-category">${rec.category}</div>
-            <div class="routing-programme">${rec.recommended_programme}</div>
-            <div class="routing-return">R${rec.monthly_return_zar}</div>
-            <div class="routing-friction friction-${rec.friction}">${rec.friction.toUpperCase()}</div>
-            <div class="routing-action">${rec.action}</div>
-            ${rec.signup_url ? `<a class="routing-cta" href="${rec.signup_url}" target="_blank" rel="noopener">Sign up</a>` : ""}
-          `;
-          list.appendChild(row);
+        categoryEntries.forEach(([categoryName, cat]) => {
+          list.appendChild(renderRoutingRow(categoryName, cat));
         });
         div.appendChild(list);
+      }
+
+      const uncategorisedEntries = Object.entries(routing.uncategorised_kb_matches || {})
+        .filter(([, matches]) => matches && matches.length);
+      if (uncategorisedEntries.length) {
+        div.appendChild(renderUncategorised(uncategorisedEntries));
       }
 
       return div;
