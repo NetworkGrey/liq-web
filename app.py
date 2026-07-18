@@ -584,6 +584,27 @@ def _check_partial_conflict_mention(reply: str, conflict_facts: list[str]) -> st
     return reply
 
 
+def _check_dischem_capitec_boost_mention(reply: str, evaluated_programme: str | None, programmes_held: dict) -> str | None:
+    """Point fix, not a general mechanism (Gustav's call, per this session's
+    Audit finding). Dis-Chem Better Rewards' 'Capitec Boost' (recm21yDBrTZZbu52,
+    +5% stacking cashback for Capitec Live Better holders) has twice been
+    correctly retrieved in one Mode 3 pass and denied/omitted in another.
+    Unlike _check_partial_conflict_mention(), this fires on full omission too,
+    not just contradiction — the observed failure here was active false denial
+    ("neither eBucks nor Capitec earn at Dis-Chem"), and silent omission would
+    hide the same real, held-programme benefit just as effectively. Returns a
+    correction string to append, or None if no correction needed."""
+    if evaluated_programme != "Better Rewards":
+        return None
+    if "capitec live better" not in {_norm_name(p) for p in programmes_held}:
+        return None
+    if "capitec boost" in reply.lower():
+        return None
+    return (" Correction: Capitec Live Better holders get an additional 5% "
+            "off at Dis-Chem via the Capitec Boost, stacking with the base "
+            "discount, not a gap Better Rewards fills.")
+
+
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
     """Resolve a single record's Tier link field to a tier name, or None if untiered."""
     tier_field = record.get("Tier") or []
@@ -1176,6 +1197,10 @@ def chat():
         reply = response.content[0].text
         if mode == "3" and conflict_facts:
             reply = _check_partial_conflict_mention(reply, conflict_facts)
+        if mode == "3":
+            dischem_correction = _check_dischem_capitec_boost_mention(reply, evaluated_programme, held_names)
+            if dischem_correction:
+                reply += dischem_correction
 
         session["history"].append({"role": "user", "content": message})
         session["history"].append({"role": "assistant", "content": reply})
