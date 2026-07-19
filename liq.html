@@ -1415,7 +1415,7 @@
       area.innerHTML = "";
 
       // Routing output (Mode 2 — only when routing is populated)
-      if (mode === "2" && data.routing && data.routing.categories && Object.keys(data.routing.categories).length) {
+      if (mode === "2" ? (data.routing ? (data.routing.categories ? Object.keys(data.routing.categories).length : false) : false) : false) {
         area.appendChild(renderRouting(data.routing));
       }
 
@@ -1435,7 +1435,7 @@
       const parseRow = line => line.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
       const headerCells = parseRow(tableLines[0]);
       const isSeparator = row => /^[\s:|-]+$/.test(row);
-      const bodyStart = tableLines[1] && isSeparator(tableLines[1]) ? 2 : 1;
+      const bodyStart = tableLines[1] ? (isSeparator(tableLines[1]) ? 2 : 1) : 1;
       const bodyRows = tableLines.slice(bodyStart).map(parseRow);
 
       let html = '<table class="prose-table"><thead><tr>';
@@ -1460,7 +1460,7 @@
 
       // Extract hero number for Mode 1 and 3 (independent of markdown structure)
       const randMatch = normalized.match(/R(\d[\d,]+)/);
-      if ((mode === "1" || mode === "3") && randMatch) {
+      if ((mode === "1" || mode === "3") ? randMatch : false) {
         const hero = document.createElement("div");
         hero.className = "hero-number";
         hero.textContent = `R${randMatch[1]}`;
@@ -1630,7 +1630,7 @@
       }
 
       const uncategorisedEntries = Object.entries(routing.uncategorised_kb_matches || {})
-        .filter(([, matches]) => matches && matches.length);
+        .filter(([, matches]) => matches ? matches.length : false);
       if (uncategorisedEntries.length) {
         div.appendChild(renderUncategorised(uncategorisedEntries));
       }
@@ -1707,9 +1707,9 @@
         const key = cb.dataset.progKey;
         const entry = { name: cb.value };
         const tierSelect = document.querySelector(`.prog-drilldown[data-prog-key="${key}"] .prog-tier-select`);
-        if (tierSelect && tierSelect.value) entry.tier = tierSelect.value;
+        if (tierSelect ? tierSelect.value : false) entry.tier = tierSelect.value;
         const pointsInput = document.querySelector(`.prog-drilldown[data-prog-key="${key}"] .prog-points-input`);
-        if (pointsInput && pointsInput.value) entry.balance = parseFloat(pointsInput.value);
+        if (pointsInput ? pointsInput.value : false) entry.balance = parseFloat(pointsInput.value);
         programmes_held.push(entry);
       });
 
@@ -1966,9 +1966,9 @@
           const key = cb.dataset.progKey;
           const entry = { name: cb.value };
           const tierSelect = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-tier-select`);
-          if (tierSelect && tierSelect.value) entry.tier = tierSelect.value;
+          if (tierSelect ? tierSelect.value : false) entry.tier = tierSelect.value;
           const pointsInput = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-points-input`);
-          if (pointsInput && pointsInput.value) entry.balance = parseFloat(pointsInput.value);
+          if (pointsInput ? pointsInput.value : false) entry.balance = parseFloat(pointsInput.value);
           updated.push(entry);
         });
         joinHeldProgrammes = updated;
@@ -1982,7 +1982,7 @@
       const btn = document.getElementById("join-evaluate-btn");
       if (!btn) return;
       const hasSelection = !!document.querySelector(".join-prog-radio:checked");
-      btn.disabled = !(hasSelection && joinHeldConfirmed);
+      btn.disabled = !(hasSelection ? joinHeldConfirmed : false);
     }
 
     function wireJoinUnlocked() {
