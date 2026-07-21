@@ -49,6 +49,15 @@ belongs in a Code instruction, an Audit finding, or a document correction.
   then `diff` against the expected content. This is the standard for
   closing out any Code-reported commit, don't mark a commit verified from
   Code's report alone, pull the raw URL and diff it yourself.
+- **When the raw URL doesn't match but the push is otherwise confirmed
+  good** (`git show origin/main:<path>` on Code's side matches): this can
+  be Fastly CDN edge-cache lag on `raw.githubusercontent.com` specifically,
+  not a failed or reverted push, confirmed live this session. Don't poll
+  the same cached URL repeatedly. Instead, pull an independent path:
+  `curl -sSL https://codeload.github.com/NetworkGrey/liq-web/tar.gz/refs/heads/main
+  -o main.tar.gz`, extract the specific file, and diff that. It's a
+  different serving path from the raw CDN and confirms the actual git
+  content directly.
 - **Grep for existence and absence, not just content.** A zero-result grep
   is itself a finding, not a null result to discard, see the trust-section
   example below.
