@@ -30,9 +30,14 @@ behaviour, not a bug.
 
 ## The current decision tree
 
-Verified directly against the live repo (commit `5199553`, re-checked
-before writing this, not reused from an earlier session per
-`liq-source-tracing`'s standing instruction):
+Verified directly against `app.py` immediately before writing this skill,
+not reused from an earlier session or another file's citation. **Do not
+treat any specific commit hash as a durable reference for this
+function**, `detect_mode()` only changes when `app.py` itself changes, but
+the repo's overall HEAD moves on every skill-file commit too, so citing
+"current as of commit X" goes stale the moment any unrelated file lands.
+Per `liq-source-tracing`: re-pull and re-check `detect_mode()` at time of
+use, don't trust this citation, or any citation, as still current:
 
 ```python
 def detect_mode(message: str, user_spec: dict | None) -> str:
