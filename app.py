@@ -201,6 +201,18 @@ def build_system_prompt(
             "\n\n## PRE-COMPUTED SPEND ROUTING (verified, do not recompute)\n"
             + json.dumps(routing_output, ensure_ascii=False, indent=2)
         )
+        prompt += (
+            "\n\n## UNENFORCED CAP GUARD\n"
+            "For any category above whose \"notes\" field contains the exact "
+            "phrase \"not enforced in this total\": do not state a specific "
+            "final, effective, or capped return figure for that category. "
+            "The engine has not computed or validated what the capped figure "
+            "actually is, resolving it yourself is a fabrication even if the "
+            "arithmetic looks plausible. Pass the uncertainty through "
+            "instead, e.g. \"this figure doesn't reflect the category cap, "
+            "check the source for the actual limit\" — never state your own "
+            "resolved number."
+        )
 
     return prompt
 
@@ -603,6 +615,62 @@ def _check_dischem_capitec_boost_mention(reply: str, evaluated_programme: str | 
     return (" Correction: Capitec Live Better holders get an additional 5% "
             "off at Dis-Chem via the Capitec Boost, stacking with the base "
             "discount, not a gap Better Rewards fills.")
+
+
+_UNENFORCED_CAP_MARKER = "not enforced in this total"
+
+_CAP_ASSERTION_PATTERN = re.compile(
+    r"(?:capped|actual|real)(?:\s+\w+){0,2}\s+return[^.\n]{0,40}?R\s?[\d,]+"
+    r"|binding\s+limit[^.\n]{0,40}?R\s?[\d,]+",
+    re.IGNORECASE,
+)
+
+
+def _check_unenforced_cap_assertion(reply: str, routing: dict | None) -> str | None:
+    """
+    Deterministic post-generation check, no LLM call. resolve_spend_routing()
+    honestly flags, in a category's `notes`, when a cap exists but isn't
+    numerically enforced ("... not enforced in this total, check the
+    source."). The narration layer has, confirmed live, overridden that
+    disclosure and stated a specific resolved capped figure as fact instead —
+    three independent live generations against the identical R4,500
+    grocery/UCount Rewards case each asserted a different confident number
+    (R1,000, R900, R250), none computed or validated by the engine. This is
+    the exact failure mode the deterministic/narrative split exists to
+    prevent.
+
+    Detection pattern derived from those three real generations, not guessed:
+    a "capped"/"actual"/"real" return (or "binding limit") stated within a
+    short window of a specific Rand figure. Checked against the whole reply,
+    not scoped to text near the flagged programme's name — one of the three
+    real violations never named the programme at all, so a proximity
+    requirement would have missed it.
+
+    Only triggers when at least one routed category carries the unenforced-
+    cap marker; a capped-but-enforced or uncapped category is untouched.
+    Appends a correction rather than attempting in-place text surgery, same
+    pattern as _check_dischem_capitec_boost_mention() — the wrong figure's
+    exact wording and position vary too much run to run to safely splice out.
+    """
+    if not routing:
+        return None
+
+    flagged = any(
+        _UNENFORCED_CAP_MARKER in (entry.get("notes") or "")
+        for entry in routing.get("categories", {}).values()
+    )
+    if not flagged:
+        return None
+
+    if not _CAP_ASSERTION_PATTERN.search(reply):
+        return None
+
+    return (
+        "\n\nCorrection: the specific capped return figure stated above was "
+        "not computed or validated by the routing engine — this figure "
+        "doesn't reflect the category cap, check the source for the actual "
+        "limit."
+    )
 
 
 def _record_tier_name(record: dict, tier_names: dict) -> str | None:
@@ -1140,10 +1208,15 @@ def analyse():
             system=system_prompt,
             messages=[{"role": "user", "content": user_content}],
         )
+        reply = response.content[0].text
+        if routing:
+            cap_correction = _check_unenforced_cap_assertion(reply, routing)
+            if cap_correction:
+                reply += cap_correction
 
         return jsonify({
             "routing": routing,
-            "response": response.content[0].text,
+            "response": reply,
         })
 
     except Exception as e:
@@ -1231,6 +1304,10 @@ def chat():
             dischem_correction = _check_dischem_capitec_boost_mention(reply, evaluated_programme, held_names)
             if dischem_correction:
                 reply += dischem_correction
+        if mode == "2" and routing:
+            cap_correction = _check_unenforced_cap_assertion(reply, routing)
+            if cap_correction:
+                reply += cap_correction
 
         session["history"].append({"role": "user", "content": message})
         session["history"].append({"role": "assistant", "content": reply})
