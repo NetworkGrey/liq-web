@@ -154,6 +154,14 @@ project. Any Audit-specific skill should link to it, not restate it, this supers
   odd (e.g. a stated band boundary that overlaps the previous band's upper
   bound by a small margin), don't silently "correct" the source's own
   numbers. Flag the oddity inline instead.
+- `Spend category` on Earn rate and Redemption records must match a
+  working `CATEGORY_ALIASES` string exactly, purchase-type language only.
+  Merchant or retailer type belongs on the Partners table's
+  `Partner sector` field, never on `Spend category`, the two are
+  different concepts and this schema already separates them correctly
+  everywhere except where sourcing conflated them. A near-miss category
+  string (e.g. "Grocer" for "Grocery") is not cosmetic, it makes every
+  record carrying it silently unreachable to `resolve_spend_routing()`.
 
 ## Frontend / WordPress conventions
 
