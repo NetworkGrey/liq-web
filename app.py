@@ -783,6 +783,174 @@ def _bank_stepwise_value(spend_band_schedule: str, monthly_spend: float) -> floa
     return None
 
 
+def _format_rate_display(value: float, unit: str | None) -> str:
+    """Formats a raw Earn rate value/unit pair as a user-facing display
+    string (e.g. "40%", "R2.50/litre"). Pure formatting, not a new stored
+    field — the underlying value/unit are the record's existing fields."""
+    if unit in PERCENT_UNITS:
+        return f"{value:g}%"
+    if unit in PER_LITRE_UNITS:
+        return f"R{value:.2f}/litre"
+    return f"{value:g} {unit}" if unit else f"{value:g}"
+
+
+def _apply_earn_cap(
+    record: dict,
+    naive_return: float,
+    category_spend: float,
+    total_card_spend: float | None = None,
+    degraded_rate: float | None = None,
+) -> dict:
+    """
+    Cap-enforcement resolver, built standalone against Part A's not-yet-
+    backfilled fields (`Cap type`, `Cap value`, `Cap period`, `Cap basis`,
+    `Cap group`). NOT wired into resolve_spend_routing() — per this
+    instruction, verify standalone only against constructed test data.
+    Live wiring is a separate, later, stage-gated task once a sourcing
+    pass actually populates these fields on real records.
+
+    `naive_return` is the already-computed, uncapped return for this
+    record (rate x spend), matching resolve_spend_routing()'s existing
+    math. `category_spend` is this category's monthly spend.
+
+    Records sharing a `Cap group` are NOT resolved here — one shared pool
+    across multiple records is a cross-record computation, handled by
+    _apportion_cap_group() instead. Call that first for any record whose
+    `Cap group` is populated; this function is for the remaining,
+    non-grouped Cap types only (a caller invariant, not re-validated here).
+
+    Flagging two gaps in the given five-field list rather than silently
+    papering over them:
+
+    1. `Cap basis` ("Category spend" vs "Total card spend") tells this
+       function how to interpret a percentage-type `Cap value` — against
+       this category's own spend, or against a total-card-spend figure
+       resolve_spend_routing() does not currently track at all. Callers
+       must supply that total explicitly via `total_card_spend`; this
+       function does not (and cannot) derive it from a single category.
+       A `Cap basis` of "Total card spend" with no `total_card_spend`
+       supplied raises rather than silently defaulting to category spend
+       — collapsing the A-vs-E distinction that way would be exactly the
+       failure this build is meant to prevent. A blank `Cap basis` means
+       `Cap value` is a flat Rand ceiling, not a percentage at all.
+    2. The five listed fields have nowhere to store the *degraded* rate
+       for a `Cap type` of "Rate substitution" — `Cap value` is used here
+       as the spend threshold only. `degraded_rate` is a function
+       parameter, not a field read off the record, as a stand-in. Part
+       A's real schema will need an actual field for this before
+       backfill; this is not an invented sixth field, just flagged
+       plainly so it isn't lost before the schema is finalised.
+    """
+    cap_type = record.get("Cap type")
+    rate_value = record.get("Earn rate value") or 0
+    rate_unit = record.get("Earn rate unit")
+    rate_display = _format_rate_display(rate_value, rate_unit)
+
+    if not cap_type:
+        # Ordinary, non-capped record — unaffected, passes through exactly as today.
+        return {
+            "estimated_monthly_return": round(naive_return, 2),
+            "rate": rate_display,
+            "cap_note": None,
+        }
+
+    if cap_type == "Shared across partners, narration only":
+        # No computation, no group object — the existing free-text Cap
+        # amount surfaces as a caveat on the category's ordinary entry.
+        return {
+            "estimated_monthly_return": round(naive_return, 2),
+            "rate": rate_display,
+            "cap_note": record.get("Cap amount") or None,
+        }
+
+    if cap_type == "Hard stop":
+        cap_basis = record.get("Cap basis")
+        cap_value = record.get("Cap value") or 0
+        if cap_basis == "Category spend":
+            cap_ceiling = category_spend * (cap_value / 100)
+        elif cap_basis == "Total card spend":
+            if total_card_spend is None:
+                raise ValueError(
+                    "Cap basis is 'Total card spend' but no total_card_spend was supplied"
+                )
+            cap_ceiling = total_card_spend * (cap_value / 100)
+        else:
+            cap_ceiling = cap_value  # no basis set -> flat Rand ceiling, not a percentage
+        capped_return = min(naive_return, cap_ceiling)
+        return {
+            "estimated_monthly_return": round(capped_return, 2),
+            "rate": rate_display,
+            "cap_note": (
+                f"Capped at R{cap_ceiling:,.2f}" if capped_return < naive_return else None
+            ),
+        }
+
+    if cap_type == "Rate substitution":
+        threshold = record.get("Cap value") or 0
+        if degraded_rate is None:
+            raise ValueError("Rate substitution requires a degraded_rate")
+        base_spend = min(category_spend, threshold)
+        excess_spend = max(category_spend - threshold, 0)
+        # Two different rate applications across one spend amount, not a
+        # min() — the base rate and the degraded rate never both apply to
+        # the same rand of spend.
+        total_return = base_spend * (rate_value / 100) + excess_spend * (degraded_rate / 100)
+        return {
+            "estimated_monthly_return": round(total_return, 2),
+            "rate": rate_display,
+            "cap_note": (
+                f"{rate_display} up to R{threshold:,.2f}, "
+                f"{_format_rate_display(degraded_rate, rate_unit)} above it"
+                if excess_spend > 0 else None
+            ),
+        }
+
+    raise ValueError(f"Unrecognised Cap type: {cap_type!r}")
+
+
+def _apportion_cap_group(members: list[dict]) -> list[dict]:
+    """
+    Records sharing a non-blank `Cap group` share ONE pooled cap, not one
+    each. Sums naive returns across all members; if the combined total
+    exceeds the shared `Cap value`, apportions the pool proportionally
+    (member_naive / combined_naive * pool_value) rather than min()-ing
+    each member independently against the same cap value — which is
+    exactly the CYOR Grocery/Fashion/Lifestyle gap this resolver exists
+    to close (each category treated as its own independent allowance,
+    effectively multiplying one shared pool by however many categories
+    share it).
+
+    `members`: list of dicts, each at minimum {"naive_return": float,
+    "cap_value": float}, plus whatever identifying fields the caller
+    wants passed through untouched. All members in one call must share
+    the same Cap group and the same Cap value — a caller invariant, not
+    re-validated here.
+
+    Returns each member with an added `estimated_monthly_return` and
+    `cap_note`. Members pass through with their naive return unchanged
+    (and no cap_note) if the combined total is within the pool — sharing
+    a Cap group is not itself a cap event unless the pool is exceeded.
+    """
+    if not members:
+        return []
+    pool_value = members[0]["cap_value"]
+    combined_naive = sum(m["naive_return"] for m in members)
+    if combined_naive <= pool_value:
+        return [
+            {**m, "estimated_monthly_return": round(m["naive_return"], 2), "cap_note": None}
+            for m in members
+        ]
+    results = []
+    for m in members:
+        share = (m["naive_return"] / combined_naive) * pool_value
+        results.append({
+            **m,
+            "estimated_monthly_return": round(share, 2),
+            "cap_note": f"Shared cap group, apportioned from a R{pool_value:,.2f} pool",
+        })
+    return results
+
+
 def _best_redemption_match(
     redemptions: list[dict],
     kb_categories: list[str],
