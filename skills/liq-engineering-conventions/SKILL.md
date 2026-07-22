@@ -154,14 +154,18 @@ project. Any Audit-specific skill should link to it, not restate it, this supers
   odd (e.g. a stated band boundary that overlaps the previous band's upper
   bound by a small margin), don't silently "correct" the source's own
   numbers. Flag the oddity inline instead.
-- `Spend category` on Earn rate and Redemption records must match a
-  working `CATEGORY_ALIASES` string exactly, purchase-type language only.
-  Merchant or retailer type belongs on the Partners table's
-  `Partner sector` field, never on `Spend category`, the two are
-  different concepts and this schema already separates them correctly
-  everywhere except where sourcing conflated them. A near-miss category
-  string (e.g. "Grocer" for "Grocery") is not cosmetic, it makes every
-  record carrying it silently unreachable to `resolve_spend_routing()`.
+- For purchase categories intended to be routable by
+  `resolve_spend_routing()`, `Spend category` must match a working
+  `CATEGORY_ALIASES` string exactly, purchase-type language only.
+  Categories deliberately outside the alias map (e.g. `Bank / non-partner`,
+  consumed by `_best_bank_match()`; `All spend`; `Partner spend`) are not
+  violations of this rule, but a category intended to be routable that
+  doesn't match a working alias string is, whether by near-miss ("Grocer"
+  for "Grocery") or by a missing alias key ("Lifestyle"). Merchant or
+  retailer type belongs on the Partners table's `Partner sector` field,
+  never on `Spend category`. A near-miss or missing-alias category string
+  is not cosmetic, it makes every record carrying it silently unreachable
+  to `resolve_spend_routing()`.
 
 ## Frontend / WordPress conventions
 
