@@ -621,7 +621,7 @@ _UNENFORCED_CAP_MARKER = "not enforced in this total"
 
 _CAP_ASSERTION_PATTERN = re.compile(
     r"(?:capped|actual|real)(?:\s+\w+){0,2}\s+return[^.\n]{0,40}?R\s?[\d,]+"
-    r"|binding\s+limit[^.\n]{0,40}?R\s?[\d,]+",
+    r"|binding\s+(?:limit|cap)[^.\n]{0,40}?R\s?[\d,]+",
     re.IGNORECASE,
 )
 
@@ -633,18 +633,21 @@ def _check_unenforced_cap_assertion(reply: str, routing: dict | None) -> str | N
     numerically enforced ("... not enforced in this total, check the
     source."). The narration layer has, confirmed live, overridden that
     disclosure and stated a specific resolved capped figure as fact instead —
-    three independent live generations against the identical R4,500
+    four independent live generations against the identical R4,500
     grocery/UCount Rewards case each asserted a different confident number
-    (R1,000, R900, R250), none computed or validated by the engine. This is
+    or framing (R1,000, R900 as "actual capped return", R250, R900 again as
+    "the binding cap"), none computed or validated by the engine. This is
     the exact failure mode the deterministic/narrative split exists to
     prevent.
 
-    Detection pattern derived from those three real generations, not guessed:
-    a "capped"/"actual"/"real" return (or "binding limit") stated within a
-    short window of a specific Rand figure. Checked against the whole reply,
-    not scoped to text near the flagged programme's name — one of the three
-    real violations never named the programme at all, so a proximity
-    requirement would have missed it.
+    Detection pattern derived from those four real generations, not guessed,
+    and iterated once already: a first version (three generations) matched
+    "binding limit" but missed a fourth live generation that said "binding
+    cap" instead, caught during live re-verification of this same fix, not
+    hypothetically. Pattern now covers both. Checked against the whole
+    reply, not scoped to text near the flagged programme's name — one of
+    the original three violations never named the programme at all, so a
+    proximity requirement would have missed it too.
 
     Only triggers when at least one routed category carries the unenforced-
     cap marker; a capped-but-enforced or uncapped category is untouched.
