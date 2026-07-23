@@ -951,6 +951,114 @@ def _apportion_cap_group(members: list[dict]) -> list[dict]:
     return results
 
 
+# MyDifference PLUS: three records actually feed this computation. The two
+# ceiling records (10% on the Credit-in-WW-Group pair, 2% on the Store-in-
+# WW-Group pair) are narration-only and never enter the math — they exist
+# solely to source a caveat string on their paired floor record.
+_MYDIFFERENCE_PROTECTED_POOL = 2000.0  # R, shared monthly threshold, apportioned across all 3
+_MYDIFFERENCE_POST_CAP_RATE = 0.5      # %, flat rate every record substitutes to above its share
+
+_MYDIFFERENCE_MEMBERS = {
+    "credit_ww": {"floor_rate": 1.0, "ceiling_rate": 10.0},
+    "store_ww": {"floor_rate": 0.2, "ceiling_rate": 2.0},
+    "credit_outside_ww": {"floor_rate": 0.5, "ceiling_rate": None},
+}
+
+
+def _mydifference_ceiling_caveat(ceiling_rate: float) -> str:
+    """Formats the ceiling caveat string, sourced from the paired ceiling
+    record's rate, never computed."""
+    return f"This rate can rise to {ceiling_rate:g}% by completing this quarter's account actions."
+
+
+def _resolve_mydifference_plus_cap(spend_by_member: dict[str, float]) -> dict[str, dict]:
+    """
+    MyDifference PLUS's shared-threshold Rate-substitution mechanic,
+    standalone, unwired. Deliberately NOT built on _apportion_cap_group() —
+    that function splits a fixed RETURN pool across a group (CYOR's hard-
+    stop shape). This mechanic apportions a fixed SPEND threshold (the
+    R2,000 monthly pool) across the group instead, then applies Rate
+    substitution (base rate to threshold, degraded rate above it) per
+    record using that record's own apportioned slice — a genuinely
+    different computation, not a variant of the same one.
+
+    `spend_by_member`: {"credit_ww": float, "store_ww": float,
+    "credit_outside_ww": float}, only keys with actual spend need be
+    present — "wherever spend exists" per the instruction, not all 3 need
+    a value.
+
+    Algorithm, in the order it must run:
+    1. naive_return[m] = floor_rate[m] * spend[m], for every member with
+       spend present.
+    2. combined_naive = sum(naive_return.values()).
+    3. Each member's protected_share (in Rand of *return*, not spend):
+       2000 * (naive_return[m] / combined_naive).
+    4. Converted to a Rand-of-*spend* threshold by dividing back through
+       that member's own floor rate: spend_threshold[m] =
+       protected_share[m] / floor_rate[m] — algebraically this reduces to
+       spend[m] * (2000 / combined_naive), which is what guarantees the
+       "combined_naive <= 2000 -> no member ever crosses their own
+       threshold" property the standalone tests check for: since every
+       member's threshold scales by the same factor >= 1 of their own
+       spend whenever the pool isn't exhausted, no member can ever spend
+       past their own threshold in that case, regardless of the specific
+       spend split across members.
+    5. Spend up to that threshold earns at the floor rate; spend above it
+       earns at the flat 0.5% post-cap rate. Both applied to disjoint
+       slices of the same spend amount, not a min() against the return.
+    6. Credit and Store entries get the paired ceiling record's caveat
+       string attached; the outside-WW entry has no ceiling pair, so it
+       never gets one — confirmed by construction (only two members carry
+       a `ceiling_rate` in `_MYDIFFERENCE_MEMBERS`).
+
+    Known gap, flagged not resolved, matching the AVBOB-card-type
+    precedent rather than guessing: the source also states the Store Card
+    earns nothing at all if the member holds a Credit Card simultaneously
+    with it. Whether the input surface can even express which specific
+    card type within a programme a user holds isn't established, and this
+    function does not attempt that exclusion — every member present in
+    `spend_by_member` is computed independently of what else is present.
+    """
+    naive_return = {}
+    for member, spend in spend_by_member.items():
+        if not spend:
+            continue
+        floor_rate = _MYDIFFERENCE_MEMBERS[member]["floor_rate"]
+        naive_return[member] = floor_rate / 100 * spend
+
+    if not naive_return:
+        return {}
+
+    combined_naive = sum(naive_return.values())
+
+    results = {}
+    for member, naive in naive_return.items():
+        spend = spend_by_member[member]
+        floor_rate = _MYDIFFERENCE_MEMBERS[member]["floor_rate"]
+        ceiling_rate = _MYDIFFERENCE_MEMBERS[member]["ceiling_rate"]
+
+        protected_share = _MYDIFFERENCE_PROTECTED_POOL * (naive / combined_naive)
+        spend_threshold = protected_share / (floor_rate / 100)
+
+        below_spend = min(spend, spend_threshold)
+        above_spend = max(spend - spend_threshold, 0)
+        blended_return = (
+            below_spend * (floor_rate / 100)
+            + above_spend * (_MYDIFFERENCE_POST_CAP_RATE / 100)
+        )
+
+        results[member] = {
+            "naive_return": round(naive, 2),
+            "protected_share": round(protected_share, 2),
+            "estimated_monthly_return": round(blended_return, 2),
+            "cap_note": (
+                _mydifference_ceiling_caveat(ceiling_rate) if ceiling_rate else None
+            ),
+        }
+
+    return results
+
+
 def _best_redemption_match(
     redemptions: list[dict],
     kb_categories: list[str],
