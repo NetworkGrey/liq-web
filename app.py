@@ -802,12 +802,11 @@ def _apply_earn_cap(
     degraded_rate: float | None = None,
 ) -> dict:
     """
-    Cap-enforcement resolver, built standalone against Part A's not-yet-
-    backfilled fields (`Cap type`, `Cap value`, `Cap period`, `Cap basis`,
-    `Cap group`). NOT wired into resolve_spend_routing() — per this
-    instruction, verify standalone only against constructed test data.
-    Live wiring is a separate, later, stage-gated task once a sourcing
-    pass actually populates these fields on real records.
+    Cap-enforcement resolver, standalone-verified against real Batch 1
+    record shapes pulled fresh from Airtable plus constructed shape A/E
+    data (real R2,500/20% figures sourced from live shape-A/E text).
+    STILL NOT wired into resolve_spend_routing() — this instruction only
+    corrects the Cap type branching, it does not wire live enforcement.
 
     `naive_return` is the already-computed, uncapped return for this
     record (rate x spend), matching resolve_spend_routing()'s existing
@@ -819,27 +818,39 @@ def _apply_earn_cap(
     `Cap group` is populated; this function is for the remaining,
     non-grouped Cap types only (a caller invariant, not re-validated here).
 
-    Flagging two gaps in the given five-field list rather than silently
-    papering over them:
+    `Cap type` branches on the SIX live singleSelect option strings, not
+    a collapsed "Hard stop" placeholder (that placeholder never matched
+    any real record; confirmed against live Airtable, 52 of 92 tagged
+    Batch 1 records would have failed under the prior version):
+      - "Hard stop, fixed amount": Cap value is already a flat Rand
+        ceiling, no Cap basis involved.
+      - "Points-denominated": Cap value already stores the Rand-
+        equivalent of the points figure (confirmed against live data,
+        e.g. "2,500 pts (R250)/fixed cycle" -> Cap value = 250), so it
+        resolves identically to a flat Rand ceiling. No points-to-rand
+        conversion happens here, the KB has already done it.
+      - "Hard stop, percentage of spend": Cap value is a percentage,
+        `Cap basis` says what it's a percentage of.
+      - "Hard stop, lower of amount or percentage": needs both `Cap
+        value` (flat Rand ceiling) and `Cap percent value` (the
+        percentage), takes the lower of the two computed ceilings.
+        Requires the `Cap percent value` field to exist on the table;
+        if a record of this type has no value in it, it's read as 0 and
+        the percentage side will always lose, so this branch should not
+        be exercised until that field is populated (Batch 2, separately
+        gated).
+      - "Shared across partners, narration only" and "Rate substitution"
+        are unchanged from the prior version, both already matched real
+        data correctly.
 
-    1. `Cap basis` ("Category spend" vs "Total card spend") tells this
-       function how to interpret a percentage-type `Cap value` — against
-       this category's own spend, or against a total-card-spend figure
-       resolve_spend_routing() does not currently track at all. Callers
-       must supply that total explicitly via `total_card_spend`; this
-       function does not (and cannot) derive it from a single category.
-       A `Cap basis` of "Total card spend" with no `total_card_spend`
-       supplied raises rather than silently defaulting to category spend
-       — collapsing the A-vs-E distinction that way would be exactly the
-       failure this build is meant to prevent. A blank `Cap basis` means
-       `Cap value` is a flat Rand ceiling, not a percentage at all.
-    2. The five listed fields have nowhere to store the *degraded* rate
-       for a `Cap type` of "Rate substitution" — `Cap value` is used here
-       as the spend threshold only. `degraded_rate` is a function
-       parameter, not a field read off the record, as a stand-in. Part
-       A's real schema will need an actual field for this before
-       backfill; this is not an invented sixth field, just flagged
-       plainly so it isn't lost before the schema is finalised.
+    `Cap basis` of "Total card spend" with no `total_card_spend` supplied
+    still raises rather than silently defaulting to category spend, same
+    as before. A blank or absent `Cap basis` on a percentage-type cap
+    defaults to category spend.
+
+    `degraded_rate` for "Rate substitution" remains a function parameter,
+    not read from the `Post-cap rate` field. Known, separate gap, not
+    part of this fix, flagged so it isn't lost.
     """
     cap_type = record.get("Cap type")
     rate_value = record.get("Earn rate value") or 0
@@ -863,25 +874,57 @@ def _apply_earn_cap(
             "cap_note": record.get("Cap amount") or None,
         }
 
-    if cap_type == "Hard stop":
-        cap_basis = record.get("Cap basis")
-        cap_value = record.get("Cap value") or 0
-        if cap_basis == "Category spend":
-            cap_ceiling = category_spend * (cap_value / 100)
+    def _pct_ceiling(cap_basis, pct_value):
+        if cap_basis == "Category spend" or not cap_basis:
+            return category_spend * (pct_value / 100)
         elif cap_basis == "Total card spend":
             if total_card_spend is None:
                 raise ValueError(
                     "Cap basis is 'Total card spend' but no total_card_spend was supplied"
                 )
-            cap_ceiling = total_card_spend * (cap_value / 100)
-        else:
-            cap_ceiling = cap_value  # no basis set -> flat Rand ceiling, not a percentage
+            return total_card_spend * (pct_value / 100)
+        raise ValueError(f"Unrecognised Cap basis: {cap_basis!r}")
+
+    if cap_type in ("Hard stop, fixed amount", "Points-denominated"):
+        # Cap value is already a flat Rand ceiling in both cases,
+        # confirmed against real Batch 1 data.
+        cap_ceiling = record.get("Cap value") or 0
         capped_return = min(naive_return, cap_ceiling)
         return {
             "estimated_monthly_return": round(capped_return, 2),
             "rate": rate_display,
             "cap_note": (
                 f"Capped at R{cap_ceiling:,.2f}" if capped_return < naive_return else None
+            ),
+        }
+
+    if cap_type == "Hard stop, percentage of spend":
+        cap_basis = record.get("Cap basis")
+        cap_value = record.get("Cap value") or 0
+        cap_ceiling = _pct_ceiling(cap_basis, cap_value)
+        capped_return = min(naive_return, cap_ceiling)
+        return {
+            "estimated_monthly_return": round(capped_return, 2),
+            "rate": rate_display,
+            "cap_note": (
+                f"Capped at R{cap_ceiling:,.2f}" if capped_return < naive_return else None
+            ),
+        }
+
+    if cap_type == "Hard stop, lower of amount or percentage":
+        cap_basis = record.get("Cap basis")
+        flat_value = record.get("Cap value") or 0
+        pct_value = record.get("Cap percent value") or 0
+        pct_ceiling = _pct_ceiling(cap_basis, pct_value)
+        cap_ceiling = min(flat_value, pct_ceiling)
+        capped_return = min(naive_return, cap_ceiling)
+        return {
+            "estimated_monthly_return": round(capped_return, 2),
+            "rate": rate_display,
+            "cap_note": (
+                f"Capped at R{cap_ceiling:,.2f} (lower of R{flat_value:,.2f} flat "
+                f"or R{pct_ceiling:,.2f} at {pct_value}%)"
+                if capped_return < naive_return else None
             ),
         }
 
