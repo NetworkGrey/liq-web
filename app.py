@@ -1379,16 +1379,57 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
             "notes": record.get("Conditions / notes") or record.get("Notes") or "",
         }
 
+        cap_type = record.get("Cap type")
+        cap_basis = record.get("Cap basis")
+
         # Cap amount is free text (e.g. "R150/month" or "20% of monthly
-        # spend"), not a structured number — flag it in the response notes
-        # rather than attempting to parse and enforce it against the sum.
+        # spend"), not a structured number. Only surfaced as an unenforced
+        # caveat when Cap type hasn't been structured yet -- once Cap type
+        # is set, the branch below enforces it (or explicitly narrates why
+        # it can't), so this free-text fallback would be stale/contradictory
+        # if left firing unconditionally alongside the structured path.
         cap_amount = record.get("Cap amount")
-        if cap_amount:
+        if cap_amount and not cap_type:
             cap_note = f"Capped: {cap_amount}, not enforced in this total, check the source."
             entry["notes"] = f"{entry['notes']} {cap_note}".strip()
 
         if return_type == "percent":
             estimated_return = round(monthly_spend * (value / 100), 2)
+
+            if cap_type == "Rate substitution":
+                degraded_rate = record.get("Post-cap rate")
+                if degraded_rate is None:
+                    # Known gap: degraded_rate isn't sourced from a field on
+                    # every Rate substitution record yet. Leave uncapped and
+                    # narrate rather than raise inside a live request.
+                    entry["notes"] = (
+                        f"{entry['notes']} Rate substitution cap present but "
+                        f"not enforced (no Post-cap rate on record)."
+                    ).strip()
+                else:
+                    cap_result = _apply_earn_cap(
+                        record, naive_return=estimated_return,
+                        category_spend=monthly_spend, degraded_rate=degraded_rate,
+                    )
+                    estimated_return = cap_result["estimated_monthly_return"]
+                    if cap_result["cap_note"]:
+                        entry["notes"] = f"{entry['notes']} {cap_result['cap_note']}".strip()
+            elif cap_type and cap_basis == "Total card spend":
+                # Total card spend isn't tracked anywhere in user_spec today
+                # (six category-level inputs only, per the live Review form).
+                # Can't enforce without it -- narrate rather than guess or crash.
+                entry["notes"] = (
+                    f"{entry['notes']} Cap present but not enforced "
+                    f"(requires total card spend, not currently tracked)."
+                ).strip()
+            elif cap_type:
+                cap_result = _apply_earn_cap(
+                    record, naive_return=estimated_return, category_spend=monthly_spend,
+                )
+                estimated_return = cap_result["estimated_monthly_return"]
+                if cap_result["cap_note"]:
+                    entry["notes"] = f"{entry['notes']} {cap_result['cap_note']}".strip()
+
             entry["estimated_monthly_return"] = estimated_return
             total_uplift += estimated_return
             if _norm_name(programme_name) not in programmes_held:
