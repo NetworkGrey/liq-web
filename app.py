@@ -994,6 +994,75 @@ def _apportion_cap_group(members: list[dict]) -> list[dict]:
     return results
 
 
+def _resolve_grouped_compound_cap(members: list[dict]) -> list[dict]:
+    """
+    Glue between the per-record compound cap ("Hard stop, lower of amount
+    or percentage") and the cross-record pool split (_apportion_cap_group).
+    Neither existing function does this alone: _apply_earn_cap() resolves
+    one record's own flat-vs-percent ceiling in isolation; _apportion_cap_group()
+    splits a pool but takes a single scalar `cap_value` as given, with no
+    percent side at all. A record that is BOTH compound-capped AND grouped
+    (UCount's CYOR Grocery, split across three retailer sub-lists sharing
+    one per-category cap) needs both, in the right order: the percentage
+    side has to be evaluated against the *combined* category spend across
+    the whole group, not each member's own retailer-sublist spend, before
+    the lower-of-two-vs-flat comparison happens, and only then does the
+    (single, now-resolved) pool ceiling get apportioned across members.
+
+    `members`: list of dicts, each with at minimum:
+      - "naive_return": float, this member's own uncapped return
+      - "category_spend": float, this member's own category-spend
+        contribution (e.g. this retailer sub-list's share of the category)
+      - "Cap value": float, the flat Rand ceiling (must be identical
+        across all members of one group, a sourcing invariant, not
+        re-derived here)
+      - "Cap percent value": float, the percentage (same invariant)
+      - "Cap basis": "Category spend" or "Total card spend" (same
+        invariant); "Total card spend" bypasses group-level summing
+        entirely, since that figure is already a whole-card total, not
+        something to sum across a category's retailer sub-lists.
+
+    Any other keys on each member dict pass through untouched to the
+    output, same contract as _apportion_cap_group().
+
+    Raises ValueError if Cap value / Cap percent value / Cap basis are
+    not identical across the group -- this is a sourced-data invariant,
+    not something to average or silently pick one of. A violation means
+    the KB backfill itself is wrong for this group, not something this
+    function should paper over.
+    """
+    if not members:
+        return []
+
+    cap_values = {mm["Cap value"] for mm in members}
+    pct_values = {mm["Cap percent value"] for mm in members}
+    bases = {mm["Cap basis"] for mm in members}
+    if len(cap_values) > 1 or len(pct_values) > 1 or len(bases) > 1:
+        raise ValueError(
+            "Grouped compound-cap members must share identical Cap value, "
+            f"Cap percent value, and Cap basis. Got Cap value={cap_values}, "
+            f"Cap percent value={pct_values}, Cap basis={bases}."
+        )
+
+    flat_value = cap_values.pop()
+    pct_value = pct_values.pop()
+    basis = bases.pop()
+
+    if basis == "Category spend" or not basis:
+        combined_category_spend = sum(mm["category_spend"] for mm in members)
+        pct_ceiling = combined_category_spend * (pct_value / 100)
+        pool_value = min(flat_value, pct_ceiling)
+    else:
+        # "Total card spend" is already a whole-card figure, not something
+        # to sum across a category's retailer sub-lists -- the flat side
+        # is the pool ceiling directly. (No live grouped records currently
+        # use this basis; branch kept explicit rather than assumed unreachable.)
+        pool_value = flat_value
+
+    pool_members = [{**mm, "cap_value": pool_value} for mm in members]
+    return _apportion_cap_group(pool_members)
+
+
 # MyDifference PLUS: three records actually feed this computation. The two
 # ceiling records (10% on the Credit-in-WW-Group pair, 2% on the Store-in-
 # WW-Group pair) are narration-only and never enter the math — they exist
