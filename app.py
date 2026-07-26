@@ -252,6 +252,10 @@ CATEGORY_ALIASES: dict[str, dict[str, list[str]]] = {
         "earn_rates":  ["Pharmacy (RSA/eSwatini)"],
         "redemptions": [],
     },
+    "health_beauty": {
+        "earn_rates":  ["Health & Beauty"],
+        "redemptions": [],
+    },
     "dining": {
         "earn_rates":  ["Dining"],
         "redemptions": [],

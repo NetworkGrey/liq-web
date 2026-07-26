@@ -1112,6 +1112,10 @@
 <label for="cat-travel">Travel</label>
 <input id="cat-travel" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
+<div class="field-group">
+<label for="cat-healthbeauty">Health &amp; beauty</label>
+<input id="cat-healthbeauty" inputmode="numeric" min="0" placeholder="0" type="number"/>
+</div>
 </div>
 <div class="collapsible">
 <button aria-controls="programmes-held" aria-expanded="false" class="collapsible-toggle" type="button">
@@ -1717,6 +1721,7 @@
         dining:    parseFloat(document.getElementById("cat-dining").value) || 0,
         clothing:  parseFloat(document.getElementById("cat-clothing").value) || 0,
         travel:    parseFloat(document.getElementById("cat-travel").value) || 0,
+        health_beauty: parseFloat(document.getElementById("cat-healthbeauty").value) || 0,
       };
 
       const programmes_held = [];
