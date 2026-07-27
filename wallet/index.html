@@ -161,6 +161,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
       gap: 16px;
       margin-bottom: 14px;
     }
@@ -172,6 +173,25 @@
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--ink-3);
+    }
+
+    .wallet-search-input {
+      flex: 1 1 200px;
+      max-width: 280px;
+      min-height: 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      padding: 0 12px;
+    }
+    .wallet-search-input::placeholder { color: var(--muted); }
+    .wallet-search-input:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: -1px;
+      border-color: var(--blue);
     }
 
     button[id$="-btn"] {
@@ -209,7 +229,9 @@
       border: 1px solid var(--border-soft);
       background: #fff;
       box-shadow: var(--shadow-soft);
+      cursor: pointer;
     }
+    .wallet-card-tile:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
 
     .wallet-card-image { display: block; width: 100%; height: 110px; object-fit: cover; background: var(--surface-2); }
 
@@ -307,6 +329,42 @@
       color: var(--ink-2);
       font-size: var(--text-xs);
     }
+
+    .card-view-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10;
+    }
+    .card-view-overlay[hidden] { display: none; }
+
+    .card-view-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: var(--radius);
+    }
+
+    .card-view-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      min-height: 44px;
+      min-width: 44px;
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: var(--text-lg);
+      line-height: 1;
+      cursor: pointer;
+    }
+    .card-view-close:hover { background: var(--surface-2); }
 </style>
 </head>
 <body>
@@ -373,6 +431,11 @@
 </div>
 
 <input accept="image/*" capture="environment" hidden="" id="file-input" type="file"/>
+
+<div class="card-view-overlay" hidden="" id="card-view-overlay">
+<button aria-label="Close" class="card-view-close" id="card-view-close-btn" type="button">×</button>
+<img alt="Stored card, full view" class="card-view-image" id="card-view-image"/>
+</div>
 
 <script>
     // ─── Storage layer: typed, versioned, first-party IndexedDB ────────────
@@ -466,6 +529,7 @@
       container.innerHTML =
         '<div class="wallet-list-header">' +
         '<p class="ask-selector-label">Stored on this device</p>' +
+        '<input aria-label="Search cards" class="wallet-search-input" id="wallet-search-input" placeholder="Search cards" type="search"/>' +
         '<button id="add-card-btn" type="button">+ Add card</button>' +
         "</div>" +
         '<div class="wallet-card-grid" id="wallet-card-grid"></div>' +
@@ -486,6 +550,9 @@
         cards.forEach(function (card) {
           const tile = document.createElement("div");
           tile.className = "wallet-card-tile";
+          tile.setAttribute("role", "button");
+          tile.setAttribute("tabindex", "0");
+          tile.setAttribute("aria-label", "View stored card full screen");
           const img = document.createElement("img");
           img.className = "wallet-card-image";
           img.src = URL.createObjectURL(card.image);
@@ -495,12 +562,64 @@
           label.textContent = "Stored on this device";
           tile.appendChild(img);
           tile.appendChild(label);
+          tile.addEventListener("click", function () { openCardView(card); });
+          tile.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openCardView(card);
+            }
+          });
           grid.appendChild(tile);
         });
       }, function () {
         grid.innerHTML = "";
         emptyMsg.hidden = false;
         emptyMsg.textContent = "Couldn’t read your cards from storage.";
+      });
+    }
+
+    // ─── Full-screen card view (tap a tile → view the stored image) ────────
+
+    function openCardView(card) {
+      const overlay = document.getElementById("card-view-overlay");
+      const img = document.getElementById("card-view-image");
+      img.src = URL.createObjectURL(card.image);
+      overlay.hidden = false;
+    }
+
+    function closeCardView() {
+      const overlay = document.getElementById("card-view-overlay");
+      const img = document.getElementById("card-view-image");
+      if (img.src) URL.revokeObjectURL(img.src);
+      img.src = "";
+      overlay.hidden = true;
+    }
+
+    function wireCardView() {
+      document.getElementById("card-view-close-btn").addEventListener("click", closeCardView);
+      document.getElementById("card-view-overlay").addEventListener("click", function (e) {
+        if (e.target.id === "card-view-overlay") closeCardView();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !document.getElementById("card-view-overlay").hidden) closeCardView();
+      });
+    }
+
+    // ─── Card search (filters the grid by tile label text) ─────────────────
+
+    function filterCardGrid(query) {
+      const q = query.trim().toLowerCase();
+      const grid = document.getElementById("wallet-card-grid");
+      Array.from(grid.children).forEach(function (tile) {
+        const label = tile.querySelector(".wallet-card-label");
+        const text = label ? label.textContent.toLowerCase() : "";
+        tile.hidden = q !== "" && text.indexOf(q) === -1;
+      });
+    }
+
+    function wireSearch() {
+      document.getElementById("wallet-search-input").addEventListener("input", function (e) {
+        filterCardGrid(e.target.value);
       });
     }
 
@@ -719,11 +838,13 @@
 
     document.addEventListener("DOMContentLoaded", function () {
       initNoticeModal();
+      wireCardView();
       const body = document.getElementById("wallet-body");
       openWalletDb().then(function () {
         renderWalletShell(body);
         refreshCardGrid();
         wireAddCard();
+        wireSearch();
       }, function () {
         renderStorageBlocked(body);
       });
