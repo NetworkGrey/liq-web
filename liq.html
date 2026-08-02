@@ -522,7 +522,8 @@
        not the native browser checkbox, so its outline shape is consistent
        across browsers rather than left to each OS's own rendering. */
     .shared-prog-checkbox,
-    .shared-other-checkbox {
+    .shared-other-checkbox,
+    .shared-eligibility-checkbox {
       appearance: none;
       -webkit-appearance: none;
       width: 16px;
@@ -537,12 +538,14 @@
     }
 
     .shared-prog-checkbox:checked,
-    .shared-other-checkbox:checked {
+    .shared-other-checkbox:checked,
+    .shared-eligibility-checkbox:checked {
       background: var(--blue);
     }
 
     .shared-prog-checkbox:checked::after,
-    .shared-other-checkbox:checked::after {
+    .shared-other-checkbox:checked::after,
+    .shared-eligibility-checkbox:checked::after {
       content: "";
       position: absolute;
       left: 4px;
@@ -557,6 +560,26 @@
     .shared-other-input {
       margin-left: 22px;
       max-width: 260px;
+    }
+
+    /* Distinct from the card selector on purpose: a card is a possession,
+       an eligibility flag is a personal attribute -- own bordered
+       container, not blended into the checkbox-grid above it. */
+    .eligibility-section {
+      margin: 14px 0 0;
+      padding: 14px 16px;
+      border: 1px solid var(--border-soft);
+      border-left: 4px solid var(--blue);
+      background: var(--surface-2);
+      border-radius: 4px;
+    }
+
+    .eligibility-heading {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 2px;
     }
 
     .signin-banner {
@@ -1088,6 +1111,7 @@
 <label for="ask-input">Where are you shopping, or which loyalty programme are you considering?</label>
 <p class="ask-selector-label">Pick the loyalty programmes you hold, optional.</p>
 <div class="checkbox-grid" id="ask-programme-grid"></div>
+<div id="ask-eligibility-section"></div>
 <div class="input-row">
 <input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
 <button id="ask-btn" type="button">Ask</button>
@@ -1150,6 +1174,7 @@
 <div id="review-programme-grid"></div>
 </div>
 </div>
+<div id="review-eligibility-section"></div>
 <button id="analyse-btn" type="button">Analyse</button>
 <div aria-live="polite" class="counter" id="review-counter"></div>
 </div></div><section class="join-section">
@@ -1694,13 +1719,32 @@
     const heldState = new Map();
     let otherHeld = { checked: false, text: "" };
 
+    // ─── Eligibility flags: self-declared personal attributes ───────────────
+    // A card is a possession, an eligibility flag is a personal attribute --
+    // kept visually and structurally separate from the card selector on
+    // purpose, never a programmes_held entry, never usable to satisfy the
+    // "select at least one card" gate. Same "tick once, applies everywhere"
+    // sharing as the card selector. Adding a second flag later (students,
+    // nurses) is a data change to this array, not a markup rebuild.
+    const ELIGIBILITY_FLAGS = [
+      { key: "60plus", label: "60 or older? You may qualify for extra discounts." },
+    ];
+
+    const eligibilityState = new Set();
+
+    function isEligible(flagKey) {
+      return eligibilityState.has(flagKey);
+    }
+
     const HELD_STATE_STORAGE_KEY = "liq_held_state";
 
     function saveHeldStateToSession() {
       try {
         const held = [];
         heldState.forEach((meta, value) => held.push({ value, tier: meta.tier, balance: meta.balance }));
-        sessionStorage.setItem(HELD_STATE_STORAGE_KEY, JSON.stringify({ held, other: otherHeld }));
+        sessionStorage.setItem(HELD_STATE_STORAGE_KEY, JSON.stringify({
+          held, other: otherHeld, eligibility: Array.from(eligibilityState),
+        }));
       } catch {}
     }
 
@@ -1711,6 +1755,7 @@
         const parsed = JSON.parse(raw);
         (parsed.held || []).forEach(h => heldState.set(h.value, { tier: h.tier, balance: h.balance }));
         if (parsed.other) otherHeld = parsed.other;
+        (parsed.eligibility || []).forEach(k => eligibilityState.add(k));
       } catch {}
     }
 
@@ -1821,6 +1866,60 @@
       if (!container) return;
       container.innerHTML = renderChecklistHtml(idPrefix, withDrilldown);
       wireChecklistEvents(container, withDrilldown);
+    }
+
+    // Directly below the card selector, but its own container -- a card is
+    // a possession, an eligibility flag is a personal attribute, kept
+    // visually and structurally separate on purpose.
+    function renderEligibilityHtml(idPrefix) {
+      const rows = ELIGIBILITY_FLAGS.map(flag => {
+        const id = `${idPrefix}-eligibility-${flag.key}`;
+        const checked = eligibilityState.has(flag.key) ? "checked" : "";
+        return `
+          <div class="programme-row">
+            <label class="prog-checkbox-label">
+              <input class="shared-eligibility-checkbox" data-flag-key="${flag.key}" id="${id}" type="checkbox" ${checked}/>
+              ${flag.label}
+            </label>
+          </div>`;
+      }).join("");
+      return `
+        <div class="eligibility-section">
+          <p class="eligibility-heading">Any of these apply to you?</p>
+          <p class="wallet-note">Optional, self-declared, shared by Ask, Spend Check and Should I Join</p>
+          ${rows}
+        </div>`;
+    }
+
+    const mountedEligibilitySections = []; // [{ containerId, idPrefix }]
+
+    function mountEligibilitySection(containerId, idPrefix) {
+      mountedEligibilitySections.push({ containerId, idPrefix });
+      renderMountedEligibilitySection(containerId, idPrefix);
+    }
+
+    function renderMountedEligibilitySection(containerId, idPrefix) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = renderEligibilityHtml(idPrefix);
+      container.querySelectorAll(".shared-eligibility-checkbox").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const key = cb.dataset.flagKey;
+          if (cb.checked) eligibilityState.add(key);
+          else eligibilityState.delete(key);
+          onEligibilityChanged();
+        });
+      });
+    }
+
+    // Re-renders every mounted instance so ticking in one panel is reflected
+    // in the other immediately, same "tick once, applies everywhere"
+    // mechanism as the card selector, persisted the same way.
+    function onEligibilityChanged() {
+      saveHeldStateToSession();
+      mountedEligibilitySections.forEach(({ containerId, idPrefix }) => {
+        renderMountedEligibilitySection(containerId, idPrefix);
+      });
     }
 
     function wireChecklistEvents(container, withDrilldown) {
@@ -2076,6 +2175,8 @@
       initCollapsible();
       mountChecklist("ask-programme-grid", "ask", false);
       mountChecklist("review-programme-grid", "review", true);
+      mountEligibilitySection("ask-eligibility-section", "ask");
+      mountEligibilitySection("review-eligibility-section", "review");
       renderJoinSection();
 
       // Sync remaining count from server on load — overrides stale localStorage
