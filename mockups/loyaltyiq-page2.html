@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(0.98 0.004 250); }
+    a { color: oklch(0.52 0.16 255); }
+    a:hover { color: oklch(0.4 0.16 255); }
+    input, select, button { font-family: 'IBM Plex Sans', sans-serif; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(0.98 0.004 250); color:oklch(0.18 0.01 250); font-family:'IBM Plex Sans',sans-serif; padding-bottom:80px;">
+
+  <sc-if value="{{showDemo}}" hint-placeholder-val="{{true}}">
+    <div style="background:oklch(0.18 0.01 250); color:oklch(0.9 0.005 250); padding:10px 32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <span style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:oklch(0.65 0.01 250);">Simulated arrival from page 1</span>
+      <div style="display:flex; gap:8px;">
+        <button onClick="{{goAsk}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Ask now</button>
+        <button onClick="{{goSpend}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Spend Check now</button>
+        <button onClick="{{goJoin}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Should I Join</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <header style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px 16px; border-bottom:1px solid oklch(0.88 0.008 250);">
+    <div style="font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:20px; letter-spacing:-0.01em;">LoyaltyIQ</div>
+    <div style="display:flex; align-items:center; gap:20px;">
+      <span style="font-size:12px; color:oklch(0.5 0.01 250); letter-spacing:0.04em; text-transform:uppercase;">Page 2 · tool</span>
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:oklch(0.4 0.01 250); cursor:pointer;">
+        <input type="checkbox" checked="{{registered}}" onChange="{{toggleRegistered}}" style="accent-color:oklch(0.52 0.16 255); width:16px; height:16px;" />
+        Registered (demo)
+      </label>
+    </div>
+  </header>
+
+  <section style="padding:28px 32px 24px; border-bottom:1px solid oklch(0.88 0.008 250);">
+    <h2 style="font-size:16px; font-weight:600; margin:0 0 4px;">My Cards</h2>
+    <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 16px; max-width:560px;">Select the loyalty programmes you hold. Ask, Spend Check, and Should I Join all read from here — none of them has its own card selector.</p>
+    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+      <sc-for list="{{cardsList}}" as="card" hint-placeholder-count="8">
+        <button onClick="{{card.onToggle}}" style="{{card.chipStyle}}">
+          {{card.name}}
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <nav style="display:flex; padding:0 32px; border-bottom:1px solid oklch(0.88 0.008 250); background:oklch(0.995 0.002 250);">
+    <button onClick="{{setTabAsk}}" style="{{tabStyleAsk}}">Ask</button>
+    <button onClick="{{setTabSpend}}" style="{{tabStyleSpend}}">Spend Check</button>
+    <button onClick="{{setTabJoin}}" style="{{tabStyleJoin}}">Should I Join</button>
+  </nav>
+
+  <main style="padding:32px; max-width:760px; margin:0 auto;">
+
+    <sc-if value="{{isAskTab}}" hint-placeholder-val="{{true}}">
+      <div>
+        <h1 style="font-size:22px; margin:0 0 8px;">Ask</h1>
+        <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 20px;">Open to everyone — no registration required.</p>
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <input type="text" value="{{askQuery}}" onChange="{{setAskQuery}}" placeholder="Where are you shopping, or which loyalty programme are you considering?" style="flex:1; padding:12px 14px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px; color:oklch(0.18 0.01 250);" />
+          <button onClick="{{submitAsk}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer;">Ask</button>
+        </div>
+
+        <sc-if value="{{askAnswer}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:20px;">
+            <p style="font-family:'IBM Plex Mono',monospace; font-size:15px; line-height:1.6; margin:0;">{{askAnswer.text}}</p>
+            <sc-if value="{{askAnswer.nudge}}" hint-placeholder-val="{{false}}">
+              <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:14px 0 0; border-top:1px solid oklch(0.9 0.008 250); padding-top:14px;">{{askAnswer.nudge}}</p>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSpendTab}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-size:22px; margin:0 0 8px;">Spend Check</h1>
+
+        <sc-if value="{{spendNeedsRegister}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px; text-align:left;">
+            <p style="font-size:15px; margin:0 0 6px; font-weight:600;">Start your 14-day free trial to run a Spend Check.</p>
+            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px;">Continues as a paid subscription after the trial. Pricing to be confirmed.</p>
+            <button onClick="{{toggleRegistered}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Start free trial</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{spendReady}}" hint-placeholder-val="{{false}}">
+          <div>
+            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 20px;">Monthly spend by category. Leave a field at 0 to leave it out entirely.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; margin-bottom:22px;">
+              <sc-for list="{{spendFields}}" as="field" hint-placeholder-count="7">
+                <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; color:oklch(0.4 0.01 250);">
+                  {{field.label}}
+                  <input type="number" min="0" value="{{field.value}}" onChange="{{field.onChange}}" style="padding:10px 12px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px; font-family:'IBM Plex Mono',monospace;" />
+                </label>
+              </sc-for>
+            </div>
+            <button onClick="{{submitSpend}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:28px;">Run Spend Check</button>
+
+            <sc-if value="{{spendResults}}" hint-placeholder-val="{{false}}">
+              <div>
+                <div style="border:1px solid oklch(0.85 0.01 250);">
+                  <sc-for list="{{spendResults.rows}}" as="row" hint-placeholder-count="5">
+                    <div style="display:grid; grid-template-columns:1.2fr 1.4fr 1.4fr 0.9fr 0.7fr; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid oklch(0.9 0.008 250); font-size:13px;">
+                      <span style="font-weight:600;">{{row.category}}</span>
+                      <span style="color:oklch(0.45 0.01 250);">{{row.programme}}</span>
+                      <span style="color:oklch(0.45 0.01 250); font-size:12px;">{{row.rateDisplay}}</span>
+                      <span style="font-family:'IBM Plex Mono',monospace; font-weight:600;">{{row.rand}}</span>
+                      <span style="{{row.frictionStyle}}">{{row.friction}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="padding:18px 16px; border:1px solid oklch(0.85 0.01 250); border-top:none;">
+                  <div style="display:flex; justify-content:space-between; font-size:13px; color:oklch(0.48 0.01 250); margin-bottom:6px;">
+                    <span>Gross total</span>
+                    <span style="font-family:'IBM Plex Mono',monospace;">{{spendResults.grossDisplay}}</span>
+                  </div>
+                  <sc-if value="{{spendResults.hasAdjustment}}" hint-placeholder-val="{{false}}">
+                    <p style="font-size:12px; color:oklch(0.5 0.01 250); margin:0 0 6px; font-style:italic;">{{spendResults.adjustmentNote}}</p>
+                  </sc-if>
+                  <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700; padding-top:8px; border-top:1px solid oklch(0.9 0.008 250);">
+                    <span>Realistic total</span>
+                    <span style="font-family:'IBM Plex Mono',monospace; color:oklch(0.52 0.16 255);">{{spendResults.realisticDisplay}}</span>
+                  </div>
+                  <p style="font-size:12px; color:oklch(0.55 0.01 250); margin:14px 0 0;">You're leaving about {{spendResults.realisticDisplay}} a month on the table. The average South African leaves R420.</p>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isJoinTab}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-size:22px; margin:0 0 8px;">Should I Join</h1>
+
+        <sc-if value="{{joinNeedsRegister}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px;">
+            <p style="font-size:15px; margin:0 0 6px; font-weight:600;">Start your 14-day free trial to use Should I Join.</p>
+            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px;">Continues as a paid subscription after the trial. Pricing to be confirmed.</p>
+            <button onClick="{{toggleRegistered}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Start free trial</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{joinLocked}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px;">
+            <p style="font-size:15px; margin:0 0 8px; font-weight:600;">Complete Spend Check first</p>
+            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px; line-height:1.6;">Should I Join uses your spend and held cards from Spend Check to evaluate a new one against them.</p>
+            <button onClick="{{setTabSpend}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Go to Spend Check</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{joinReady}}" hint-placeholder-val="{{false}}">
+          <div>
+            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 16px;">Pick a programme you don't hold yet to evaluate against your Spend Check profile.</p>
+            <div style="display:flex; gap:10px; margin-bottom:22px;">
+              <select value="{{joinCandidateId}}" onChange="{{setJoinCandidate}}" style="flex:1; padding:12px 14px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px;">
+                <sc-for list="{{joinCandidates}}" as="c" hint-placeholder-count="2">
+                  <option value="{{c.id}}">{{c.name}}</option>
+                </sc-for>
+              </select>
+              <button onClick="{{evaluateJoin}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer;">Evaluate</button>
+            </div>
+
+            <sc-if value="{{joinResult}}" hint-placeholder-val="{{false}}">
+              <div style="border:1px solid oklch(0.85 0.01 250); padding:24px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                  <span style="{{joinResult.badgeStyle}}">{{joinResult.verdict}}</span>
+                  <span style="font-weight:600; font-size:15px;">{{joinResult.name}}</span>
+                </div>
+                <p style="font-size:14px; line-height:1.6; color:oklch(0.3 0.01 250); margin:0;">{{joinResult.reasoning}}</p>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1280, &quot;height&quot;: 900},
+  &quot;defaultTab&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;ask&quot;, &quot;options&quot;: [&quot;ask&quot;, &quot;spend&quot;, &quot;join&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Behavior&quot;},
+  &quot;startRegistered&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Behavior&quot;},
+  &quot;showPage1Demo&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Behavior&quot;}
+}">
+const CATEGORIES = [
+  { key: 'groceries', label: 'Groceries', programme: 'Checkers Xtra Savings', rateDisplay: '15% back on qualifying items', friction: 'LOW', calc: v => v * 0.15 },
+  { key: 'fuel', label: 'Fuel', programme: 'Engen 1app', rateDisplay: 'approx. R0.85 back per R100 spent', friction: 'MED', calc: v => v * 0.0085 },
+  { key: 'pharmacy', label: 'Pharmacy', programme: 'Clicks ClubCard', rateDisplay: '5% back in points', friction: 'LOW', calc: v => v * 0.05 },
+  { key: 'dining', label: 'Dining', programme: 'Woolworths WRewards', rateDisplay: 'up to 5% in WRewards', friction: 'MED', calc: v => v * 0.05 },
+  { key: 'clothing', label: 'Clothing', programme: 'Woolworths WRewards', rateDisplay: '5% in WRewards', friction: 'LOW', calc: v => v * 0.05 },
+  { key: 'travel', label: 'Travel', programme: 'Voyager Miles', rateDisplay: '1 mile per R7.50 (approx. R0.35/mile)', friction: 'HIGH', calc: v => (v / 7.5) * 0.35 },
+  { key: 'healthBeauty', label: 'Health & beauty', programme: 'Dis-Chem Benefit', rateDisplay: '5 points per R1 (approx. 1% value)', friction: 'LOW', calc: v => v * 0.01 },
+];
+
+const INITIAL_CARDS = [
+  { id: 'checkers', name: 'Checkers Xtra Savings', held: true },
+  { id: 'clicks', name: 'Clicks ClubCard', held: true },
+  { id: 'woolies', name: 'Woolworths WRewards', held: true },
+  { id: 'engen', name: 'Engen 1app', held: false },
+  { id: 'dischem', name: 'Dis-Chem Benefit', held: false },
+  { id: 'voyager', name: 'Voyager Miles', held: false },
+  { id: 'pnp', name: 'Pick n Pay Smart Shopper', held: false },
+  { id: 'vitality', name: 'Discovery Vitality', held: false },
+];
+
+const JOIN_CANDIDATES = [
+  {
+    id: 'pnp', name: 'Pick n Pay Smart Shopper', verdict: 'NO',
+    reasoning: "Your groceries spend already earns 15% back through Checkers Xtra Savings. Pick n Pay Smart Shopper earns less on the same spend — no case for joining based on your Spend Check profile.",
+  },
+  {
+    id: 'vitality', name: 'Discovery Vitality', verdict: 'YES',
+    reasoning: "Dis-Chem Benefit earns roughly 1% back on health & beauty spend. Vitality's active-rewards model typically pays out more across health, beauty, and part of your dining spend — worth joining based on your profile.",
+  },
+];
+
+const rand = n => 'R' + Math.round(n).toLocaleString('en-ZA');
+
+class Component extends DCLogic {
+  state = {
+    showDemo: this.props.showPage1Demo ?? true,
+    registered: this.props.startRegistered ?? false,
+    activeTab: this.props.defaultTab ?? 'ask',
+    cards: INITIAL_CARDS,
+    askQuery: '',
+    askAnswer: null,
+    spend: { groceries: 2400, fuel: 1200, pharmacy: 350, dining: 800, clothing: 500, travel: 0, healthBeauty: 300 },
+    spendSubmitted: false,
+    joinCandidateId: 'pnp',
+    joinResult: null,
+  };
+
+  toggleHeld(id) {
+    this.setState(s => ({ cards: s.cards.map(c => c.id === id ? { ...c, held: !c.held } : c) }));
+  }
+
+  submitAsk() {
+    const held = this.state.cards.some(c => c.held);
+    if (held) {
+      this.setState({ askAnswer: { text: 'Spending about R600 at Checkers. Estimated reward R90. Use Xtra Savings. Approx. 15% back on qualifying items.', nudge: null } });
+    } else {
+      this.setState({ askAnswer: { text: 'Most grocery loyalty programmes offer between 5–15% back on qualifying purchases, depending on the programme and category.', nudge: 'Select your cards and go to Spend Check to see what you\u2019re leaving on the table.' } });
+    }
+  }
+
+  updateSpend(key, val) {
+    this.setState(s => ({ spend: { ...s.spend, [key]: Number(val) || 0 }, spendResultsCache: null }));
+  }
+
+  submitSpend() {
+    const held = new Set(this.state.cards.filter(c => c.held).map(c => c.name));
+    const rows = [];
+    let gross = 0;
+    const newProgrammes = new Set();
+    for (const cat of CATEGORIES) {
+      const spendVal = this.state.spend[cat.key];
+      if (!spendVal || spendVal <= 0) continue;
+      const r = cat.calc(spendVal);
+      gross += r;
+      if (!held.has(cat.programme)) newProgrammes.add(cat.programme);
+      rows.push({ category: cat.label, programme: cat.programme, rateDisplay: cat.rateDisplay, rand: rand(r), friction: cat.friction,
+        frictionStyle: this.frictionStyle(cat.friction) });
+    }
+    const adjustment = newProgrammes.size * 50;
+    const realistic = Math.max(0, gross - adjustment);
+    this.setState({
+      spendSubmitted: true,
+      spendResults: {
+        rows, grossDisplay: rand(gross),
+        hasAdjustment: adjustment > 0,
+        adjustmentNote: adjustment > 0 ? `Adjusted down ${rand(adjustment)}, R50 \u00d7 ${newProgrammes.size} new programme${newProgrammes.size > 1 ? 's' : ''}, to keep the total realistic` : '',
+        realisticDisplay: rand(realistic),
+      },
+    });
+  }
+
+  frictionStyle(level) {
+    const base = 'justify-self:end; font-size:11px; font-weight:600; letter-spacing:0.04em; padding:3px 8px;';
+    if (level === 'LOW') return base + 'background:oklch(0.92 0.03 255); color:oklch(0.38 0.15 255);';
+    if (level === 'MED') return base + 'background:oklch(0.9 0.008 250); color:oklch(0.4 0.01 250);';
+    return base + 'background:oklch(0.85 0.008 250); color:oklch(0.2 0.01 250);';
+  }
+
+  evaluateJoin() {
+    const cand = JOIN_CANDIDATES.find(c => c.id === this.state.joinCandidateId);
+    if (!cand) return;
+    this.setState({ joinResult: {
+      name: cand.name, verdict: cand.verdict, reasoning: cand.reasoning,
+      badgeStyle: 'font-size:12px; font-weight:700; letter-spacing:0.04em; padding:4px 10px; ' +
+        (cand.verdict === 'YES' ? 'background:oklch(0.52 0.16 255); color:white;' : 'background:oklch(0.9 0.008 250); color:oklch(0.35 0.01 250);'),
+    }});
+  }
+
+  renderVals() {
+    const s = this.state;
+    const tabStyle = active => `background:transparent; border:none; border-bottom:2px solid ${active ? 'oklch(0.52 0.16 255)' : 'transparent'}; color:${active ? 'oklch(0.18 0.01 250)' : 'oklch(0.5 0.01 250)'}; font-weight:${active ? 600 : 500}; font-size:14px; padding:14px 20px; cursor:pointer;`;
+    const chipStyle = held => `border:1px solid ${held ? 'oklch(0.52 0.16 255)' : 'oklch(0.82 0.008 250)'}; background:${held ? 'oklch(0.92 0.03 255)' : 'oklch(0.995 0.002 250)'}; color:${held ? 'oklch(0.32 0.15 255)' : 'oklch(0.45 0.01 250)'}; font-size:13px; font-weight:${held ? 600 : 400}; padding:8px 14px; cursor:pointer;`;
+
+    const spendCompleted = s.spendSubmitted;
+
+    return {
+      showDemo: s.showDemo,
+      registered: s.registered,
+      toggleRegistered: () => this.setState({ registered: !s.registered }),
+
+      cardsList: s.cards.map(c => ({ ...c, chipStyle: chipStyle(c.held), onToggle: () => this.toggleHeld(c.id) })),
+
+      isAskTab: s.activeTab === 'ask',
+      isSpendTab: s.activeTab === 'spend',
+      isJoinTab: s.activeTab === 'join',
+      tabStyleAsk: tabStyle(s.activeTab === 'ask'),
+      tabStyleSpend: tabStyle(s.activeTab === 'spend'),
+      tabStyleJoin: tabStyle(s.activeTab === 'join'),
+      setTabAsk: () => this.setState({ activeTab: 'ask' }),
+      setTabSpend: () => this.setState({ activeTab: 'spend' }),
+      setTabJoin: () => this.setState({ activeTab: 'join' }),
+      goAsk: () => this.setState({ activeTab: 'ask' }),
+      goSpend: () => this.setState({ activeTab: 'spend' }),
+      goJoin: () => this.setState({ activeTab: 'join' }),
+
+      askQuery: s.askQuery,
+      setAskQuery: e => this.setState({ askQuery: e.target.value }),
+      submitAsk: () => this.submitAsk(),
+      askAnswer: s.askAnswer,
+
+      spendNeedsRegister: !s.registered,
+      spendReady: s.registered,
+      spendFields: CATEGORIES.map(cat => ({
+        label: cat.label, value: s.spend[cat.key],
+        onChange: e => this.updateSpend(cat.key, e.target.value),
+      })),
+      submitSpend: () => this.submitSpend(),
+      spendResults: spendCompleted ? s.spendResults : null,
+
+      joinNeedsRegister: !s.registered,
+      joinLocked: s.registered && !spendCompleted,
+      joinReady: s.registered && spendCompleted,
+      joinCandidates: JOIN_CANDIDATES,
+      joinCandidateId: s.joinCandidateId,
+      setJoinCandidate: e => this.setState({ joinCandidateId: e.target.value, joinResult: null }),
+      evaluateJoin: () => this.evaluateJoin(),
+      joinResult: s.joinResult,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
