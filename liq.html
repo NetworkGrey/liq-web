@@ -1729,9 +1729,10 @@
       return entries;
     }
 
-    // The zero-cards gate (Spend Check, Should I Join) must check real held
-    // LPs only -- `heldState.size`, never a count that includes "Other",
-    // which would let ticking Other wrongly satisfy the gate.
+    // Returns the fixed acknowledgement sentence when Other was ticked with
+    // non-empty text, else null -- inert doesn't mean silent, dropping
+    // stated input without saying so is the same failure shape as showing
+    // unsourced data, just in a different spot.
     function getOtherAcknowledgement() {
       if (otherHeld.checked && otherHeld.text.trim()) {
         return `You mentioned ${otherHeld.text.trim()}, that's not one of LIQ's covered programmes yet, so it isn't reflected below.`;
