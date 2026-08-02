@@ -1239,6 +1239,15 @@ def resolve_spend_routing(user_spec: dict, kb: dict) -> dict:
         elif isinstance(entry, dict) and entry.get("name"):
             programmes_held[_norm_name(entry["name"])] = entry.get("tier") or None
 
+    # MyDifference PLUS's rewards are a superset of the base MyDifference --
+    # holding both is "PLUS held" for computation purposes, not two
+    # independent contributions. Dropping the redundant base entry here
+    # (routing only) avoids double-counting the same underlying benefit;
+    # the shared UI state still keeps both as independent entries, and the
+    # LLM-narration path (_held_programmes_display()) is untouched.
+    if _norm_name("MyDifference PLUS") in programmes_held and _norm_name("MyDifference") in programmes_held:
+        del programmes_held[_norm_name("MyDifference")]
+
     result_categories = {}
     uncategorised_matches: dict[str, list[str]] = {}
     total_uplift = 0.0

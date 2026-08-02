@@ -518,6 +518,47 @@
       padding: 2px 0 2px 14px;
     }
 
+    /* Shared card selector checkbox: outline square, --blue, 2px stroke --
+       not the native browser checkbox, so its outline shape is consistent
+       across browsers rather than left to each OS's own rendering. */
+    .shared-prog-checkbox,
+    .shared-other-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      border: 2px solid var(--blue);
+      border-radius: 2px;
+      background: var(--surface);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .shared-prog-checkbox:checked,
+    .shared-other-checkbox:checked {
+      background: var(--blue);
+    }
+
+    .shared-prog-checkbox:checked::after,
+    .shared-other-checkbox:checked::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 0px;
+      width: 4px;
+      height: 8px;
+      border: solid var(--surface);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .shared-other-input {
+      margin-left: 22px;
+      max-width: 260px;
+    }
+
     .signin-banner {
       border-left: 4px solid var(--blue);
       background: var(--blue-soft);
@@ -1046,23 +1087,7 @@
 <section class="workspace" id="input-area"><div class="tab-bar" role="tablist"><button aria-controls="panel-ask" aria-expanded="true" aria-selected="true" class="tab active" id="tab-ask" role="tab">Ask</button><div aria-labelledby="tab-ask" class="panel-shell" id="panel-ask" role="tabpanel">
 <label for="ask-input">Where are you shopping, or which loyalty programme are you considering?</label>
 <p class="ask-selector-label">Pick the loyalty programmes you hold, optional.</p>
-<div class="checkbox-grid ask-checkbox-grid">
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="FNB eBucks"/> FNB</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Clicks ClubCard"/> Clicks</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Shell V+"/> Shell</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Absa Rewards"/> Absa</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Discovery Vitality"/> Discovery</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Capitec Live Better"/> Capitec</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="UCount Rewards"/> Standard Bank</label>
-<div class="ask-merchant-group">
-<div class="ask-merchant-name">Woolworths</div>
-<label class="prog-checkbox-label ask-merchant-sub"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference"/> MyDifference</label>
-<label class="prog-checkbox-label ask-merchant-sub"><input class="ask-prog-checkbox" type="checkbox" value="MyDifference PLUS"/> MyDifference PLUS</label>
-</div>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="SAA Voyager"/> SAA</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Better Rewards"/> Dis-Chem</label>
-<label class="prog-checkbox-label"><input class="ask-prog-checkbox" type="checkbox" value="Xtra Savings"/> Checkers/Shoprite</label>
-</div>
+<div class="checkbox-grid" id="ask-programme-grid"></div>
 <div class="input-row">
 <input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
 <button id="ask-btn" type="button">Ask</button>
@@ -1122,193 +1147,7 @@
 <span class="chevron">›</span> Loyalty Programmes I already hold
                 </button>
 <div hidden="" id="programmes-held">
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="fnbebucks" type="checkbox" value="FNB eBucks"/>
-                      FNB eBucks
-                    </label>
-<div class="prog-drilldown" data-prog-key="fnbebucks" hidden="">
-<div class="field-group-sm">
-<label for="fnbebucks-tier">Account tier (optional)</label>
-<select class="prog-tier-select" id="fnbebucks-tier">
-<option value="">Not sure / skip</option>
-<option value="FNB Easy PAYU">FNB Easy PAYU</option>
-<option value="FNB Easy Bundle">FNB Easy Bundle</option>
-<option value="FNB Aspire">FNB Aspire</option>
-<option value="FNB Premier">FNB Premier</option>
-<option value="FNB Private Clients">FNB Private Clients</option>
-<option value="FNB Private Wealth">FNB Private Wealth</option>
-<option value="RMB Private Bank">RMB Private Bank</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="fnbebucks-points">Current eBucks balance (optional)</label>
-<input class="prog-points-input" id="fnbebucks-points" inputmode="numeric" min="0" placeholder="Optional — e.g. 4500" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="clicks" type="checkbox" value="Clicks ClubCard"/>
-                      Clicks ClubCard
-                    </label>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="shellvplus" type="checkbox" value="Shell V+"/>
-                      Shell V+
-                    </label>
-<div class="prog-drilldown" data-prog-key="shellvplus" hidden="">
-<div class="field-group-sm">
-<label for="shellvplus-tier">Tier (optional)</label>
-<select class="prog-tier-select" id="shellvplus-tier">
-<option value="">Not sure / skip</option>
-<option value="V+ Regular">V+ Regular</option>
-<option value="V+ Super">V+ Super</option>
-<option value="V+ Premium">V+ Premium</option>
-<option value="V+ Ultra">V+ Ultra</option>
-<option value="V+ Ultra Plus">V+ Ultra Plus</option>
-<option value="V+ Ultra *****">V+ Ultra *****</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="shellvplus-points">Current ZAR cashback balance this period (optional)</label>
-<input class="prog-points-input" id="shellvplus-points" inputmode="numeric" min="0" placeholder="e.g. 150" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="absa" type="checkbox" value="Absa Rewards"/>
-                      Absa Rewards
-                    </label>
-<div class="prog-drilldown" data-prog-key="absa" hidden="">
-<div class="field-group-sm">
-<label for="absa-tier">Tier (optional)</label>
-<select class="prog-tier-select" id="absa-tier">
-<option value="">Not sure / skip</option>
-<option value="Tier 1">Tier 1</option>
-<option value="Tier 2">Tier 2</option>
-<option value="Tier 3">Tier 3</option>
-<option value="Tier 4">Tier 4</option>
-<option value="Tier 5">Tier 5</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="absa-points">Current Absa Rewards balance (optional)</label>
-<input class="prog-points-input" id="absa-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="vitality" type="checkbox" value="Discovery Vitality"/>
-                      Discovery Vitality
-                    </label>
-<div class="prog-drilldown" data-prog-key="vitality" hidden="">
-<div class="field-group-sm">
-<label for="vitality-tier">Status (optional)</label>
-<select class="prog-tier-select" id="vitality-tier">
-<option value="">Not sure / skip</option>
-<option value="Blue">Blue</option>
-<option value="Bronze">Bronze</option>
-<option value="Silver">Silver</option>
-<option value="Gold">Gold</option>
-<option value="Diamond">Diamond</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="vitality-points">Current Vitality points this year (optional)</label>
-<input class="prog-points-input" id="vitality-points" inputmode="numeric" min="0" placeholder="e.g. 32000" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="capitec" type="checkbox" value="Capitec Live Better"/>
-                      Capitec Live Better
-                    </label>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="ucount" type="checkbox" value="UCount Rewards"/>
-                      UCount Rewards
-                    </label>
-<div class="prog-drilldown" data-prog-key="ucount" hidden="">
-<div class="field-group-sm">
-<label for="ucount-tier">Tier (optional)</label>
-<select class="prog-tier-select" id="ucount-tier">
-<option value="">Not sure / skip</option>
-<option value="Tier 1">Tier 1</option>
-<option value="Tier 2">Tier 2</option>
-<option value="Tier 3">Tier 3</option>
-<option value="Tier 4">Tier 4</option>
-<option value="Tier 5">Tier 5</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="ucount-points">Current UCount Rewards points balance (optional)</label>
-<input class="prog-points-input" id="ucount-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="mydifference" type="checkbox" value="MyDifference"/>
-                      MyDifference
-                    </label>
-<div class="prog-drilldown" data-prog-key="mydifference" hidden="">
-<div class="field-group-sm">
-<label for="mydifference-tier">Tier (optional)</label>
-<select class="prog-tier-select" id="mydifference-tier">
-<option value="">Not sure / skip</option>
-<option value="Loyal">Loyal</option>
-<option value="Ambassador">Ambassador</option>
-<option value="VIP">VIP</option>
-</select>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="mydifferenceplus" type="checkbox" value="MyDifference PLUS"/>
-                      MyDifference PLUS
-                    </label>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="voyager" type="checkbox" value="SAA Voyager"/>
-                      SAA Voyager
-                    </label>
-<div class="prog-drilldown" data-prog-key="voyager" hidden="">
-<div class="field-group-sm">
-<label for="voyager-tier">Tier (optional)</label>
-<select class="prog-tier-select" id="voyager-tier">
-<option value="">Not sure / skip</option>
-<option value="Blue">Blue</option>
-<option value="Silver">Silver</option>
-<option value="Gold">Gold</option>
-<option value="Platinum">Platinum</option>
-</select>
-</div>
-<div class="field-group-sm">
-<label for="voyager-points">Current Voyager Miles balance (optional)</label>
-<input class="prog-points-input" id="voyager-points" inputmode="numeric" min="0" placeholder="Optional" type="number"/>
-</div>
-</div>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="betterrewards" type="checkbox" value="Better Rewards"/>
-                      Better Rewards
-                    </label>
-</div>
-<div class="programme-row">
-<label class="prog-checkbox-label">
-<input class="prog-checkbox" data-prog-key="xtrasavings" type="checkbox" value="Xtra Savings"/>
-                      Xtra Savings
-                    </label>
-</div>
+<div id="review-programme-grid"></div>
 </div>
 </div>
 <button id="analyse-btn" type="button">Analyse</button>
@@ -1674,10 +1513,8 @@
       appendTurn(message);
       setLoading(true);
 
-      const programmes_held = [];
-      document.querySelectorAll(".ask-prog-checkbox:checked").forEach(cb => {
-        programmes_held.push({ name: cb.value });
-      });
+      const programmes_held = getProgrammesHeldPayload();
+      const noCardsSelected = programmes_held.length === 0;
 
       try {
         const res = await fetch(`${API_BASE}/chat`, {
@@ -1699,6 +1536,15 @@
         const data = await res.json();
         setRemaining(data.remaining ?? remaining - 1);
         renderResponse(data, data.mode ?? "1", currentAnswerEl);
+        // Ask is exempt from the zero-cards gate (Spend Check/Should I Join
+        // both block instead) -- proceeds with a general, unpersonalised
+        // answer and closes with a nudge toward Spend Check every time.
+        if (noCardsSelected && currentAnswerEl) {
+          const nudge = document.createElement("p");
+          nudge.className = "ask-nudge";
+          nudge.textContent = "Select your cards and go to Spend Check to see what you're leaving on the table.";
+          currentAnswerEl.appendChild(nudge);
+        }
 
       } catch {
         if (currentAnswerEl) currentAnswerEl.innerHTML = `<p class="error-msg">LoyaltyIQ is unavailable right now. Try again in a moment.</p>`;
@@ -1714,6 +1560,11 @@
         return;
       }
 
+      if (heldCount() === 0) {
+        showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+        return;
+      }
+
       const categories = {
         groceries: parseFloat(document.getElementById("cat-groceries").value) || 0,
         fuel:      parseFloat(document.getElementById("cat-fuel").value) || 0,
@@ -1724,16 +1575,7 @@
         health_beauty: parseFloat(document.getElementById("cat-healthbeauty").value) || 0,
       };
 
-      const programmes_held = [];
-      document.querySelectorAll(".prog-checkbox:checked").forEach(cb => {
-        const key = cb.dataset.progKey;
-        const entry = { name: cb.value };
-        const tierSelect = document.querySelector(`.prog-drilldown[data-prog-key="${key}"] .prog-tier-select`);
-        if (tierSelect ? tierSelect.value : false) entry.tier = tierSelect.value;
-        const pointsInput = document.querySelector(`.prog-drilldown[data-prog-key="${key}"] .prog-points-input`);
-        if (pointsInput ? pointsInput.value : false) entry.balance = parseFloat(pointsInput.value);
-        programmes_held.push(entry);
-      });
+      const programmes_held = getProgrammesHeldPayload();
 
       const area = document.getElementById("output-area");
       area.innerHTML = `<p class="thinking">Analysing…</p>`;
@@ -1758,7 +1600,7 @@
         const data = await res.json();
         setRemaining(remaining - 1);
         renderResponse(data, "2");
-        markReviewCompleted(programmes_held);
+        markReviewCompleted();
         renderJoinSection();
 
       } catch {
@@ -1773,94 +1615,272 @@
       area.innerHTML = `<p class="error-msg">${msg}</p>`;
     }
 
-    function initDrilldowns() {
-      document.querySelectorAll(".prog-checkbox").forEach(cb => {
+    // ─── Shared programme selector: one catalog, one selection state, ───────
+    // used by Ask, Spend Check, and Should I Join alike. Tick once, applies
+    // everywhere. Retires the three independently-drifted lists this used to
+    // be (Ask's own checkboxes, Spend Check's own checkboxes, JOIN_PROGRAMMES).
+
+    // Canonical casing matches Airtable's Programme name field exactly (e.g.
+    // "Absa Rewards", not the old JOIN_PROGRAMMES "ABSA Rewards") -- `value`
+    // is the only thing ever submitted to the backend, `label` is display
+    // text only, identical across all three moments now (no more per-panel
+    // abbreviations). Order is alphabetical by each item's own sort name,
+    // "Other" pinned last regardless -- the Woolworths row sorts by its
+    // first child, "MyDifference", not by "Woolworths" itself.
+    const PROGRAMME_CATALOG = [
+      { key: "absa", value: "Absa Rewards", label: "Absa Rewards",
+        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
+        pointsLabel: "Current Absa Rewards balance (optional)" },
+      { key: "betterrewards", value: "Better Rewards", label: "Dis-Chem Better Rewards" },
+      { key: "capitec", value: "Capitec Live Better", label: "Capitec Live Better" },
+      { key: "clicks", value: "Clicks ClubCard", label: "Clicks ClubCard" },
+      { key: "vitality", value: "Discovery Vitality", label: "Discovery Vitality",
+        tiers: ["Blue", "Bronze", "Silver", "Gold", "Diamond"],
+        pointsLabel: "Current Vitality points this year (optional)" },
+      { key: "fnbebucks", value: "FNB eBucks", label: "FNB eBucks",
+        tiers: ["FNB Easy PAYU", "FNB Easy Bundle", "FNB Aspire", "FNB Premier", "FNB Private Clients", "FNB Private Wealth", "RMB Private Bank"],
+        pointsLabel: "Current eBucks balance (optional)" },
+      { isGroup: true, groupLabel: "Woolworths", children: [
+          { key: "mydifference", value: "MyDifference", label: "MyDifference",
+            tiers: ["Loyal", "Ambassador", "VIP"] },
+          { key: "mydifferenceplus", value: "MyDifference PLUS", label: "MyDifference PLUS" },
+        ] },
+      { key: "voyager", value: "SAA Voyager", label: "SAA Voyager",
+        tiers: ["Blue", "Silver", "Gold", "Platinum"],
+        pointsLabel: "Current Voyager Miles balance (optional)" },
+      { key: "shellvplus", value: "Shell V+", label: "Shell V+",
+        tiers: ["V+ Regular", "V+ Super", "V+ Premium", "V+ Ultra", "V+ Ultra Plus", "V+ Ultra *****"],
+        pointsLabel: "Current ZAR cashback balance this period (optional)" },
+      { key: "ucount", value: "UCount Rewards", label: "Standard Bank UCount",
+        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
+        pointsLabel: "Current UCount Rewards points balance (optional)" },
+      { key: "xtrasavings", value: "Xtra Savings", label: "Xtra Savings" },
+      { isOther: true, key: "other", label: "Other" },
+    ];
+
+    // Flattened view (Woolworths' two children in place of the group
+    // wrapper, "Other" excluded) -- used wherever a plain list of real,
+    // nameable programmes is needed: Should I Join's candidate picker and
+    // payload building. "Other" isn't a real programme name, so it's never
+    // a join-evaluation candidate and never appears here.
+    function catalogFlat() {
+      const flat = [];
+      PROGRAMME_CATALOG.forEach(item => {
+        if (item.isGroup) flat.push(...item.children);
+        else if (!item.isOther) flat.push(item);
+      });
+      return flat;
+    }
+
+    const PROGRAMME_CATALOG_BY_KEY = {};
+    catalogFlat().forEach(c => { PROGRAMME_CATALOG_BY_KEY[c.key] = c; });
+
+    // Single source of truth for "what do you hold" -- value -> {tier,
+    // balance}. Ticking a box in any one panel updates this and re-renders
+    // every other mounted panel so they immediately reflect it too. This is
+    // the actual "tick once, applies everywhere" mechanism.
+    const heldState = new Map();
+    let otherHeld = { checked: false, text: "" };
+
+    const HELD_STATE_STORAGE_KEY = "liq_held_state";
+
+    function saveHeldStateToSession() {
+      try {
+        const held = [];
+        heldState.forEach((meta, value) => held.push({ value, tier: meta.tier, balance: meta.balance }));
+        sessionStorage.setItem(HELD_STATE_STORAGE_KEY, JSON.stringify({ held, other: otherHeld }));
+      } catch {}
+    }
+
+    function restoreHeldStateFromSession() {
+      try {
+        const raw = sessionStorage.getItem(HELD_STATE_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        (parsed.held || []).forEach(h => heldState.set(h.value, { tier: h.tier, balance: h.balance }));
+        if (parsed.other) otherHeld = parsed.other;
+      } catch {}
+    }
+
+    function heldCount() {
+      return heldState.size + (otherHeld.checked && otherHeld.text.trim() ? 1 : 0);
+    }
+
+    function getProgrammesHeldPayload() {
+      const entries = [];
+      heldState.forEach((meta, value) => {
+        const entry = { name: value };
+        if (meta.tier) entry.tier = meta.tier;
+        if (meta.balance != null && !Number.isNaN(meta.balance)) entry.balance = meta.balance;
+        entries.push(entry);
+      });
+      if (otherHeld.checked && otherHeld.text.trim()) entries.push({ name: otherHeld.text.trim() });
+      return entries;
+    }
+
+    function renderProgrammeRow(item, idPrefix, withDrilldown, isGroupChild) {
+      const id = `${idPrefix}-${item.key}`;
+      const meta = heldState.get(item.value);
+      const checked = meta ? "checked" : "";
+      let drilldown = "";
+      if (withDrilldown && (item.tiers || item.pointsLabel)) {
+        const tierOptions = (item.tiers || []).map(t =>
+          `<option value="${t}" ${meta && meta.tier === t ? "selected" : ""}>${t}</option>`
+        ).join("");
+        drilldown = `
+          <div class="prog-drilldown" data-prog-key="${item.key}" ${checked ? "" : "hidden"}>
+            ${item.tiers ? `
+            <div class="field-group-sm">
+              <label for="${id}-tier">Tier (optional)</label>
+              <select class="prog-tier-select" data-prog-key="${item.key}" id="${id}-tier">
+                <option value="">Not sure / skip</option>
+                ${tierOptions}
+              </select>
+            </div>` : ""}
+            ${item.pointsLabel ? `
+            <div class="field-group-sm">
+              <label for="${id}-points">${item.pointsLabel}</label>
+              <input class="prog-points-input" data-prog-key="${item.key}" id="${id}-points" inputmode="numeric" min="0" type="number" value="${meta && meta.balance != null ? meta.balance : ""}"/>
+            </div>` : ""}
+          </div>`;
+      }
+      return `
+        <div class="programme-row">
+          <label class="prog-checkbox-label${isGroupChild ? " ask-merchant-sub" : ""}">
+            <input class="shared-prog-checkbox" data-value="${item.value}" data-prog-key="${item.key}" id="${id}" type="checkbox" value="${item.value}" ${checked}/>
+            ${item.label}
+          </label>
+          ${drilldown}
+        </div>`;
+    }
+
+    function renderOtherRow(idPrefix) {
+      const id = `${idPrefix}-other`;
+      const checked = otherHeld.checked ? "checked" : "";
+      return `
+        <div class="programme-row">
+          <label class="prog-checkbox-label">
+            <input class="shared-other-checkbox" id="${id}" type="checkbox" ${checked}/>
+            Other
+          </label>
+          <input class="shared-other-input" id="${id}-text" placeholder="Programme name" type="text" value="${otherHeld.text.replace(/"/g, "&quot;")}"/>
+        </div>`;
+    }
+
+    function renderChecklistHtml(idPrefix, withDrilldown) {
+      return PROGRAMME_CATALOG.map(item => {
+        if (item.isGroup) {
+          const rows = item.children.map(c => renderProgrammeRow(c, idPrefix, withDrilldown, true)).join("");
+          return `<div class="ask-merchant-group"><div class="ask-merchant-name">${item.groupLabel}</div>${rows}</div>`;
+        }
+        if (item.isOther) return renderOtherRow(idPrefix);
+        return renderProgrammeRow(item, idPrefix, withDrilldown);
+      }).join("");
+    }
+
+    const mountedChecklists = []; // [{ containerId, idPrefix, withDrilldown }]
+
+    function mountChecklist(containerId, idPrefix, withDrilldown) {
+      mountedChecklists.push({ containerId, idPrefix, withDrilldown });
+      renderMountedChecklist(containerId, idPrefix, withDrilldown);
+    }
+
+    function renderMountedChecklist(containerId, idPrefix, withDrilldown) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = renderChecklistHtml(idPrefix, withDrilldown);
+      wireChecklistEvents(container, withDrilldown);
+    }
+
+    function wireChecklistEvents(container, withDrilldown) {
+      container.querySelectorAll(".shared-prog-checkbox").forEach(cb => {
         cb.addEventListener("change", () => {
-          const key = cb.dataset.progKey;
-          const drilldown = document.querySelector(`.prog-drilldown[data-prog-key="${key}"]`);
-          if (drilldown) drilldown.hidden = !cb.checked;
+          const value = cb.dataset.value;
+          if (cb.checked) {
+            if (!heldState.has(value)) heldState.set(value, {});
+          } else {
+            heldState.delete(value);
+          }
+          onHeldStateChanged();
         });
       });
+      if (withDrilldown) {
+        container.querySelectorAll(".prog-tier-select").forEach(sel => {
+          sel.addEventListener("change", () => {
+            const row = PROGRAMME_CATALOG_BY_KEY[sel.dataset.progKey];
+            const meta = heldState.get(row.value);
+            if (meta) { meta.tier = sel.value || undefined; saveHeldStateToSession(); }
+          });
+        });
+        container.querySelectorAll(".prog-points-input").forEach(inp => {
+          inp.addEventListener("input", () => {
+            const row = PROGRAMME_CATALOG_BY_KEY[inp.dataset.progKey];
+            const meta = heldState.get(row.value);
+            if (meta) { meta.balance = inp.value ? parseFloat(inp.value) : undefined; saveHeldStateToSession(); }
+          });
+        });
+      }
+      const otherCb = container.querySelector(".shared-other-checkbox");
+      const otherInput = container.querySelector(".shared-other-input");
+      if (otherCb) {
+        otherCb.addEventListener("change", () => {
+          otherHeld.checked = otherCb.checked;
+          onHeldStateChanged();
+        });
+      }
+      if (otherInput) {
+        otherInput.addEventListener("input", () => {
+          otherHeld.text = otherInput.value;
+          onOtherTextChanged();
+        });
+      }
+    }
+
+    // Re-renders every mounted instance so a tick in one panel is reflected
+    // in the others immediately, and persists to sessionStorage so it
+    // survives a reload within the same tab session (same durability the
+    // old per-panel state never actually had to begin with).
+    function onHeldStateChanged() {
+      saveHeldStateToSession();
+      mountedChecklists.forEach(({ containerId, idPrefix, withDrilldown }) => {
+        renderMountedChecklist(containerId, idPrefix, withDrilldown);
+      });
+      renderJoinHeldSummary();
+    }
+
+    // Other's free text doesn't re-render the whole list (would steal focus
+    // mid-keystroke) -- just syncs the other instances' text value directly.
+    function onOtherTextChanged() {
+      saveHeldStateToSession();
+      mountedChecklists.forEach(({ idPrefix }) => {
+        const input = document.getElementById(`${idPrefix}-other-text`);
+        if (input && document.activeElement !== input) input.value = otherHeld.text;
+      });
+      renderJoinHeldSummary();
     }
 
     // ─── Join: session-gated single-programme evaluation ────────────────────
 
-    // Verified-only pool. `label` is each programme's Airtable `Common name`
-    // field value (pulled live at build time, not the mockup's illustrative
-    // text) — `value` is the canonical Programme name, the only thing ever
-    // submitted to the backend.
-    const JOIN_PROGRAMMES = [
-      { value: "Discovery Vitality", label: "Discovery Vitality" },
-      { value: "FNB eBucks", label: "FNB eBucks" },
-      { value: "Shell V+", label: "Shell V+" },
-      { value: "Clicks ClubCard", label: "Clicks ClubCard" },
-      { value: "ABSA Rewards", label: "ABSA Rewards" },
-      { value: "Capitec Live Better", label: "Capitec Live Better" },
-      { value: "UCount Rewards", label: "Standard Bank UCount" },
-      { value: "MyDifference", label: "Woolworths MyDifference" },
-      { value: "MyDifference PLUS", label: "Woolworths MyDifference PLUS" },
-      { value: "Better Rewards", label: "Dis-Chem" },
-      { value: "Xtra Savings", label: "Xtra Savings" },
-    ];
-
-    // Same held-programme catalog as Review's grid, reproduced here (with
-    // join-prefixed ids) so Join's edit grid doesn't share DOM ids with Review's.
-    const HELD_PROGRAMME_CATALOG = [
-      { key: "fnbebucks", value: "FNB eBucks", label: "FNB eBucks",
-        tiers: ["FNB Easy PAYU", "FNB Easy Bundle", "FNB Aspire", "FNB Premier", "FNB Private Clients", "FNB Private Wealth", "RMB Private Bank"],
-        pointsLabel: "Current eBucks balance (optional)" },
-      { key: "clicks", value: "Clicks ClubCard", label: "Clicks ClubCard" },
-      { key: "shellvplus", value: "Shell V+", label: "Shell V+",
-        tiers: ["V+ Regular", "V+ Super", "V+ Premium", "V+ Ultra", "V+ Ultra Plus", "V+ Ultra *****"],
-        pointsLabel: "Current ZAR cashback balance this period (optional)" },
-      { key: "absa", value: "Absa Rewards", label: "Absa Rewards",
-        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
-        pointsLabel: "Current Absa Rewards balance (optional)" },
-      { key: "vitality", value: "Discovery Vitality", label: "Discovery Vitality",
-        tiers: ["Blue", "Bronze", "Silver", "Gold", "Diamond"],
-        pointsLabel: "Current Vitality points this year (optional)" },
-      { key: "capitec", value: "Capitec Live Better", label: "Capitec Live Better" },
-      { key: "ucount", value: "UCount Rewards", label: "UCount Rewards",
-        tiers: ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"],
-        pointsLabel: "Current UCount Rewards points balance (optional)" },
-      { key: "mydifference", value: "MyDifference", label: "MyDifference",
-        tiers: ["Loyal", "Ambassador", "VIP"] },
-      { key: "mydifferenceplus", value: "MyDifference PLUS", label: "MyDifference PLUS" },
-      { key: "voyager", value: "SAA Voyager", label: "SAA Voyager",
-        tiers: ["Blue", "Silver", "Gold", "Platinum"],
-        pointsLabel: "Current Voyager Miles balance (optional)" },
-      { key: "betterrewards", value: "Better Rewards", label: "Better Rewards" },
-      { key: "xtrasavings", value: "Xtra Savings", label: "Xtra Savings" },
-    ];
-
     function getReviewState() {
       let completed = false;
-      let held = [];
       try {
         completed = sessionStorage.getItem("liq_review_completed") === "1";
-        held = JSON.parse(sessionStorage.getItem("liq_review_held_programmes") || "[]");
       } catch {}
-      return { completed, held };
+      return { completed };
     }
 
-    function markReviewCompleted(programmesHeld) {
+    function markReviewCompleted() {
       try {
         sessionStorage.setItem("liq_review_completed", "1");
-        sessionStorage.setItem("liq_review_held_programmes", JSON.stringify(programmesHeld));
       } catch {}
     }
-
-    let joinHeldProgrammes = [];
-    let joinHeldConfirmed = false;
 
     // Re-derives Join's entire UI from current session state every time it's
     // called. Never assumes a prior render is still valid — this is the one
-    // gate check, run on load, on bfcache restores, and right after a Review
-    // submission succeeds, rather than a one-shot first-visit check.
+    // gate check, run on load, on bfcache restores, and right after a Spend
+    // Check submission succeeds, rather than a one-shot first-visit check.
     function renderJoinSection() {
-      const { completed, held } = getReviewState();
-      joinHeldProgrammes = held;
-      joinHeldConfirmed = false;
+      const { completed } = getReviewState();
       const body = document.getElementById("join-body");
       if (!completed) {
         body.innerHTML = renderJoinLockedHtml();
@@ -1887,8 +1907,15 @@
       `;
     }
 
+    // Candidate list sources the same canonical catalog now (fixes
+    // JOIN_PROGRAMMES' stale "ABSA Rewards" casing and its missing SAA
+    // Voyager) -- "Other" excluded, evaluating "should I join" a free-text
+    // unknown isn't a groundable question. This answers a different
+    // question (which NEW programme to evaluate) than the shared held
+    // state (what you already hold), so it stays its own radio picker
+    // rather than merging into the checkbox state.
     function renderJoinPickerHtml() {
-      const radios = JOIN_PROGRAMMES.map(p =>
+      const radios = catalogFlat().map(p =>
         `<label class="prog-checkbox-label"><input class="join-prog-radio" name="join-programme" type="radio" value="${p.value}"/> ${p.label}</label>`
       ).join("");
 
@@ -1901,116 +1928,34 @@
       `;
     }
 
-    function renderJoinHeldRecap() {
+    // Read-only recap of the shared held state -- always in sync with
+    // Spend Check, nothing to separately confirm now that ticking is
+    // shared ("tick once, applies everywhere" would be contradicted by a
+    // second confirm-and-re-edit step here). Edit happens in Spend Check.
+    function renderJoinHeldSummary() {
       const section = document.getElementById("join-held-section");
-      const slots = joinHeldProgrammes.map(p => {
-        const meta = HELD_PROGRAMME_CATALOG.find(c => c.value === p.name);
-        const label = meta ? meta.label : p.name;
-        return `<div class="wallet-slot wallet-filled">${label}</div>`;
-      }).join("");
-
+      if (!section) return;
+      const payload = getProgrammesHeldPayload();
+      if (!payload.length) {
+        section.innerHTML = `<p class="ask-selector-label">No held cards selected yet — add them in Spend Check.</p>`;
+        return;
+      }
+      const slots = payload.map(p => `<div class="wallet-slot wallet-filled">${p.name}</div>`).join("");
       section.innerHTML = `
-        <p class="ask-selector-label">Your held programmes</p>
+        <p class="ask-selector-label">Your held cards</p>
         <div class="wallet-grid join-recap-grid">${slots}</div>
-        <p class="join-confirm-prompt">Confirm you hold these cards?</p>
-        <div class="join-confirm-actions">
-          <button id="join-confirm-yes-btn" type="button">Yes</button>
-          <button class="btn-secondary" id="join-confirm-addmore-btn" type="button">Add more cards</button>
-        </div>
       `;
-
-      document.getElementById("join-confirm-yes-btn").addEventListener("click", () => {
-        joinHeldConfirmed = true;
-        updateJoinEvaluateState();
-      });
-      document.getElementById("join-confirm-addmore-btn").addEventListener("click", renderJoinHeldEditGrid);
-    }
-
-    function renderJoinHeldEditGrid() {
-      const section = document.getElementById("join-held-section");
-      const heldByValue = {};
-      joinHeldProgrammes.forEach(p => { heldByValue[p.name] = p; });
-
-      const rows = HELD_PROGRAMME_CATALOG.map(c => {
-        const id = `join-edit-${c.key}`;
-        const existing = heldByValue[c.value];
-        const checked = existing ? "checked" : "";
-        let drilldown = "";
-        if (c.tiers || c.pointsLabel) {
-          const tierOptions = (c.tiers || []).map(t =>
-            `<option value="${t}" ${existing ? (existing.tier === t ? "selected" : "") : ""}>${t}</option>`
-          ).join("");
-          drilldown = `
-            <div class="prog-drilldown" data-prog-key="${c.key}" ${checked ? "" : "hidden"}>
-              ${c.tiers ? `
-              <div class="field-group-sm">
-                <label for="${id}-tier">Tier (optional)</label>
-                <select class="join-edit-tier-select" id="${id}-tier">
-                  <option value="">Not sure / skip</option>
-                  ${tierOptions}
-                </select>
-              </div>` : ""}
-              ${c.pointsLabel ? `
-              <div class="field-group-sm">
-                <label for="${id}-points">${c.pointsLabel}</label>
-                <input class="join-edit-points-input" id="${id}-points" inputmode="numeric" min="0" type="number" value="${existing ? (existing.balance != null ? existing.balance : "") : ""}"/>
-              </div>` : ""}
-            </div>`;
-        }
-
-        return `
-          <div class="programme-row">
-            <label class="prog-checkbox-label">
-              <input class="join-edit-prog-checkbox" data-prog-key="${c.key}" id="${id}" type="checkbox" value="${c.value}" ${checked}/>
-              ${c.label}
-            </label>
-            ${drilldown}
-          </div>`;
-      }).join("");
-
-      section.innerHTML = `
-        <p class="ask-selector-label">Loyalty programmes I already hold</p>
-        <div id="join-edit-grid">${rows}</div>
-        <div class="join-confirm-actions">
-          <button class="btn-secondary" id="join-back-to-confirm-btn" type="button">Back to confirm</button>
-        </div>
-      `;
-
-      document.querySelectorAll(".join-edit-prog-checkbox").forEach(cb => {
-        cb.addEventListener("change", () => {
-          const key = cb.dataset.progKey;
-          const drilldown = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"]`);
-          if (drilldown) drilldown.hidden = !cb.checked;
-        });
-      });
-
-      document.getElementById("join-back-to-confirm-btn").addEventListener("click", () => {
-        const updated = [];
-        document.querySelectorAll(".join-edit-prog-checkbox:checked").forEach(cb => {
-          const key = cb.dataset.progKey;
-          const entry = { name: cb.value };
-          const tierSelect = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-tier-select`);
-          if (tierSelect ? tierSelect.value : false) entry.tier = tierSelect.value;
-          const pointsInput = document.querySelector(`#join-edit-grid .prog-drilldown[data-prog-key="${key}"] .join-edit-points-input`);
-          if (pointsInput ? pointsInput.value : false) entry.balance = parseFloat(pointsInput.value);
-          updated.push(entry);
-        });
-        joinHeldProgrammes = updated;
-        joinHeldConfirmed = false;
-        renderJoinHeldRecap();
-        updateJoinEvaluateState();
-      });
     }
 
     function updateJoinEvaluateState() {
       const btn = document.getElementById("join-evaluate-btn");
       if (!btn) return;
       const hasSelection = !!document.querySelector(".join-prog-radio:checked");
-      btn.disabled = !(hasSelection ? joinHeldConfirmed : false);
+      btn.disabled = !hasSelection;
     }
 
     function wireJoinUnlocked() {
-      renderJoinHeldRecap();
+      renderJoinHeldSummary();
       document.querySelectorAll(".join-prog-radio").forEach(r => {
         r.addEventListener("change", updateJoinEvaluateState);
       });
@@ -2022,6 +1967,11 @@
     async function submitJoinEvaluate() {
       const selected = document.querySelector(".join-prog-radio:checked");
       if (!selected) return;
+
+      if (heldCount() === 0) {
+        showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+        return;
+      }
 
       const remaining = getRemaining();
       if (remaining <= 0) {
@@ -2047,7 +1997,7 @@
           body: JSON.stringify({
             message,
             session_id: getSessionId(),
-            user_spec: { programmes_held: joinHeldProgrammes }
+            user_spec: { programmes_held: getProgrammesHeldPayload() }
           })
         });
 
@@ -2069,20 +2019,6 @@
       }
     }
 
-    const ASK_SELECTOR_CAP = Infinity; // TEMPORARY, testing phase, revert to 2 before public launch
-
-    function initAskSelectorCap() {
-      const boxes = document.querySelectorAll(".ask-prog-checkbox");
-      boxes.forEach(cb => {
-        cb.addEventListener("change", () => {
-          const checkedCount = document.querySelectorAll(".ask-prog-checkbox:checked").length;
-          boxes.forEach(other => {
-            if (!other.checked) other.disabled = checkedCount >= ASK_SELECTOR_CAP;
-          });
-        });
-      });
-    }
-
     function initCollapsible() {
       document.querySelectorAll(".collapsible-toggle").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -2096,10 +2032,11 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      restoreHeldStateFromSession();
       updateCounters(getRemaining());
       initCollapsible();
-      initDrilldowns();
-      initAskSelectorCap();
+      mountChecklist("ask-programme-grid", "ask", false);
+      mountChecklist("review-programme-grid", "review", true);
       renderJoinSection();
 
       // Sync remaining count from server on load — overrides stale localStorage
