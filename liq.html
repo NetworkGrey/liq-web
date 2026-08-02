@@ -1515,6 +1515,7 @@
 
       const programmes_held = getProgrammesHeldPayload();
       const noCardsSelected = programmes_held.length === 0;
+      const otherAckText = getOtherAcknowledgement();
 
       try {
         const res = await fetch(`${API_BASE}/chat`, {
@@ -1538,7 +1539,10 @@
         renderResponse(data, data.mode ?? "1", currentAnswerEl);
         // Ask is exempt from the zero-cards gate (Spend Check/Should I Join
         // both block instead) -- proceeds with a general, unpersonalised
-        // answer and closes with a nudge toward Spend Check every time.
+        // answer and closes with a nudge toward Spend Check every time. The
+        // Other-acknowledgement line is independent and can appear alongside
+        // it -- they say different things and aren't mutually exclusive.
+        appendOtherAcknowledgement(currentAnswerEl, otherAckText);
         if (noCardsSelected && currentAnswerEl) {
           const nudge = document.createElement("p");
           nudge.className = "ask-nudge";
@@ -1560,8 +1564,14 @@
         return;
       }
 
-      if (heldCount() === 0) {
-        showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+      // Real held LPs only -- "Other" must never satisfy this gate, ticking
+      // it isn't the same as holding a card LIQ can actually price.
+      if (heldState.size === 0) {
+        if (otherHeld.checked && otherHeld.text.trim()) {
+          showError("Other isn't included in your results yet. Tick at least one covered programme to continue.");
+        } else {
+          showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+        }
         return;
       }
 
@@ -1576,6 +1586,7 @@
       };
 
       const programmes_held = getProgrammesHeldPayload();
+      const otherAckText = getOtherAcknowledgement();
 
       const area = document.getElementById("output-area");
       area.innerHTML = `<p class="thinking">Analysing…</p>`;
@@ -1600,6 +1611,7 @@
         const data = await res.json();
         setRemaining(remaining - 1);
         renderResponse(data, "2");
+        appendOtherAcknowledgement(area, otherAckText);
         markReviewCompleted();
         renderJoinSection();
 
@@ -1702,11 +1714,11 @@
       } catch {}
     }
 
-    function heldCount() {
-      return heldState.size + (otherHeld.checked && otherHeld.text.trim() ? 1 : 0);
-    }
-
     function getProgrammesHeldPayload() {
+      // "Other" is deliberately excluded here, always -- it has no KB match
+      // (neither the unverified Programme pool nor the verified Programmes
+      // table is a safe target, per the settled Design debate) and must
+      // never reach /chat or /analyse, ticked or not, regardless of text.
       const entries = [];
       heldState.forEach((meta, value) => {
         const entry = { name: value };
@@ -1714,8 +1726,25 @@
         if (meta.balance != null && !Number.isNaN(meta.balance)) entry.balance = meta.balance;
         entries.push(entry);
       });
-      if (otherHeld.checked && otherHeld.text.trim()) entries.push({ name: otherHeld.text.trim() });
       return entries;
+    }
+
+    // The zero-cards gate (Spend Check, Should I Join) must check real held
+    // LPs only -- `heldState.size`, never a count that includes "Other",
+    // which would let ticking Other wrongly satisfy the gate.
+    function getOtherAcknowledgement() {
+      if (otherHeld.checked && otherHeld.text.trim()) {
+        return `You mentioned ${otherHeld.text.trim()}, that's not one of LIQ's covered programmes yet, so it isn't reflected below.`;
+      }
+      return null;
+    }
+
+    function appendOtherAcknowledgement(targetEl, ackText) {
+      if (!ackText || !targetEl) return;
+      const p = document.createElement("p");
+      p.className = "other-ack";
+      p.textContent = ackText; // textContent, not innerHTML -- name is untrusted input.
+      targetEl.appendChild(p);
     }
 
     function renderProgrammeRow(item, idPrefix, withDrilldown, isGroupChild) {
@@ -1764,6 +1793,7 @@
             Other
           </label>
           <input class="shared-other-input" id="${id}-text" placeholder="Programme name" type="text" value="${otherHeld.text.replace(/"/g, "&quot;")}"/>
+          <p class="wallet-note other-caption">Not one of LIQ's covered programmes yet, won't be included in your results.</p>
         </div>`;
     }
 
@@ -1968,8 +1998,14 @@
       const selected = document.querySelector(".join-prog-radio:checked");
       if (!selected) return;
 
-      if (heldCount() === 0) {
-        showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+      // Real held LPs only -- "Other" must never satisfy this gate, ticking
+      // it isn't the same as holding a card LIQ can actually price.
+      if (heldState.size === 0) {
+        if (otherHeld.checked && otherHeld.text.trim()) {
+          showError("Other isn't included in your results yet. Tick at least one covered programme to continue.");
+        } else {
+          showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
+        }
         return;
       }
 
@@ -1983,6 +2019,7 @@
       // needs "worth it" for Mode 3, _detect_evaluated_programme() needs the
       // exact Programme name (not Common name) to ground the evaluation.
       const message = `Is ${selected.value} worth it?`;
+      const otherAckText = getOtherAcknowledgement();
 
       const area = document.getElementById("output-area");
       area.innerHTML = `<p class="thinking">Analysing…</p>`;
@@ -2010,6 +2047,7 @@
         const data = await res.json();
         setRemaining(data.remaining ?? remaining - 1);
         renderResponse(data, data.mode ?? "3");
+        appendOtherAcknowledgement(area, otherAckText);
 
       } catch {
         showError("LoyaltyIQ is unavailable right now. Try again in a moment.");
