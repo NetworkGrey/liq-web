@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="./image-slot.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <template id="__bundler_thumbnail" data-bg-color="#f5f7fa">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1200" height="800" fill="#f5f7fa"/>
+      <text x="600" y="380" font-family="sans-serif" font-weight="700" font-size="140" fill="#1457e6" text-anchor="middle">IQ</text>
+      <text x="600" y="470" font-family="monospace" font-size="36" fill="#64748b" text-anchor="middle">my e-wallet</text>
+    </svg>
+  </template>
+  <style>
+    body { margin: 0; background: #f5f7fa; }
+    a { color: #1457e6; }
+    a:hover { color: #0f49c7; }
+    input, select, button { font-family: 'Inter', sans-serif; }
+    @media (max-width: 900px) {
+      .ew-grid { grid-template-columns:repeat(3,1fr) !important; }
+    }
+    @media (max-width: 640px) {
+      .ew-header { padding:14px 16px !important; flex-wrap:wrap; gap:8px; }
+      .ew-header > div:first-child { font-size:26px !important; }
+      .ew-main { padding:20px 16px !important; }
+      .ew-intro-grid { grid-template-columns:1fr !important; }
+      .ew-grid { grid-template-columns:repeat(2,1fr) !important; gap:12px !important; }
+    }
+    @media (max-width: 380px) {
+      .ew-grid { grid-template-columns:1fr !important; }
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:#f5f7fa; color:#0f172a; font-family:'Inter',sans-serif; padding-bottom:80px;">
+
+  <header class="ew-header" style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px 16px; border-bottom:1px solid #dbe3ee;">
+    <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; letter-spacing:-0.02em; line-height:1;">Loyalty<span style="color:#1457e6;">IQ</span></div>
+    <span style="font-size:12px; color:#64748b; letter-spacing:0.04em; text-transform:uppercase;">Page 3 · My e-wallet</span>
+  </header>
+
+  <main class="ew-main" style="padding:32px; max-width:960px; margin:0 auto;">
+
+    <h1 style="font-size:22px; margin:0 0 6px;">My e-wallet</h1>
+    <p style="font-size:13px; color:#64748b; margin:0 0 24px; max-width:640px;">Upload photos of the loyalty cards you hold, so you always have them on hand.</p>
+
+    <div style="border:1px solid #dbe3ee; background:#fff; padding:20px; margin-bottom:32px;">
+      <h2 style="font-size:15px; font-weight:600; margin:0 0 16px;">Your cards, in plain terms</h2>
+      <div class="ew-intro-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="border:1px solid #bfe3c4; background:#eff9f0; padding:16px 18px;">
+          <sc-for list="{{doesList}}" as="item" hint-placeholder-count="4">
+            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.5; color:#204a28; margin-bottom:10px;">
+              <span style="color:#1f8a3c; font-weight:700; flex:0 0 auto;">✓</span>
+              <span>{{item.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid #f0cfc9; background:#fcf3f1; padding:16px 18px;">
+          <sc-for list="{{doesNotList}}" as="item" hint-placeholder-count="4">
+            <div style="display:flex; gap:10px; align-items:flex-start; font-size:13px; line-height:1.5; color:#5c2b23; margin-bottom:10px;">
+              <span style="color:#c23b23; font-weight:700; flex:0 0 auto;">✗</span>
+              <span>{{item.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <p style="font-size:12px; color:#64748b; margin:16px 0 0;">See our <a href="#">Privacy Policy</a> for the full detail.</p>
+    </div>
+
+    <h2 style="font-size:16px; font-weight:600; margin:0 0 4px;">Your cards</h2>
+    <p style="font-size:13px; color:#64748b; margin:0 0 20px;">Tap a slot to add a photo, then pick which card it is.</p>
+
+    <div class="ew-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;">
+      <sc-for list="{{cardSlots}}" as="slot" hint-placeholder-count="10">
+        <div style="border:1px solid #dbe3ee; background:#fff; padding:10px; display:flex; flex-direction:column; gap:8px;">
+          <image-slot id="{{slot.id}}" shape="rect" placeholder="{{slot.placeholder}}" style="width:100%; aspect-ratio:1.586/1;"></image-slot>
+          <select value="{{slot.value}}" onChange="{{slot.onChange}}" style="width:100%; box-sizing:border-box; padding:8px 10px; border:1px solid #cbd5e1; background:#fff; font-size:12px; color:#334155;">
+            <option value="">Name this card</option>
+            <sc-for list="{{catalog}}" as="opt" hint-placeholder-count="13">
+              <option value="{{opt}}">{{opt}}</option>
+            </sc-for>
+          </select>
+        </div>
+      </sc-for>
+      <div style="border:1px dashed #cbd5e1; background:#f8fafc; padding:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; aspect-ratio:auto; min-height:120px;">
+        <span style="font-size:24px; color:#94a3b8; line-height:1;">+</span>
+        <span style="font-size:12px; color:#94a3b8; text-align:center;">Add<br />Coming soon</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1280, &quot;height&quot;: 1000}
+}">
+const DOES_LIST = [
+  { text: 'Stores a photo of your card, kept only on this device' },
+  { text: 'Strips identifying metadata from every photo automatically when it\u2019s saved' },
+  { text: 'Lets you label each card from our list' },
+  { text: 'Reads the barcode\u2019s value on your device, so it can show a crisp, scannable version at the till' },
+];
+
+const DOES_NOT_LIST = [
+  { text: 'Never sent anywhere. No network call leaves your device when you add, view, remove, or scan a card' },
+  { text: 'Not backed up to any cloud or account. Clearing your browser or switching devices means your cards are gone, there\u2019s no copy anywhere else' },
+  { text: 'The decoded barcode value stays on your device only, it\u2019s never transmitted, logged, or stored outside the app' },
+  { text: 'Not shared with any other part of LoyaltyIQ or with any third party' },
+];
+
+const CATALOG = [
+  'Absa Rewards', 'Dis-Chem Better Rewards', 'Capitec Live Better', 'Clicks ClubCard',
+  'Discovery Vitality', 'FNB eBucks', 'MyDifference', 'MyDifference PLUS',
+  'SAA Voyager', 'Shell V+', 'Standard Bank UCount', 'Xtra Savings', 'Other',
+];
+
+class Component extends DCLogic {
+  state = { names: {} };
+
+  renderVals() {
+    const cardSlots = Array.from({ length: 10 }, (_, i) => {
+      const id = 'ew-card-' + (i + 1);
+      return {
+        id, placeholder: 'Card photo ' + (i + 1),
+        value: this.state.names[id] || '',
+        onChange: e => this.setState(s => ({ names: { ...s.names, [id]: e.target.value } })),
+      };
+    });
+    return {
+      doesList: DOES_LIST,
+      doesNotList: DOES_NOT_LIST,
+      catalog: CATALOG,
+      cardSlots,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

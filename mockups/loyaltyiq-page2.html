@@ -7,75 +7,98 @@
 </head>
 <body>
 <x-dc>
+
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; background: oklch(0.98 0.004 250); }
-    a { color: oklch(0.52 0.16 255); }
-    a:hover { color: oklch(0.4 0.16 255); }
-    input, select, button { font-family: 'IBM Plex Sans', sans-serif; }
+    body { margin: 0; background: #f5f7fa; }
+    a { color: #1457e6; }
+    a:hover { color: #0f49c7; }
+    input, select, button { font-family: 'Inter', sans-serif; }
+    @media (max-width: 640px) {
+      .lp2-header { padding:16px 18px !important; flex-wrap:wrap; gap:12px; }
+      .lp2-cards-section, .lp2-main { padding-left:18px !important; padding-right:18px !important; }
+      .lp2-nav { overflow-x:auto; }
+      .lp2-spend-grid { grid-template-columns:1fr !important; }
+      .lp2-row { grid-template-columns:1fr 1fr !important; row-gap:4px !important; }
+      .lp2-row span:nth-child(3) { display:none; }
+    }
   </style>
 </helmet>
 
-<div style="min-height:100vh; background:oklch(0.98 0.004 250); color:oklch(0.18 0.01 250); font-family:'IBM Plex Sans',sans-serif; padding-bottom:80px;">
+<div style="min-height:100vh; background:#f5f7fa; color:#0f172a; font-family:'Inter',sans-serif; padding-bottom:80px;">
 
   <sc-if value="{{showDemo}}" hint-placeholder-val="{{true}}">
-    <div style="background:oklch(0.18 0.01 250); color:oklch(0.9 0.005 250); padding:10px 32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-      <span style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:oklch(0.65 0.01 250);">Simulated arrival from page 1</span>
+    <div style="background:#0f172a; color:#e2e8f0; padding:10px 32px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <span style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:#94a3b8;">Simulated arrival from page 1</span>
       <div style="display:flex; gap:8px;">
-        <button onClick="{{goAsk}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Ask now</button>
-        <button onClick="{{goSpend}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Spend Check now</button>
-        <button onClick="{{goJoin}}" style="background:transparent; border:1px solid oklch(0.4 0.01 250); color:oklch(0.9 0.005 250); padding:6px 14px; font-size:13px; cursor:pointer;">Should I Join</button>
+        <button onClick="{{goAsk}}" style="background:transparent; border:1px solid #475569; color:#e2e8f0; padding:6px 14px; font-size:13px; cursor:pointer;">Ask now</button>
+        <button onClick="{{goSpend}}" style="background:transparent; border:1px solid #475569; color:#e2e8f0; padding:6px 14px; font-size:13px; cursor:pointer;">Spend Check now</button>
+        <button onClick="{{goJoin}}" style="background:transparent; border:1px solid #475569; color:#e2e8f0; padding:6px 14px; font-size:13px; cursor:pointer;">Should I Join?</button>
       </div>
     </div>
   </sc-if>
 
-  <header style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px 16px; border-bottom:1px solid oklch(0.88 0.008 250);">
-    <div style="font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:20px; letter-spacing:-0.01em;">LoyaltyIQ</div>
-    <div style="display:flex; align-items:center; gap:20px;">
-      <span style="font-size:12px; color:oklch(0.5 0.01 250); letter-spacing:0.04em; text-transform:uppercase;">Page 2 · tool</span>
-      <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:oklch(0.4 0.01 250); cursor:pointer;">
-        <input type="checkbox" checked="{{registered}}" onChange="{{toggleRegistered}}" style="accent-color:oklch(0.52 0.16 255); width:16px; height:16px;" />
-        Registered (demo)
-      </label>
-    </div>
+  <header class="lp2-header" style="display:flex; justify-content:space-between; align-items:center; padding:24px 32px 16px; border-bottom:1px solid #dbe3ee;">
+    <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:34px; letter-spacing:-0.02em; line-height:1;">Loyalty<span style="color:#1457e6;">IQ</span></div>
+    <span style="font-size:12px; color:#64748b; letter-spacing:0.04em; text-transform:uppercase;">Page 2 · tool</span>
   </header>
 
-  <section style="padding:28px 32px 24px; border-bottom:1px solid oklch(0.88 0.008 250);">
+  <section class="lp2-cards-section" style="padding:28px 32px 24px; border-bottom:1px solid #dbe3ee;">
     <h2 style="font-size:16px; font-weight:600; margin:0 0 4px;">My Cards</h2>
-    <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 16px; max-width:560px;">Select the loyalty programmes you hold. Ask, Spend Check, and Should I Join all read from here — none of them has its own card selector.</p>
-    <div style="display:flex; flex-wrap:wrap; gap:10px;">
-      <sc-for list="{{cardsList}}" as="card" hint-placeholder-count="8">
-        <button onClick="{{card.onToggle}}" style="{{card.chipStyle}}">
-          {{card.name}}
-        </button>
+    <p style="font-size:13px; color:#64748b; margin:0 0 16px; max-width:600px;">Select the loyalty programmes you hold. Ask, Spend Check, and Should I Join? all read from here — none of them has its own card selector.</p>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start;">
+      <sc-for list="{{flatCards}}" as="card" hint-placeholder-count="10">
+        <button onClick="{{card.onToggle}}" style="{{card.chipStyle}}">{{card.name}}</button>
       </sc-for>
+      <div style="border:1px solid #dbe3ee; background:#f8fafc; padding:9px 14px; display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:12px; font-weight:600; color:#334155;">Woolworths</span>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#334155; cursor:pointer;">
+          <input type="checkbox" checked="{{mydiffHeld}}" onChange="{{toggleMydiff}}" style="accent-color:#1457e6;" /> MyDifference
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#334155; cursor:pointer;">
+          <input type="checkbox" checked="{{mydiffPlusHeld}}" onChange="{{toggleMydiffPlus}}" style="accent-color:#1457e6;" /> MyDifference PLUS
+        </label>
+      </div>
+      <button onClick="{{toggleOther}}" style="{{otherChipStyle}}">Other</button>
+    </div>
+    <sc-if value="{{otherSelected}}" hint-placeholder-val="{{false}}">
+      <p style="font-size:12px; color:#64748b; margin:10px 0 0; font-style:italic;">Other cards aren't yet in our engine — results won't include them.</p>
+    </sc-if>
+
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid #dbe3ee; max-width:560px;">
+      <h3 style="font-size:13px; font-weight:600; margin:0 0 4px; color:#0f172a;">Age 60 or older?</h3>
+      <p style="font-size:12px; color:#64748b; margin:0 0 8px;">We'll flag age-eligible benefits where they exist. Self-declared, stored on this device only, and never used to change your calculated totals.</p>
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; cursor:pointer;">
+        <input type="checkbox" checked="{{isSenior}}" onChange="{{toggleSenior}}" style="accent-color:#1457e6;" /> I am 60 or older
+      </label>
     </div>
   </section>
 
-  <nav style="display:flex; padding:0 32px; border-bottom:1px solid oklch(0.88 0.008 250); background:oklch(0.995 0.002 250);">
+  <nav class="lp2-nav" style="display:flex; padding:0 32px; border-bottom:1px solid #dbe3ee; background:#fff;">
     <button onClick="{{setTabAsk}}" style="{{tabStyleAsk}}">Ask</button>
     <button onClick="{{setTabSpend}}" style="{{tabStyleSpend}}">Spend Check</button>
-    <button onClick="{{setTabJoin}}" style="{{tabStyleJoin}}">Should I Join</button>
+    <button onClick="{{setTabJoin}}" style="{{tabStyleJoin}}">Should I Join?</button>
   </nav>
 
-  <main style="padding:32px; max-width:760px; margin:0 auto;">
+  <main class="lp2-main" style="padding:32px; max-width:760px; margin:0 auto;">
 
     <sc-if value="{{isAskTab}}" hint-placeholder-val="{{true}}">
       <div>
         <h1 style="font-size:22px; margin:0 0 8px;">Ask</h1>
-        <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 20px;">Open to everyone — no registration required.</p>
+        <p style="font-size:13px; color:#64748b; margin:0 0 4px;">Open to everyone — no registration required.</p>
+        <p style="font-size:12px; color:#94a3b8; margin:0 0 20px;">5 free questions per day, shared with Should I Join?.</p>
         <div style="display:flex; gap:10px; margin-bottom:16px;">
-          <input type="text" value="{{askQuery}}" onChange="{{setAskQuery}}" placeholder="Where are you shopping, or which loyalty programme are you considering?" style="flex:1; padding:12px 14px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px; color:oklch(0.18 0.01 250);" />
-          <button onClick="{{submitAsk}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer;">Ask</button>
+          <input type="text" value="{{askQuery}}" onChange="{{setAskQuery}}" placeholder="Where are you shopping, or which loyalty programme are you considering?" style="flex:1; padding:12px 14px; border:1px solid #cbd5e1; background:#fff; font-size:14px; color:#0f172a;" />
+          <button onClick="{{submitAsk}}" style="background:#1457e6; color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer;">Ask</button>
         </div>
 
         <sc-if value="{{askAnswer}}" hint-placeholder-val="{{false}}">
-          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:20px;">
-            <p style="font-family:'IBM Plex Mono',monospace; font-size:15px; line-height:1.6; margin:0;">{{askAnswer.text}}</p>
+          <div style="border:1px solid #dbe3ee; background:#fff; padding:20px;">
+            <p style="font-family:'JetBrains Mono',monospace; font-size:15px; line-height:1.6; margin:0;">{{askAnswer.text}}</p>
             <sc-if value="{{askAnswer.nudge}}" hint-placeholder-val="{{false}}">
-              <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:14px 0 0; border-top:1px solid oklch(0.9 0.008 250); padding-top:14px;">{{askAnswer.nudge}}</p>
+              <p style="font-size:13px; color:#64748b; margin:14px 0 0; border-top:1px solid #dbe3ee; padding-top:14px;">{{askAnswer.nudge}}</p>
             </sc-if>
           </div>
         </sc-if>
@@ -86,54 +109,84 @@
       <div>
         <h1 style="font-size:22px; margin:0 0 8px;">Spend Check</h1>
 
-        <sc-if value="{{spendNeedsRegister}}" hint-placeholder-val="{{false}}">
-          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px; text-align:left;">
-            <p style="font-size:15px; margin:0 0 6px; font-weight:600;">Start your 14-day free trial to run a Spend Check.</p>
-            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px;">Continues as a paid subscription after the trial. Pricing to be confirmed.</p>
-            <button onClick="{{toggleRegistered}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Start free trial</button>
+        <sc-if value="{{spendNeedsGoogle}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid #dbe3ee; background:#fff; padding:28px; text-align:left;">
+            <p style="font-size:15px; margin:0 0 6px; font-weight:600;">Continue with Google to run a Spend Check.</p>
+            <p style="font-size:13px; color:#64748b; margin:0 0 18px;">We use this only to keep your Spend Check profile tied to your account.</p>
+            <button onClick="{{connectGoogle}}" style="background:#0c8599; color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Continue with Google</button>
           </div>
         </sc-if>
 
         <sc-if value="{{spendReady}}" hint-placeholder-val="{{false}}">
           <div>
-            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 20px;">Monthly spend by category. Leave a field at 0 to leave it out entirely.</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; margin-bottom:22px;">
-              <sc-for list="{{spendFields}}" as="field" hint-placeholder-count="7">
-                <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; color:oklch(0.4 0.01 250);">
+            <p style="font-size:13px; color:#64748b; margin:0 0 20px;">Monthly spend by category. Leave a field at 0 to leave it out entirely. Pharmacy isn't asked for here — see why below.</p>
+            <div class="lp2-spend-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; margin-bottom:14px;">
+              <sc-for list="{{spendFields}}" as="field" hint-placeholder-count="5">
+                <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; color:#334155;">
                   {{field.label}}
-                  <input type="number" min="0" value="{{field.value}}" onChange="{{field.onChange}}" style="padding:10px 12px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px; font-family:'IBM Plex Mono',monospace;" />
+                  <input type="number" min="0" value="{{field.value}}" onChange="{{field.onChange}}" style="padding:10px 12px; border:1px solid #cbd5e1; background:#fff; font-size:14px; font-family:'JetBrains Mono',monospace;" />
                 </label>
               </sc-for>
             </div>
-            <button onClick="{{submitSpend}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:28px;">Run Spend Check</button>
+
+            <sc-if value="{{hasTierCards}}" hint-placeholder-val="{{false}}">
+              <div style="border:1px solid #dbe3ee; background:#f8fafc; padding:14px 16px; margin-bottom:22px;">
+                <div style="font-size:12px; font-weight:600; color:#334155; margin-bottom:10px;">Tier, for held cards that have one</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                  <sc-for list="{{tierCards}}" as="tc" hint-placeholder-count="3">
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:#64748b;">
+                      {{tc.name}}
+                      <select value="{{tc.value}}" onChange="{{tc.onChange}}" style="padding:8px 10px; border:1px solid #cbd5e1; background:#fff; font-size:12px;">
+                        <option value="unsure">Not sure</option>
+                        <sc-for list="{{tc.tiers}}" as="t" hint-placeholder-count="5">
+                          <option value="{{t}}">{{t}}</option>
+                        </sc-for>
+                      </select>
+                    </label>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <button onClick="{{submitSpend}}" style="background:#0c8599; color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:28px;">Run Spend Check</button>
 
             <sc-if value="{{spendResults}}" hint-placeholder-val="{{false}}">
               <div>
-                <div style="border:1px solid oklch(0.85 0.01 250);">
-                  <sc-for list="{{spendResults.rows}}" as="row" hint-placeholder-count="5">
-                    <div style="display:grid; grid-template-columns:1.2fr 1.4fr 1.4fr 0.9fr 0.7fr; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid oklch(0.9 0.008 250); font-size:13px;">
+                <div style="border:1px solid #dbe3ee;">
+                  <sc-for list="{{spendResults.categories}}" as="row" hint-placeholder-count="4">
+                    <div class="lp2-row" style="display:grid; grid-template-columns:1.2fr 1.4fr 1.4fr 0.9fr 0.7fr; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #dbe3ee; font-size:13px;">
                       <span style="font-weight:600;">{{row.category}}</span>
-                      <span style="color:oklch(0.45 0.01 250);">{{row.programme}}</span>
-                      <span style="color:oklch(0.45 0.01 250); font-size:12px;">{{row.rateDisplay}}</span>
-                      <span style="font-family:'IBM Plex Mono',monospace; font-weight:600;">{{row.rand}}</span>
+                      <span style="color:#64748b;">{{row.programme}}</span>
+                      <span style="color:#64748b; font-size:12px;">{{row.rateDisplay}}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-weight:600;">{{row.upliftDisplay}}</span>
                       <span style="{{row.frictionStyle}}">{{row.friction}}</span>
                     </div>
                   </sc-for>
+                  <sc-for list="{{spendResults.uncategorised_kb_matches}}" as="ucm" hint-placeholder-count="2">
+                    <div class="lp2-row" style="display:grid; grid-template-columns:1.2fr 1.4fr 1.4fr 0.9fr 0.7fr; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #dbe3ee; font-size:13px;">
+                      <span style="font-weight:600;">{{ucm.category}}</span>
+                      <span style="color:#64748b;">{{ucm.programme}}</span>
+                      <span style="color:#64748b; font-size:12px;">{{ucm.rateDisplay}}</span>
+                      <span style="font-family:'JetBrains Mono',monospace; font-weight:600;">{{ucm.valueDisplay}}</span>
+                      <span style="font-size:11px; color:#94a3b8;">no rand figure</span>
+                    </div>
+                    <sc-if value="{{ucm.hasNotes}}" hint-placeholder-val="{{false}}">
+                      <sc-for list="{{ucm.notes}}" as="note" hint-placeholder-count="1">
+                        <p style="font-size:12px; color:#64748b; margin:0; padding:6px 16px 10px; border-bottom:1px solid #dbe3ee; font-style:italic;">{{note}}</p>
+                      </sc-for>
+                    </sc-if>
+                  </sc-for>
                 </div>
 
-                <div style="padding:18px 16px; border:1px solid oklch(0.85 0.01 250); border-top:none;">
-                  <div style="display:flex; justify-content:space-between; font-size:13px; color:oklch(0.48 0.01 250); margin-bottom:6px;">
-                    <span>Gross total</span>
-                    <span style="font-family:'IBM Plex Mono',monospace;">{{spendResults.grossDisplay}}</span>
-                  </div>
-                  <sc-if value="{{spendResults.hasAdjustment}}" hint-placeholder-val="{{false}}">
-                    <p style="font-size:12px; color:oklch(0.5 0.01 250); margin:0 0 6px; font-style:italic;">{{spendResults.adjustmentNote}}</p>
+                <div style="padding:18px 16px; border:1px solid #dbe3ee; border-top:none;">
+                  <sc-if value="{{spendResults.friction_penalty_applied}}" hint-placeholder-val="{{false}}">
+                    <p style="font-size:12px; color:#64748b; margin:0 0 10px; font-style:italic;">{{spendResults.frictionNote}}</p>
                   </sc-if>
-                  <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700; padding-top:8px; border-top:1px solid oklch(0.9 0.008 250);">
-                    <span>Realistic total</span>
-                    <span style="font-family:'IBM Plex Mono',monospace; color:oklch(0.52 0.16 255);">{{spendResults.realisticDisplay}}</span>
+                  <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700; padding-top:8px;">
+                    <span>Monthly uplift, versus what you earn today</span>
+                    <span style="font-family:'JetBrains Mono',monospace; color:#0a6570;">{{spendResults.total_monthly_uplift}}</span>
                   </div>
-                  <p style="font-size:12px; color:oklch(0.55 0.01 250); margin:14px 0 0;">You're leaving about {{spendResults.realisticDisplay}} a month on the table. The average South African leaves R420.</p>
+                  <p style="font-size:12px; color:#64748b; margin:14px 0 0;">This is the gap between what your held cards already earn on this spend and the best available rate per category — not your total rewards earned.</p>
                 </div>
               </div>
             </sc-if>
@@ -144,45 +197,28 @@
 
     <sc-if value="{{isJoinTab}}" hint-placeholder-val="{{false}}">
       <div>
-        <h1 style="font-size:22px; margin:0 0 8px;">Should I Join</h1>
+        <h1 style="font-size:22px; margin:0 0 8px;">Should I Join?</h1>
+        <p style="font-size:13px; color:#64748b; margin:0 0 4px;">Open to everyone — no registration required.</p>
+        <p style="font-size:12px; color:#94a3b8; margin:0 0 20px;">Shares your 5 free questions per day with Ask.</p>
 
-        <sc-if value="{{joinNeedsRegister}}" hint-placeholder-val="{{false}}">
-          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px;">
-            <p style="font-size:15px; margin:0 0 6px; font-weight:600;">Start your 14-day free trial to use Should I Join.</p>
-            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px;">Continues as a paid subscription after the trial. Pricing to be confirmed.</p>
-            <button onClick="{{toggleRegistered}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Start free trial</button>
-          </div>
+        <sc-if value="{{joinNudgeVisible}}" hint-placeholder-val="{{true}}">
+          <p style="font-size:13px; color:#334155; margin:0 0 16px; border-left:3px solid #d9820a; padding-left:12px;">Run a Spend Check to see what this is worth on your actual spend.</p>
         </sc-if>
 
-        <sc-if value="{{joinLocked}}" hint-placeholder-val="{{false}}">
-          <div style="border:1px solid oklch(0.85 0.01 250); background:oklch(0.995 0.002 250); padding:28px;">
-            <p style="font-size:15px; margin:0 0 8px; font-weight:600;">Complete Spend Check first</p>
-            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 18px; line-height:1.6;">Should I Join uses your spend and held cards from Spend Check to evaluate a new one against them.</p>
-            <button onClick="{{setTabSpend}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:11px 20px; font-size:14px; font-weight:600; cursor:pointer;">Go to Spend Check</button>
-          </div>
-        </sc-if>
+        <button onClick="{{checkJoin}}" style="background:#d9820a; color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:22px;">Check now</button>
 
-        <sc-if value="{{joinReady}}" hint-placeholder-val="{{false}}">
-          <div>
-            <p style="font-size:13px; color:oklch(0.48 0.01 250); margin:0 0 16px;">Pick a programme you don't hold yet to evaluate against your Spend Check profile.</p>
-            <div style="display:flex; gap:10px; margin-bottom:22px;">
-              <select value="{{joinCandidateId}}" onChange="{{setJoinCandidate}}" style="flex:1; padding:12px 14px; border:1px solid oklch(0.8 0.008 250); background:oklch(0.995 0.002 250); font-size:14px;">
-                <sc-for list="{{joinCandidates}}" as="c" hint-placeholder-count="2">
-                  <option value="{{c.id}}">{{c.name}}</option>
-                </sc-for>
-              </select>
-              <button onClick="{{evaluateJoin}}" style="background:oklch(0.52 0.16 255); color:white; border:none; padding:12px 22px; font-size:14px; font-weight:600; cursor:pointer;">Evaluate</button>
+        <sc-if value="{{joinResult}}" hint-placeholder-val="{{false}}">
+          <div style="border:1px solid #dbe3ee; padding:24px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+              <span style="{{joinResult.badgeStyle}}">{{joinResult.verdict}}</span>
+              <span style="font-weight:600; font-size:15px;">{{joinResult.name}}</span>
             </div>
-
-            <sc-if value="{{joinResult}}" hint-placeholder-val="{{false}}">
-              <div style="border:1px solid oklch(0.85 0.01 250); padding:24px;">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                  <span style="{{joinResult.badgeStyle}}">{{joinResult.verdict}}</span>
-                  <span style="font-weight:600; font-size:15px;">{{joinResult.name}}</span>
-                </div>
-                <p style="font-size:14px; line-height:1.6; color:oklch(0.3 0.01 250); margin:0;">{{joinResult.reasoning}}</p>
-              </div>
-            </sc-if>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+              <div style="border:1px solid #dbe3ee; background:#f8fafc; padding:12px;"><div style="font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:6px; font-weight:600;">Cost</div><div style="font-weight:700; color:#0f172a;">{{joinResult.cost}}</div></div>
+              <div style="border:1px solid #dbe3ee; background:#f8fafc; padding:12px;"><div style="font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:6px; font-weight:600;">Requirement</div><div style="font-weight:700; color:#0f172a;">{{joinResult.requirement}}</div></div>
+            </div>
+            <div style="border:1px solid #dbe3ee; background:#f8fafc; padding:12px; margin-bottom:14px;"><div style="font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#64748b; margin-bottom:6px; font-weight:600;">Value</div><div style="font-weight:700; color:#0f172a;">{{joinResult.value}}</div></div>
+            <p style="font-size:14px; line-height:1.6; color:#334155; margin:0;">{{joinResult.reasoning}}</p>
           </div>
         </sc-if>
       </div>
@@ -198,36 +234,45 @@
   &quot;startRegistered&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Behavior&quot;},
   &quot;showPage1Demo&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Behavior&quot;}
 }">
+
+const TIERS = {
+  shellv: ['V+ Regular', 'V+ Super', 'V+ Premium', 'V+ Ultra', 'V+ Ultra Plus'],
+  vitality: ['Blue', 'Bronze', 'Silver', 'Gold', 'Diamond'],
+  voyager: ['Blue', 'Silver', 'Gold', 'Platinum'],
+  ebucks: ['FNB Easy PAYU', 'FNB Easy Bundle', 'FNB Aspire', 'FNB Premier', 'FNB Private Wealth', 'FNB Private Clients', 'RMB Private Bank'],
+  mydiff: ['Loyal', 'Ambassador', 'VIP'],
+  absa: ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5'],
+  ucount: ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5'],
+};
+
+const SPEND_FIELDS = [
+  { key: 'groceries', label: 'Groceries' },
+  { key: 'dining', label: 'Dining' },
+  { key: 'clothing', label: 'Clothing' },
+  { key: 'travel', label: 'SAA-operated flights' },
+  { key: 'healthBeauty', label: 'Health & beauty' },
+];
+
 const CATEGORIES = [
-  { key: 'groceries', label: 'Groceries', programme: 'Checkers Xtra Savings', rateDisplay: '15% back on qualifying items', friction: 'LOW', calc: v => v * 0.15 },
-  { key: 'fuel', label: 'Fuel', programme: 'Engen 1app', rateDisplay: 'approx. R0.85 back per R100 spent', friction: 'MED', calc: v => v * 0.0085 },
-  { key: 'pharmacy', label: 'Pharmacy', programme: 'Clicks ClubCard', rateDisplay: '5% back in points', friction: 'LOW', calc: v => v * 0.05 },
-  { key: 'dining', label: 'Dining', programme: 'Woolworths WRewards', rateDisplay: 'up to 5% in WRewards', friction: 'MED', calc: v => v * 0.05 },
-  { key: 'clothing', label: 'Clothing', programme: 'Woolworths WRewards', rateDisplay: '5% in WRewards', friction: 'LOW', calc: v => v * 0.05 },
-  { key: 'travel', label: 'Travel', programme: 'Voyager Miles', rateDisplay: '1 mile per R7.50 (approx. R0.35/mile)', friction: 'HIGH', calc: v => (v / 7.5) * 0.35 },
-  { key: 'healthBeauty', label: 'Health & beauty', programme: 'Dis-Chem Benefit', rateDisplay: '5 points per R1 (approx. 1% value)', friction: 'LOW', calc: v => v * 0.01 },
+  { key: 'groceries', label: 'Groceries', programme: 'Xtra Savings', parked: true },
+  { key: 'groceries', label: 'Groceries', programme: 'MyDifference', parked: true },
+  { key: 'dining', label: 'Dining', programme: 'MyDifference', parked: true },
+  { key: 'clothing', label: 'Clothing', programme: 'MyDifference PLUS', parked: true },
+  { key: 'travel', label: 'SAA-operated flights', programme: 'SAA Voyager', rateDisplay: '0.625 miles per rand, SAA-operated flights only', noRand: true, milesRate: 0.625 },
+  { key: 'healthBeauty', label: 'Health & beauty', programme: 'Dis-Chem Better Rewards', rateDisplay: '10% base discount', friction: 'LOW', calc: v => v * 0.10 },
 ];
 
-const INITIAL_CARDS = [
-  { id: 'checkers', name: 'Checkers Xtra Savings', held: true },
+const FLAT_CARDS = [
+  { id: 'absa', name: 'Absa Rewards', held: false, hasTiers: true },
+  { id: 'better', name: 'Dis-Chem Better Rewards', held: false },
+  { id: 'capitec', name: 'Capitec Live Better', held: false },
   { id: 'clicks', name: 'Clicks ClubCard', held: true },
-  { id: 'woolies', name: 'Woolworths WRewards', held: true },
-  { id: 'engen', name: 'Engen 1app', held: false },
-  { id: 'dischem', name: 'Dis-Chem Benefit', held: false },
-  { id: 'voyager', name: 'Voyager Miles', held: false },
-  { id: 'pnp', name: 'Pick n Pay Smart Shopper', held: false },
-  { id: 'vitality', name: 'Discovery Vitality', held: false },
-];
-
-const JOIN_CANDIDATES = [
-  {
-    id: 'pnp', name: 'Pick n Pay Smart Shopper', verdict: 'NO',
-    reasoning: "Your groceries spend already earns 15% back through Checkers Xtra Savings. Pick n Pay Smart Shopper earns less on the same spend — no case for joining based on your Spend Check profile.",
-  },
-  {
-    id: 'vitality', name: 'Discovery Vitality', verdict: 'YES',
-    reasoning: "Dis-Chem Benefit earns roughly 1% back on health & beauty spend. Vitality's active-rewards model typically pays out more across health, beauty, and part of your dining spend — worth joining based on your profile.",
-  },
+  { id: 'vitality', name: 'Discovery Vitality', held: false, hasTiers: true },
+  { id: 'ebucks', name: 'FNB eBucks', held: true, hasTiers: true },
+  { id: 'voyager', name: 'SAA Voyager', held: false, hasTiers: true },
+  { id: 'shellv', name: 'Shell V+', held: false, hasTiers: true },
+  { id: 'ucount', name: 'Standard Bank UCount', held: false, hasTiers: true },
+  { id: 'xtra', name: 'Xtra Savings', held: true },
 ];
 
 const rand = n => 'R' + Math.round(n).toLocaleString('en-ZA');
@@ -235,14 +280,18 @@ const rand = n => 'R' + Math.round(n).toLocaleString('en-ZA');
 class Component extends DCLogic {
   state = {
     showDemo: this.props.showPage1Demo ?? true,
-    registered: this.props.startRegistered ?? false,
     activeTab: this.props.defaultTab ?? 'ask',
-    cards: INITIAL_CARDS,
+    cards: FLAT_CARDS,
+    mydiffHeld: false,
+    mydiffPlusHeld: true,
+    otherSelected: false,
+    isSenior: false,
     askQuery: '',
     askAnswer: null,
-    spend: { groceries: 2400, fuel: 1200, pharmacy: 350, dining: 800, clothing: 500, travel: 0, healthBeauty: 300 },
+    spend: { groceries: 2400, dining: 800, clothing: 500, travel: 0, healthBeauty: 300 },
+    tierChoices: {},
+    googleConnected: this.props.startRegistered ?? false,
     spendSubmitted: false,
-    joinCandidateId: 'pnp',
     joinResult: null,
   };
 
@@ -250,83 +299,136 @@ class Component extends DCLogic {
     this.setState(s => ({ cards: s.cards.map(c => c.id === id ? { ...c, held: !c.held } : c) }));
   }
 
+  heldSet() {
+    const s = this.state;
+    const names = s.cards.filter(c => c.held).map(c => c.name);
+    if (s.mydiffHeld) names.push('MyDifference');
+    if (s.mydiffPlusHeld) names.push('MyDifference PLUS');
+    return new Set(names);
+  }
+
   submitAsk() {
-    const held = this.state.cards.some(c => c.held);
+    const held = this.state.cards.some(c => c.held) || this.state.mydiffHeld || this.state.mydiffPlusHeld;
     if (held) {
-      this.setState({ askAnswer: { text: 'Spending about R600 at Checkers. Estimated reward R90. Use Xtra Savings. Approx. 15% back on qualifying items.', nudge: null } });
+      this.setState({ askAnswer: { text: 'Spending about R600 at Clicks. Estimated reward R12. Use Clicks ClubCard. 2% back on qualifying items.', nudge: null } });
     } else {
-      this.setState({ askAnswer: { text: 'Most grocery loyalty programmes offer between 5–15% back on qualifying purchases, depending on the programme and category.', nudge: 'Select your cards and go to Spend Check to see what you\u2019re leaving on the table.' } });
+      this.setState({ askAnswer: { text: 'Most grocery and pharmacy loyalty programmes offer a few percent back on qualifying purchases, depending on the programme and category.', nudge: 'Select your cards and go to Spend Check to see what you\u2019re leaving on the table.' } });
     }
   }
 
   updateSpend(key, val) {
-    this.setState(s => ({ spend: { ...s.spend, [key]: Number(val) || 0 }, spendResultsCache: null }));
+    this.setState(s => ({ spend: { ...s.spend, [key]: Number(val) || 0 } }));
   }
 
   submitSpend() {
-    const held = new Set(this.state.cards.filter(c => c.held).map(c => c.name));
-    const rows = [];
-    let gross = 0;
+    const held = this.heldSet();
+    const categories = [];
+    const uncategorised_kb_matches = [];
+    let totalUplift = 0;
     const newProgrammes = new Set();
+
     for (const cat of CATEGORIES) {
       const spendVal = this.state.spend[cat.key];
       if (!spendVal || spendVal <= 0) continue;
-      const r = cat.calc(spendVal);
-      gross += r;
-      if (!held.has(cat.programme)) newProgrammes.add(cat.programme);
-      rows.push({ category: cat.label, programme: cat.programme, rateDisplay: cat.rateDisplay, rand: rand(r), friction: cat.friction,
-        frictionStyle: this.frictionStyle(cat.friction) });
+
+      if (cat.noRand) {
+        uncategorised_kb_matches.push({ category: cat.label, programme: cat.programme, rateDisplay: cat.rateDisplay, valueDisplay: Math.round(spendVal * cat.milesRate).toLocaleString('en-ZA') + ' mi', hasNotes: false, notes: [] });
+        continue;
+      }
+
+      if (cat.parked) {
+        categories.push({ category: cat.label, programme: cat.programme, rateDisplay: 'No published rate', upliftDisplay: '\u2014', friction: '', frictionStyle: '' });
+        continue;
+      }
+
+      const isHeld = held.has(cat.programme);
+      const value = cat.calc(spendVal);
+      const uplift = isHeld ? 0 : value;
+      if (!isHeld) newProgrammes.add(cat.programme);
+      totalUplift += uplift;
+      categories.push({
+        category: cat.label, programme: cat.programme, rateDisplay: cat.rateDisplay,
+        upliftDisplay: rand(uplift), friction: cat.friction, frictionStyle: this.frictionStyle(cat.friction),
+      });
     }
-    const adjustment = newProgrammes.size * 50;
-    const realistic = Math.max(0, gross - adjustment);
+
+    const pharmacyNotes = [];
+    if (this.state.isSenior) pharmacyNotes.push('Clicks ClubCard members aged 60+ earn double points storewide on Wednesdays.');
+    pharmacyNotes.push('Applies to the dispensing fee portion of a purchase, not the full basket, most users can\u2019t estimate this reliably enough for a total.');
+    uncategorised_kb_matches.push({ category: 'Pharmacy', programme: 'Clicks ClubCard', rateDisplay: '2% on the dispensing-fee portion', valueDisplay: '', hasNotes: true, notes: pharmacyNotes });
+
+    const frictionPenalty = newProgrammes.size * 50;
+    const totalMonthlyUplift = Math.max(0, totalUplift - frictionPenalty);
+
     this.setState({
       spendSubmitted: true,
       spendResults: {
-        rows, grossDisplay: rand(gross),
-        hasAdjustment: adjustment > 0,
-        adjustmentNote: adjustment > 0 ? `Adjusted down ${rand(adjustment)}, R50 \u00d7 ${newProgrammes.size} new programme${newProgrammes.size > 1 ? 's' : ''}, to keep the total realistic` : '',
-        realisticDisplay: rand(realistic),
+        categories, uncategorised_kb_matches,
+        friction_penalty_applied: frictionPenalty > 0,
+        frictionNote: frictionPenalty > 0 ? `R50 \u00d7 ${newProgrammes.size} new programme${newProgrammes.size > 1 ? 's' : ''} deducted, applied because those categories' best rate needs a programme you don't currently hold` : '',
+        total_monthly_uplift: rand(totalMonthlyUplift),
       },
     });
   }
 
   frictionStyle(level) {
     const base = 'justify-self:end; font-size:11px; font-weight:600; letter-spacing:0.04em; padding:3px 8px;';
-    if (level === 'LOW') return base + 'background:oklch(0.92 0.03 255); color:oklch(0.38 0.15 255);';
-    if (level === 'MED') return base + 'background:oklch(0.9 0.008 250); color:oklch(0.4 0.01 250);';
-    return base + 'background:oklch(0.85 0.008 250); color:oklch(0.2 0.01 250);';
+    if (level === 'LOW') return base + 'background:#edf4ff; color:#1457e6;';
+    if (level === 'MED') return base + 'background:#f1f5f9; color:#334155;';
+    return base + 'background:#e2e8f0; color:#0f172a;';
   }
 
-  evaluateJoin() {
-    const cand = JOIN_CANDIDATES.find(c => c.id === this.state.joinCandidateId);
-    if (!cand) return;
+  checkJoin() {
+    const clicksHeld = this.state.cards.find(c => c.id === 'clicks')?.held;
     this.setState({ joinResult: {
-      name: cand.name, verdict: cand.verdict, reasoning: cand.reasoning,
-      badgeStyle: 'font-size:12px; font-weight:700; letter-spacing:0.04em; padding:4px 10px; ' +
-        (cand.verdict === 'YES' ? 'background:oklch(0.52 0.16 255); color:white;' : 'background:oklch(0.9 0.008 250); color:oklch(0.35 0.01 250);'),
+      name: 'Clicks ClubCard',
+      verdict: clicksHeld ? 'ALREADY HELD' : 'YES',
+      cost: 'Free', requirement: 'None, free and instant',
+      value: clicksHeld
+        ? 'Already held \u2014 no updated rand figure here, since Clicks\u2019 pharmacy rate applies only to the dispensing-fee portion, which isn\u2019t collected as an input.'
+        : 'Typical example, modelled: about R10/month on R500/month spend at Clicks or Body Shop, at the 2% standard rate. Not your own number.',
+      reasoning: clicksHeld ? 'You already hold this card \u2014 nothing to change here.' : 'The R50 minimum balance to convert points to rand value is the one real friction. Otherwise there\u2019s no reason not to join.',
+      badgeStyle: 'font-size:12px; font-weight:700; letter-spacing:0.04em; padding:4px 10px; ' + (clicksHeld ? 'background:#e2e8f0; color:#334155;' : 'background:#d9820a; color:white;'),
     }});
   }
 
   renderVals() {
     const s = this.state;
-    const tabStyle = active => `background:transparent; border:none; border-bottom:2px solid ${active ? 'oklch(0.52 0.16 255)' : 'transparent'}; color:${active ? 'oklch(0.18 0.01 250)' : 'oklch(0.5 0.01 250)'}; font-weight:${active ? 600 : 500}; font-size:14px; padding:14px 20px; cursor:pointer;`;
-    const chipStyle = held => `border:1px solid ${held ? 'oklch(0.52 0.16 255)' : 'oklch(0.82 0.008 250)'}; background:${held ? 'oklch(0.92 0.03 255)' : 'oklch(0.995 0.002 250)'}; color:${held ? 'oklch(0.32 0.15 255)' : 'oklch(0.45 0.01 250)'}; font-size:13px; font-weight:${held ? 600 : 400}; padding:8px 14px; cursor:pointer;`;
+    const tabStyle = (active, color) => `background:transparent; border:none; border-bottom:2px solid ${active ? color : 'transparent'}; color:${active ? '#0f172a' : '#64748b'}; font-weight:${active ? 600 : 500}; font-size:14px; padding:14px 20px; cursor:pointer;`;
+    const chipStyle = held => `border:1px solid ${held ? '#1457e6' : '#cbd5e1'}; background:${held ? '#edf4ff' : '#fff'}; color:${held ? '#1457e6' : '#334155'}; font-size:13px; font-weight:${held ? 600 : 400}; padding:8px 14px; cursor:pointer;`;
 
     const spendCompleted = s.spendSubmitted;
+    const tierCards = s.cards.filter(c => c.hasTiers && c.held).map(c => ({
+      name: c.name, value: s.tierChoices[c.id] || 'unsure', tiers: TIERS[c.id] || [],
+      onChange: e => this.setState(st => ({ tierChoices: { ...st.tierChoices, [c.id]: e.target.value } })),
+    }));
+    if (s.mydiffHeld) {
+      tierCards.push({
+        name: 'MyDifference', value: s.tierChoices.mydiff || 'unsure', tiers: TIERS.mydiff,
+        onChange: e => this.setState(st => ({ tierChoices: { ...st.tierChoices, mydiff: e.target.value } })),
+      });
+    }
 
     return {
       showDemo: s.showDemo,
-      registered: s.registered,
-      toggleRegistered: () => this.setState({ registered: !s.registered }),
 
-      cardsList: s.cards.map(c => ({ ...c, chipStyle: chipStyle(c.held), onToggle: () => this.toggleHeld(c.id) })),
+      flatCards: s.cards.map(c => ({ ...c, chipStyle: chipStyle(c.held), onToggle: () => this.toggleHeld(c.id) })),
+      mydiffHeld: s.mydiffHeld,
+      mydiffPlusHeld: s.mydiffPlusHeld,
+      toggleMydiff: () => this.setState({ mydiffHeld: !s.mydiffHeld }),
+      toggleMydiffPlus: () => this.setState({ mydiffPlusHeld: !s.mydiffPlusHeld }),
+      otherSelected: s.otherSelected,
+      otherChipStyle: chipStyle(s.otherSelected),
+      toggleOther: () => this.setState({ otherSelected: !s.otherSelected }),
+      isSenior: s.isSenior,
+      toggleSenior: () => this.setState({ isSenior: !s.isSenior }),
 
       isAskTab: s.activeTab === 'ask',
       isSpendTab: s.activeTab === 'spend',
       isJoinTab: s.activeTab === 'join',
-      tabStyleAsk: tabStyle(s.activeTab === 'ask'),
-      tabStyleSpend: tabStyle(s.activeTab === 'spend'),
-      tabStyleJoin: tabStyle(s.activeTab === 'join'),
+      tabStyleAsk: tabStyle(s.activeTab === 'ask', '#1457e6'),
+      tabStyleSpend: tabStyle(s.activeTab === 'spend', '#0c8599'),
+      tabStyleJoin: tabStyle(s.activeTab === 'join', '#d9820a'),
       setTabAsk: () => this.setState({ activeTab: 'ask' }),
       setTabSpend: () => this.setState({ activeTab: 'spend' }),
       setTabJoin: () => this.setState({ activeTab: 'join' }),
@@ -339,22 +441,20 @@ class Component extends DCLogic {
       submitAsk: () => this.submitAsk(),
       askAnswer: s.askAnswer,
 
-      spendNeedsRegister: !s.registered,
-      spendReady: s.registered,
-      spendFields: CATEGORIES.map(cat => ({
-        label: cat.label, value: s.spend[cat.key],
-        onChange: e => this.updateSpend(cat.key, e.target.value),
+      spendNeedsGoogle: !s.googleConnected,
+      spendReady: s.googleConnected,
+      connectGoogle: () => this.setState({ googleConnected: true }),
+      spendFields: SPEND_FIELDS.map(f => ({
+        label: f.label, value: s.spend[f.key],
+        onChange: e => this.updateSpend(f.key, e.target.value),
       })),
+      hasTierCards: tierCards.length > 0,
+      tierCards,
       submitSpend: () => this.submitSpend(),
       spendResults: spendCompleted ? s.spendResults : null,
 
-      joinNeedsRegister: !s.registered,
-      joinLocked: s.registered && !spendCompleted,
-      joinReady: s.registered && spendCompleted,
-      joinCandidates: JOIN_CANDIDATES,
-      joinCandidateId: s.joinCandidateId,
-      setJoinCandidate: e => this.setState({ joinCandidateId: e.target.value, joinResult: null }),
-      evaluateJoin: () => this.evaluateJoin(),
+      joinNudgeVisible: !spendCompleted,
+      checkJoin: () => this.checkJoin(),
       joinResult: s.joinResult,
     };
   }
