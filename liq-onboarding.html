@@ -630,7 +630,7 @@
         <div class="nav-links">
           <a href="#top">Home</a>
           <a href="#about">About</a>
-          <a href="/wallet">My e-wallet</a>
+          <a href="https://web-production-0a66a.up.railway.app/wallet">My e-wallet</a>
         </div>
         <span class="nav-pill">South Africa</span>
       </nav>
@@ -849,7 +849,11 @@
       });
     });
 
-    fetch("/stats")
+    // Absolute, not relative: this page's raw markup also gets manually
+    // republished into WordPress at a different origin (liq.networkgrey.co.za),
+    // where a relative fetch would 404 -- same reason liq.html's API_BASE is
+    // absolute. The Railway origin is the same correct value in both places.
+    fetch("https://web-production-0a66a.up.railway.app/stats")
       .then(r => r.json())
       .then(d => {
         if (d.programme_count != null) {
