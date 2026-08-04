@@ -11,7 +11,7 @@ If you add any network call to this directory's code, you have broken the core p
 ## Storage layer
 
 - IndexedDB, database `liq_wallet`, object store `cards`, keyPath `id`.
-- `DB_VERSION` is a real version number (currently `1`). Bump it and add an `onupgradeneeded` migration path when the record shape changes — never silently reinterpret old records under a new shape.
+- `DB_VERSION` is a real version number (currently `2`). Bump it and add an `onupgradeneeded` migration path when the record shape changes — never silently reinterpret old records under a new shape.
 - Card record shape (documented here since this file has no build step or type checker to enforce it):
   ```
   {
@@ -20,6 +20,7 @@ If you add any network call to this directory's code, you have broken the core p
     image: Blob,         // image/jpeg, canvas re-exported — see metadata rule below
     width: number,       // px, of the stored (post-crop) image
     height: number,      // px
+    tag: string,         // added at v2 -- one of the 13 canonical CATALOG names, or "" (untagged)
   }
   ```
 - Every storage failure (open blocked/denied, private-mode restrictions, quota exceeded, transaction abort) must produce an explicit error state that says nothing was saved. Never let a failed write render as if it succeeded. Never silently drop an error.
@@ -30,10 +31,10 @@ The captured `File`/`Blob` from the file input is **never** stored directly and 
 
 ## Stage boundaries
 
-This build is Stage 1 only:
+This build is Stage 1, plus catalog tagging brought forward from Stage 3 (explicit override, 4 August 2026 three-page build instruction):
 
-- **In scope:** front image capture, crop, rotate (90° increments), canvas re-render/metadata strip, save, list view reading "stored on this device" for every card.
-- **Out of scope, don't add without a separate instruction:** back image, barcode crop, scan mode (Stage 2); tagging, held-programme linking, any distinction between cards in the list (Stage 3, deferred indefinitely as of this writing); reorder, edit, delete-all (Stage 4 polish). No Review/Join interaction. No iframe/embedding — this page is reached by a plain top-level link and must stay first-party (see below).
+- **In scope:** front image capture, crop, rotate (90° increments), canvas re-render/metadata strip, save, list view reading "stored on this device" for every card; per-card catalog tagging via a `<select>` (same 13-name canonical list as the shared card selector on `/`) writing a `tag` field to the IndexedDB record (`DB_VERSION` 2), purely local, no network call, no held-programme linking beyond the label itself.
+- **Out of scope, don't add without a separate instruction:** back image, barcode crop, scan mode (Stage 2); any actual linking of a tagged card to Ask/Spend Check/Should I Join's held-programme state, or deriving anything from the tag beyond display/search (Stage 3 remainder, still deferred); reorder, edit, delete-all (Stage 4 polish). No Review/Join interaction. No iframe/embedding — this page is reached by a plain top-level link and must stay first-party (see below).
 
 ## Why this isn't iframed
 

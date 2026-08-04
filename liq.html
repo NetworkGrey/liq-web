@@ -409,40 +409,9 @@
 
     .field-group label { margin-bottom: 7px; }
 
-    .collapsible {
-      margin: 2px 0 18px;
-      border: 1px solid var(--border-soft);
-      background: #fff;
-    }
-
-    .collapsible-toggle {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 14px 16px;
-      border: 0;
-      background: var(--surface-2);
-      color: var(--ink-2);
-      cursor: pointer;
-      font-family: var(--font-body);
-      font-size: var(--text-sm);
-      font-weight: 700;
-      text-align: left;
-    }
-
-    .collapsible-toggle:hover { color: var(--ink); background: #e9eff7; }
-
-    .chevron {
-      display: inline-block;
-      color: var(--blue);
-      font-family: var(--font-mono);
-      font-size: var(--text-md);
-      line-height: 1;
-      transition: transform .15s ease;
-    }
-
-    #programmes-held { padding: 10px 16px 16px; }
+    .cards-section { padding-top: 24px; }
+    .cards-heading { font-size: var(--text-md); font-weight: 600; margin: 0 0 4px; font-family: var(--font-body); color: var(--ink); }
+    .cards-subhead { font-size: var(--text-sm); color: var(--ink-3); margin: 0 0 16px; max-width: 600px; }
 
     .checkbox-grid {
       display: grid;
@@ -452,6 +421,8 @@
       color: var(--ink-2);
       font-size: var(--text-sm);
     }
+
+    .cards-selector { margin-top: 10px; }
 
     .checkbox-grid label,
     .prog-checkbox-label {
@@ -479,8 +450,37 @@
     .programme-row { border-bottom: 1px solid var(--border-soft); }
     .programme-row:last-child { border-bottom: 0; }
 
-    .prog-drilldown {
-      margin: 0 0 12px 22px;
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 4px 0 14px;
+    }
+
+    .prog-chip {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 400;
+      padding: 8px 14px;
+      border: 1px solid var(--border-soft);
+      background: var(--surface);
+      color: var(--ink-2);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+
+    .prog-chip:hover { border-color: var(--blue); }
+
+    .prog-chip-held {
+      border-color: var(--blue);
+      background: var(--surface-2);
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .tier-panel-row {
+      margin: 0 0 12px;
       padding: 12px;
       background: var(--surface-2);
       border-left: 4px solid var(--blue);
@@ -489,7 +489,13 @@
       gap: 12px;
     }
 
-    .prog-drilldown[hidden] { display: none; }
+    .tier-panel-name {
+      grid-column: 1 / -1;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink);
+    }
 
     .ask-selector-label {
       font-family: var(--font-mono);
@@ -693,6 +699,20 @@
     }
     .join-confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
     #join-evaluate-btn { margin-top: 18px; }
+
+    /* Selected-candidate highlight, same "held" visual language as the
+       chip toggles above -- still a plain radio input underneath, this is
+       a background tint on its label, not a new input pattern. */
+    #join-programme-grid .prog-checkbox-label {
+      padding: 8px 10px;
+      border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    #join-programme-grid .prog-checkbox-label:has(.join-prog-radio:checked) {
+      background: var(--surface-2);
+      color: var(--blue);
+      font-weight: 600;
+    }
 
     .field-group-sm { min-width: 0; }
 
@@ -1050,7 +1070,7 @@
       .input-row input { border-right: 1px solid var(--border); border-bottom: 0; }
       button[id$="-btn"] { width: 100%; }
       .spend-grid,
-      .prog-drilldown { grid-template-columns: 1fr; }
+      .tier-panel-row { grid-template-columns: 1fr; }
       .routing-row-main { grid-template-columns: 1fr 1fr; align-items: start; }
       .routing-row-main .routing-friction { grid-column: 1 / -1; }
       .hero-number { font-size: var(--text-answer-mobile); }
@@ -1106,12 +1126,15 @@
 </article>
 </div>
 </section>
+<section class="section cards-section" aria-label="My Cards">
+<h2 class="cards-heading">My Cards</h2>
+<p class="cards-subhead">Select the loyalty programmes you hold. Ask, Spend Check, and Should I Join all read from here — none of them has its own card selector.</p>
+<div class="cards-selector" id="shared-programme-grid"></div>
+<div id="shared-eligibility-section"></div>
+</section>
 <div id="app">
 <section class="workspace" id="input-area"><div class="tab-bar" role="tablist"><button aria-controls="panel-ask" aria-expanded="true" aria-selected="true" class="tab active" id="tab-ask" role="tab">Ask</button><div aria-labelledby="tab-ask" class="panel-shell" id="panel-ask" role="tabpanel">
 <label for="ask-input">Where are you shopping, or which loyalty programme are you considering?</label>
-<p class="ask-selector-label">Pick the loyalty programmes you hold, optional.</p>
-<div class="checkbox-grid" id="ask-programme-grid"></div>
-<div id="ask-eligibility-section"></div>
 <div class="input-row">
 <input autocomplete="off" id="ask-input" placeholder="e.g. I'm at Checkers spending about R600" type="text"/>
 <button id="ask-btn" type="button">Ask</button>
@@ -1125,32 +1148,14 @@
 </div>
 <button class="signin-btn" disabled="" type="button">Continue with Google</button>
 </div>
-<p class="ask-selector-label">Your card wallet, up to 10</p>
-<div class="wallet-grid">
-<div class="wallet-slot wallet-filled">FNB eBucks</div>
-<div class="wallet-slot wallet-filled">Shell V+</div>
-<div class="wallet-slot wallet-empty">+ Add<br/>Coming soon</div>
-<div class="wallet-slot wallet-empty">+ Add<br/>Coming soon</div>
-<div class="wallet-slot wallet-empty">+ Add<br/>Coming soon</div>
-</div>
-<p class="wallet-note">We never see or store your payment or banking details. See <a href="#terms">Terms and conditions</a>.</p>
-<p class="wallet-note">No upload needed, you can select loyalty programmes from the list below instead.</p>
-<p class="panel-label">Enter your monthly spend per category.</p>
+<p class="panel-label">Monthly spend by category. Leave a field at 0 to leave it out entirely. Pharmacy isn't asked for here — see why below.</p>
 <div class="spend-grid">
 <div class="field-group">
 <label for="cat-groceries">Groceries</label>
 <input id="cat-groceries" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
 <div class="field-group">
-<label for="cat-fuel">Fuel</label>
-<input id="cat-fuel" inputmode="numeric" min="0" placeholder="0" type="number"/>
-</div>
-<div class="field-group">
-<label for="cat-pharmacy">Pharmacy &amp; health</label>
-<input id="cat-pharmacy" inputmode="numeric" min="0" placeholder="0" type="number"/>
-</div>
-<div class="field-group">
-<label for="cat-dining">Dining out</label>
+<label for="cat-dining">Dining</label>
 <input id="cat-dining" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
 <div class="field-group">
@@ -1158,7 +1163,7 @@
 <input id="cat-clothing" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
 <div class="field-group">
-<label for="cat-travel">Travel</label>
+<label for="cat-travel">SAA-operated flights</label>
 <input id="cat-travel" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
 <div class="field-group">
@@ -1166,15 +1171,12 @@
 <input id="cat-healthbeauty" inputmode="numeric" min="0" placeholder="0" type="number"/>
 </div>
 </div>
-<div class="collapsible">
-<button aria-controls="programmes-held" aria-expanded="false" class="collapsible-toggle" type="button">
-<span class="chevron">›</span> Loyalty Programmes I already hold
-                </button>
-<div hidden="" id="programmes-held">
-<div id="review-programme-grid"></div>
+<p class="ask-selector-label">Tiers &amp; balances (optional)</p>
+<div id="tier-panel-section"></div>
+<div class="pharmacy-note">
+<p class="ask-selector-label">Pharmacy</p>
+<p class="wallet-note">Clicks ClubCard, 2% on the dispensing-fee portion of a purchase, not the full basket — most users can't estimate this reliably enough for a spend input, so it isn't collected as one.</p>
 </div>
-</div>
-<div id="review-eligibility-section"></div>
 <button id="analyse-btn" type="button">Analyse</button>
 <div aria-live="polite" class="counter" id="review-counter"></div>
 </div></div><section class="join-section">
@@ -1602,8 +1604,6 @@
 
       const categories = {
         groceries: parseFloat(document.getElementById("cat-groceries").value) || 0,
-        fuel:      parseFloat(document.getElementById("cat-fuel").value) || 0,
-        pharmacy:  parseFloat(document.getElementById("cat-pharmacy").value) || 0,
         dining:    parseFloat(document.getElementById("cat-dining").value) || 0,
         clothing:  parseFloat(document.getElementById("cat-clothing").value) || 0,
         travel:    parseFloat(document.getElementById("cat-travel").value) || 0,
@@ -1712,6 +1712,17 @@
     const PROGRAMME_CATALOG_BY_KEY = {};
     catalogFlat().forEach(c => { PROGRAMME_CATALOG_BY_KEY[c.key] = c; });
 
+    const PROGRAMME_CATALOG_BY_VALUE = {};
+    catalogFlat().forEach(c => { PROGRAMME_CATALOG_BY_VALUE[c.value] = c; });
+
+    // Top-level standalone items only (no Woolworths children, no Other) --
+    // these are the ones rendered as chip-toggle buttons in the shared
+    // selector. Woolworths stays a checkbox pair, Other stays a checkbox +
+    // text field, both unchanged from the existing build.
+    function catalogFlatStandalone() {
+      return PROGRAMME_CATALOG.filter(item => !item.isGroup && !item.isOther);
+    }
+
     // Single source of truth for "what do you hold" -- value -> {tier,
     // balance}. Ticking a box in any one panel updates this and re-renders
     // every other mounted panel so they immediately reflect it too. This is
@@ -1793,39 +1804,30 @@
       targetEl.appendChild(p);
     }
 
-    function renderProgrammeRow(item, idPrefix, withDrilldown, isGroupChild) {
+    // Standalone catalog items render as chip-toggle buttons (matches the
+    // approved visual redesign). No inline drilldown here at all -- tier
+    // and balance capture for held tiered cards lives in a single
+    // consolidated panel inside Spend Check instead (see renderTierPanelHtml
+    // below), not attached per-row to the shared selector.
+    function renderProgrammeChip(item, idPrefix) {
       const id = `${idPrefix}-${item.key}`;
-      const meta = heldState.get(item.value);
-      const checked = meta ? "checked" : "";
-      let drilldown = "";
-      if (withDrilldown && (item.tiers || item.pointsLabel)) {
-        const tierOptions = (item.tiers || []).map(t =>
-          `<option value="${t}" ${meta && meta.tier === t ? "selected" : ""}>${t}</option>`
-        ).join("");
-        drilldown = `
-          <div class="prog-drilldown" data-prog-key="${item.key}" ${checked ? "" : "hidden"}>
-            ${item.tiers ? `
-            <div class="field-group-sm">
-              <label for="${id}-tier">Tier (optional)</label>
-              <select class="prog-tier-select" data-prog-key="${item.key}" id="${id}-tier">
-                <option value="">Not sure / skip</option>
-                ${tierOptions}
-              </select>
-            </div>` : ""}
-            ${item.pointsLabel ? `
-            <div class="field-group-sm">
-              <label for="${id}-points">${item.pointsLabel}</label>
-              <input class="prog-points-input" data-prog-key="${item.key}" id="${id}-points" inputmode="numeric" min="0" type="number" value="${meta && meta.balance != null ? meta.balance : ""}"/>
-            </div>` : ""}
-          </div>`;
-      }
+      const held = heldState.has(item.value);
+      return `<button class="prog-chip${held ? " prog-chip-held" : ""}" data-value="${item.value}" id="${id}" type="button" aria-pressed="${held}">${item.label}</button>`;
+    }
+
+    // Woolworths' two children stay checkboxes, not chips -- same as the
+    // Other row below, this predates the mockup and isn't being reconciled
+    // to it, matches the existing, already-approved visual language for
+    // "grouped under one merchant name" specifically.
+    function renderProgrammeRow(item, idPrefix, isGroupChild) {
+      const id = `${idPrefix}-${item.key}`;
+      const checked = heldState.has(item.value) ? "checked" : "";
       return `
         <div class="programme-row">
           <label class="prog-checkbox-label${isGroupChild ? " ask-merchant-sub" : ""}">
             <input class="shared-prog-checkbox" data-value="${item.value}" data-prog-key="${item.key}" id="${id}" type="checkbox" value="${item.value}" ${checked}/>
             ${item.label}
           </label>
-          ${drilldown}
         </div>`;
     }
 
@@ -1843,29 +1845,28 @@
         </div>`;
     }
 
-    function renderChecklistHtml(idPrefix, withDrilldown) {
-      return PROGRAMME_CATALOG.map(item => {
-        if (item.isGroup) {
-          const rows = item.children.map(c => renderProgrammeRow(c, idPrefix, withDrilldown, true)).join("");
-          return `<div class="ask-merchant-group"><div class="ask-merchant-name">${item.groupLabel}</div>${rows}</div>`;
-        }
-        if (item.isOther) return renderOtherRow(idPrefix);
-        return renderProgrammeRow(item, idPrefix, withDrilldown);
+    function renderChecklistHtml(idPrefix) {
+      const chips = catalogFlatStandalone().map(item => renderProgrammeChip(item, idPrefix)).join("");
+      const groupHtml = PROGRAMME_CATALOG.filter(i => i.isGroup).map(item => {
+        const rows = item.children.map(c => renderProgrammeRow(c, idPrefix, true)).join("");
+        return `<div class="ask-merchant-group"><div class="ask-merchant-name">${item.groupLabel}</div>${rows}</div>`;
       }).join("");
+      const otherHtml = renderOtherRow(idPrefix);
+      return `<div class="chip-row">${chips}</div>${groupHtml}${otherHtml}`;
     }
 
-    const mountedChecklists = []; // [{ containerId, idPrefix, withDrilldown }]
+    const mountedChecklists = []; // [{ containerId, idPrefix }]
 
-    function mountChecklist(containerId, idPrefix, withDrilldown) {
-      mountedChecklists.push({ containerId, idPrefix, withDrilldown });
-      renderMountedChecklist(containerId, idPrefix, withDrilldown);
+    function mountChecklist(containerId, idPrefix) {
+      mountedChecklists.push({ containerId, idPrefix });
+      renderMountedChecklist(containerId, idPrefix);
     }
 
-    function renderMountedChecklist(containerId, idPrefix, withDrilldown) {
+    function renderMountedChecklist(containerId, idPrefix) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      container.innerHTML = renderChecklistHtml(idPrefix, withDrilldown);
-      wireChecklistEvents(container, withDrilldown);
+      container.innerHTML = renderChecklistHtml(idPrefix);
+      wireChecklistEvents(container);
     }
 
     // Directly below the card selector, but its own container -- a card is
@@ -1922,7 +1923,7 @@
       });
     }
 
-    function wireChecklistEvents(container, withDrilldown) {
+    function wireChecklistEvents(container) {
       container.querySelectorAll(".shared-prog-checkbox").forEach(cb => {
         cb.addEventListener("change", () => {
           const value = cb.dataset.value;
@@ -1934,22 +1935,17 @@
           onHeldStateChanged();
         });
       });
-      if (withDrilldown) {
-        container.querySelectorAll(".prog-tier-select").forEach(sel => {
-          sel.addEventListener("change", () => {
-            const row = PROGRAMME_CATALOG_BY_KEY[sel.dataset.progKey];
-            const meta = heldState.get(row.value);
-            if (meta) { meta.tier = sel.value || undefined; saveHeldStateToSession(); }
-          });
+      container.querySelectorAll(".prog-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const value = chip.dataset.value;
+          if (heldState.has(value)) {
+            heldState.delete(value);
+          } else {
+            heldState.set(value, {});
+          }
+          onHeldStateChanged();
         });
-        container.querySelectorAll(".prog-points-input").forEach(inp => {
-          inp.addEventListener("input", () => {
-            const row = PROGRAMME_CATALOG_BY_KEY[inp.dataset.progKey];
-            const meta = heldState.get(row.value);
-            if (meta) { meta.balance = inp.value ? parseFloat(inp.value) : undefined; saveHeldStateToSession(); }
-          });
-        });
-      }
+      });
       const otherCb = container.querySelector(".shared-other-checkbox");
       const otherInput = container.querySelector(".shared-other-input");
       if (otherCb) {
@@ -1972,10 +1968,11 @@
     // old per-panel state never actually had to begin with).
     function onHeldStateChanged() {
       saveHeldStateToSession();
-      mountedChecklists.forEach(({ containerId, idPrefix, withDrilldown }) => {
-        renderMountedChecklist(containerId, idPrefix, withDrilldown);
+      mountedChecklists.forEach(({ containerId, idPrefix }) => {
+        renderMountedChecklist(containerId, idPrefix);
       });
       renderJoinHeldSummary();
+      renderMountedTierPanel();
     }
 
     // Other's free text doesn't re-render the whole list (would steal focus
@@ -1987,6 +1984,69 @@
         if (input && document.activeElement !== input) input.value = otherHeld.text;
       });
       renderJoinHeldSummary();
+    }
+
+    // Consolidated tier/balance capture for held cards that have a tier
+    // structure, lives inside Spend Check only (#tier-panel-section) rather
+    // than inline per-chip in the shared selector -- keeps the chip row
+    // itself a plain toggle, matching the mockup's chip-only interaction,
+    // while still capturing tier and balance where the field already
+    // existed in the prior build (not dropped, just relocated).
+    let tierPanelContainerId = null;
+
+    function mountTierPanel(containerId) {
+      tierPanelContainerId = containerId;
+      renderMountedTierPanel();
+    }
+
+    function renderTierPanelHtml() {
+      const entries = Array.from(heldState.entries())
+        .map(([value, meta]) => ({ value, meta, item: PROGRAMME_CATALOG_BY_VALUE[value] }))
+        .filter(({ item }) => item && item.tiers);
+      if (!entries.length) {
+        return `<p class="wallet-note">Tick a card with tiers above (in "My Cards") to record its tier or balance here.</p>`;
+      }
+      return entries.map(({ value, meta, item }) => {
+        const id = `tierpanel-${item.key}`;
+        const tierOptions = item.tiers.map(t =>
+          `<option value="${t}" ${meta.tier === t ? "selected" : ""}>${t}</option>`
+        ).join("");
+        return `
+          <div class="tier-panel-row">
+            <div class="tier-panel-name">${item.label}</div>
+            <div class="field-group-sm">
+              <label for="${id}-tier">Tier (optional)</label>
+              <select class="prog-tier-select" data-prog-value="${value}" id="${id}-tier">
+                <option value="">Not sure / skip</option>
+                ${tierOptions}
+              </select>
+            </div>
+            ${item.pointsLabel ? `
+            <div class="field-group-sm">
+              <label for="${id}-points">${item.pointsLabel}</label>
+              <input class="prog-points-input" data-prog-value="${value}" id="${id}-points" inputmode="numeric" min="0" type="number" value="${meta.balance != null ? meta.balance : ""}"/>
+            </div>` : ""}
+          </div>`;
+      }).join("");
+    }
+
+    function renderMountedTierPanel() {
+      if (!tierPanelContainerId) return;
+      const container = document.getElementById(tierPanelContainerId);
+      if (!container) return;
+      container.innerHTML = renderTierPanelHtml();
+      container.querySelectorAll(".prog-tier-select").forEach(sel => {
+        sel.addEventListener("change", () => {
+          const meta = heldState.get(sel.dataset.progValue);
+          if (meta) { meta.tier = sel.value || undefined; saveHeldStateToSession(); }
+        });
+      });
+      container.querySelectorAll(".prog-points-input").forEach(inp => {
+        inp.addEventListener("input", () => {
+          const meta = heldState.get(inp.dataset.progValue);
+          if (meta) { meta.balance = inp.value ? parseFloat(inp.value) : undefined; saveHeldStateToSession(); }
+        });
+      });
     }
 
     // ─── Join: session-gated single-programme evaluation ────────────────────
@@ -2157,26 +2217,12 @@
       }
     }
 
-    function initCollapsible() {
-      document.querySelectorAll(".collapsible-toggle").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const target = document.getElementById(btn.getAttribute("aria-controls"));
-          const expanded = btn.getAttribute("aria-expanded") === "true";
-          btn.setAttribute("aria-expanded", !expanded);
-          target.hidden = expanded;
-          btn.querySelector(".chevron").style.transform = expanded ? "rotate(0deg)" : "rotate(90deg)";
-        });
-      });
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
       restoreHeldStateFromSession();
       updateCounters(getRemaining());
-      initCollapsible();
-      mountChecklist("ask-programme-grid", "ask", false);
-      mountChecklist("review-programme-grid", "review", true);
-      mountEligibilitySection("ask-eligibility-section", "ask");
-      mountEligibilitySection("review-eligibility-section", "review");
+      mountChecklist("shared-programme-grid", "cards");
+      mountEligibilitySection("shared-eligibility-section", "cards");
+      mountTierPanel("tier-panel-section");
       renderJoinSection();
 
       // Sync remaining count from server on load — overrides stale localStorage

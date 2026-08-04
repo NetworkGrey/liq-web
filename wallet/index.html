@@ -155,6 +155,24 @@
       line-height: 1.6;
     }
 
+    /* Styling for the held-back DOES/DOES NOT privacy section (see the HTML
+       comment around it) -- kept ready so the markup renders correctly the
+       moment it's uncommented post sign-off, not written from scratch then. */
+    .privacy-section { max-width: var(--max); margin: 18px auto 0; padding: 0 22px; }
+    .privacy-heading { font-family: var(--font-heading); font-weight: 700; font-size: var(--text-md); color: var(--ink); margin: 0 0 12px; }
+    .privacy-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .privacy-does, .privacy-does-not { border: 1px solid var(--border-soft); padding: 16px 18px; }
+    .privacy-does { background: #f1f9f3; border-color: #cfe8d4; }
+    .privacy-does-not { background: #fcf3f1; border-color: #f0cfc9; }
+    .privacy-item { display: flex; gap: 10px; align-items: flex-start; font-size: var(--text-sm); line-height: 1.5; margin: 0 0 10px; }
+    .privacy-item:last-child { margin-bottom: 0; }
+    .privacy-does .privacy-item { color: #204a28; }
+    .privacy-does-not .privacy-item { color: #5c2b23; }
+    .privacy-mark { font-weight: 700; flex: 0 0 auto; }
+    .privacy-mark-yes { color: #1f8a3c; }
+    .privacy-mark-no { color: #c23b23; }
+    .privacy-policy-link { font-size: var(--text-xs); color: var(--ink-3); margin: 16px 0 0; }
+
     #wallet-body { max-width: var(--max); margin: 0 auto; padding: 22px; }
 
     .wallet-list-header {
@@ -236,11 +254,31 @@
     .wallet-card-image { display: block; width: 100%; height: 110px; object-fit: cover; background: var(--surface-2); }
 
     .wallet-card-label {
-      padding: 8px 10px;
+      padding: 8px 10px 0;
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       color: var(--ink-3);
       letter-spacing: .02em;
+    }
+
+    .wallet-card-tag-select {
+      display: block;
+      width: calc(100% - 20px);
+      margin: 6px 10px 10px;
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink-2);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      padding: 0 8px;
+      cursor: pointer;
+    }
+    .wallet-card-tag-select:focus {
+      outline: 2px solid var(--blue);
+      outline-offset: -1px;
+      border-color: var(--blue);
     }
 
     .wallet-empty-msg { color: var(--muted); font-size: var(--text-sm); font-style: italic; }
@@ -391,6 +429,38 @@
 
 <div class="device-notice">Your card images stay on this device and are never uploaded, synced, or visible to us. Clearing your browser data removes them, there is no backup.</div>
 
+<!--
+  HELD, DO NOT UNCOMMENT WITHOUT SIGN-OFF: DOES/DOES NOT privacy section,
+  per the 4 August 2026 three-page build instruction. Two publish gates,
+  both must clear first:
+    1. The zero-network-call claim below must be re-verified directly
+       against this shipped route (not assumed from the AGENTS.md rule).
+    2. Legal Compliance reviews the wording. That thread doesn't exist yet.
+  The barcode-decode claim from the source mockup's DOES list, and its
+  corresponding DOES-NOT entry about the decoded value never leaving the
+  device, are deliberately NOT included below at all -- not even
+  commented out. Stage 2 (barcode capture/decode) doesn't exist in this
+  page today, so that claim is false as written, not just unverified.
+  Don't add it back until Stage 2 is real and shipped.
+
+<section class="privacy-section">
+  <h2 class="privacy-heading">What your wallet does and doesn't do</h2>
+  <div class="privacy-columns">
+    <div class="privacy-does">
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-yes">&check;</span> Stores a photo of your card, kept only on this device</p>
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-yes">&check;</span> Strips identifying metadata from every photo automatically when it's saved</p>
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-yes">&check;</span> Lets you label each card from our list</p>
+    </div>
+    <div class="privacy-does-not">
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-no">&cross;</span> Never sent anywhere. No network call leaves your device when you add, view, or remove a card</p>
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-no">&cross;</span> Not backed up to any cloud or account. Clearing your browser or switching devices means your cards are gone, there's no copy anywhere else</p>
+      <p class="privacy-item"><span class="privacy-mark privacy-mark-no">&cross;</span> Not shared with any other part of LoyaltyIQ or with any third party</p>
+    </div>
+  </div>
+  <p class="privacy-policy-link">See our <a href="#">Privacy Policy</a> for the full detail.</p>
+</section>
+-->
+
 <div id="wallet-body">
 <p class="wallet-empty-msg">Loading…</p>
 </div>
@@ -442,15 +512,32 @@
     //
     // Card record shape (documented here, not enforced by a schema language —
     // this file has no build step or type checker):
-    //   { id: string, createdAt: string (ISO 8601), image: Blob, width: number, height: number }
+    //   { id: string, createdAt: string (ISO 8601), image: Blob, width: number,
+    //     height: number, tag: string }
+    //
+    // `tag` is new at DB_VERSION 2 — one of CATALOG's names, or "" (untagged).
+    // Purely additive: existing v1 records simply read back with tag
+    // undefined (== untagged), no transform needed, nothing about the
+    // existing fields' meaning changed. Still bumping the version and
+    // running through onupgradeneeded per this file's own rule of never
+    // silently reinterpreting old records under a new shape.
     //
     // Invariant: the `image` Blob is ALWAYS a canvas-rendered re-export, never
     // the original captured File — that's what guarantees EXIF/metadata is
     // stripped before anything touches storage. See AGENTS.md.
 
     const DB_NAME = "liq_wallet";
-    const DB_VERSION = 1;
+    const DB_VERSION = 2;
     const STORE_NAME = "cards";
+
+    // Canonical tagging list -- same 13 names (12 real programmes + "Other")
+    // as the shared card selector on the main product interface. Kept as an
+    // independent copy since this page has no shared JS with liq.html.
+    const CATALOG = [
+      "Absa Rewards", "Dis-Chem Better Rewards", "Capitec Live Better", "Clicks ClubCard",
+      "Discovery Vitality", "FNB eBucks", "MyDifference", "MyDifference PLUS",
+      "SAA Voyager", "Shell V+", "Standard Bank UCount", "Xtra Savings", "Other",
+    ];
 
     let dbPromise = null;
 
@@ -473,12 +560,35 @@
           if (!db.objectStoreNames.contains(STORE_NAME)) {
             db.createObjectStore(STORE_NAME, { keyPath: "id" });
           }
+          // v2: added the `tag` field. No structural change to the store
+          // itself (no new index needed), existing records are valid as-is
+          // with tag left undefined until the user tags them.
         };
         req.onsuccess = function () { resolve(req.result); };
         req.onerror = function () { reject(req.error || new Error("IndexedDB open failed")); };
         req.onblocked = function () { reject(new Error("IndexedDB open blocked")); };
       });
       return dbPromise;
+    }
+
+    function getCard(id) {
+      return openWalletDb().then(function (db) {
+        return new Promise(function (resolve, reject) {
+          const tx = db.transaction(STORE_NAME, "readonly");
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(id);
+          req.onsuccess = function () { resolve(req.result); };
+          req.onerror = function () { reject(req.error || new Error("Failed to read card")); };
+        });
+      });
+    }
+
+    function updateCardTag(id, tag) {
+      return getCard(id).then(function (record) {
+        if (!record) throw new Error("Card not found");
+        record.tag = tag;
+        return saveCard(record);
+      });
     }
 
     function listCards() {
@@ -536,6 +646,42 @@
         '<p class="wallet-empty-msg" hidden="" id="wallet-empty-msg"></p>';
     }
 
+    // Naming a card is purely local -- picking a value calls updateCardTag(),
+    // which reads-modifies-writes the IndexedDB record, same storage layer
+    // as everything else here. No network call, same as the rest of this
+    // page. Clicks/keydown on the select stop propagation so interacting
+    // with it doesn't also trigger the tile's own click-to-view handler.
+    function buildTagSelect(card) {
+      const select = document.createElement("select");
+      select.className = "wallet-card-tag-select";
+      select.setAttribute("aria-label", "Name this card");
+      const blankOpt = document.createElement("option");
+      blankOpt.value = "";
+      blankOpt.textContent = "Name this card";
+      select.appendChild(blankOpt);
+      CATALOG.forEach(function (name) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      select.value = card.tag || "";
+      select.addEventListener("click", function (e) { e.stopPropagation(); });
+      select.addEventListener("keydown", function (e) { e.stopPropagation(); });
+      select.addEventListener("change", function (e) {
+        e.stopPropagation();
+        const tile = select.closest(".wallet-card-tile");
+        const newTag = e.target.value;
+        updateCardTag(card.id, newTag).then(function () {
+          card.tag = newTag;
+          if (tile) tile.dataset.tag = newTag;
+        }, function () {
+          select.value = card.tag || "";
+        });
+      });
+      return select;
+    }
+
     function refreshCardGrid() {
       const grid = document.getElementById("wallet-card-grid");
       const emptyMsg = document.getElementById("wallet-empty-msg");
@@ -550,6 +696,7 @@
         cards.forEach(function (card) {
           const tile = document.createElement("div");
           tile.className = "wallet-card-tile";
+          tile.dataset.tag = card.tag || "";
           tile.setAttribute("role", "button");
           tile.setAttribute("tabindex", "0");
           tile.setAttribute("aria-label", "View stored card full screen");
@@ -562,6 +709,7 @@
           label.textContent = "Stored on this device";
           tile.appendChild(img);
           tile.appendChild(label);
+          tile.appendChild(buildTagSelect(card));
           tile.addEventListener("click", function () { openCardView(card); });
           tile.addEventListener("keydown", function (e) {
             if (e.key === "Enter" || e.key === " ") {
@@ -612,8 +760,8 @@
       const grid = document.getElementById("wallet-card-grid");
       Array.from(grid.children).forEach(function (tile) {
         const label = tile.querySelector(".wallet-card-label");
-        const text = label ? label.textContent.toLowerCase() : "";
-        tile.hidden = q !== "" && text.indexOf(q) === -1;
+        const text = (label ? label.textContent : "") + " " + (tile.dataset.tag || "");
+        tile.hidden = q !== "" && text.toLowerCase().indexOf(q) === -1;
       });
     }
 
