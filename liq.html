@@ -1570,14 +1570,18 @@
         // Other-acknowledgement line is independent and can appear alongside
         // it -- they say different things and aren't mutually exclusive.
         appendOtherAcknowledgement(currentAnswerEl, otherAckText);
-        // Bitwise, not `&&` -- WordPress's render pipeline for this widget
-        // (Text Editor storing raw code it isn't built for) has been observed
-        // to entity-corrupt a literal && inside <script> on some publishes,
-        // silently breaking the whole script. Boolean(x) is always exactly
-        // true/false, so & between two of them is truthiness-equivalent to
-        // && for every condition in this file -- none of them depend on the
-        // actual (non-boolean) value && would return, only on its truthiness.
-        if (Boolean(noCardsSelected) & Boolean(currentAnswerEl)) {
+        // No literal ampersand anywhere in this file's script, not even a
+        // single one -- WordPress's render pipeline for this widget (Text
+        // Editor storing raw code it isn't built for) has been observed to
+        // entity-corrupt a bare ampersand inside a script tag on some
+        // publishes, both a doubled one and a lone one from an earlier fix
+        // attempt, each time silently breaking the whole script.
+        // .every(Boolean) on a short-lived array is the ampersand-free
+        // truthiness-only stand-in used throughout this file -- none of
+        // these conditions depend on the actual, non-boolean value the
+        // logical-AND form would have returned, only on its truthiness, and
+        // none need the array to persist past this one expression.
+        if ([noCardsSelected, currentAnswerEl].every(Boolean)) {
           const nudge = document.createElement("p");
           nudge.className = "ask-nudge";
           nudge.textContent = "Select your cards and go to Spend Check to see what you're leaving on the table.";
@@ -1601,7 +1605,7 @@
       // Real held LPs only -- "Other" must never satisfy this gate, ticking
       // it isn't the same as holding a card LIQ can actually price.
       if (heldState.size === 0) {
-        if (Boolean(otherHeld.checked) & Boolean(otherHeld.text.trim())) {
+        if ([otherHeld.checked, otherHeld.text.trim()].every(Boolean)) {
           showError("Other isn't included in your results yet. Tick at least one covered programme to continue.");
         } else {
           showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
@@ -1727,7 +1731,7 @@
     // selector. Woolworths stays a checkbox pair, Other stays a checkbox +
     // text field, both unchanged from the existing build.
     function catalogFlatStandalone() {
-      return PROGRAMME_CATALOG.filter(item => Boolean(!item.isGroup) & Boolean(!item.isOther));
+      return PROGRAMME_CATALOG.filter(item => [!item.isGroup, !item.isOther].every(Boolean));
     }
 
     // Single source of truth for "what do you hold" -- value -> {tier,
@@ -1786,7 +1790,7 @@
       heldState.forEach((meta, value) => {
         const entry = { name: value };
         if (meta.tier) entry.tier = meta.tier;
-        if (Boolean(meta.balance != null) & Boolean(!Number.isNaN(meta.balance))) entry.balance = meta.balance;
+        if ([meta.balance != null, !Number.isNaN(meta.balance)].every(Boolean)) entry.balance = meta.balance;
         entries.push(entry);
       });
       return entries;
@@ -1797,7 +1801,7 @@
     // stated input without saying so is the same failure shape as showing
     // unsourced data, just in a different spot.
     function getOtherAcknowledgement() {
-      if (Boolean(otherHeld.checked) & Boolean(otherHeld.text.trim())) {
+      if ([otherHeld.checked, otherHeld.text.trim()].every(Boolean)) {
         return `You mentioned ${otherHeld.text.trim()}, that's not one of LIQ's covered programmes yet, so it isn't reflected below.`;
       }
       return null;
@@ -1988,7 +1992,7 @@
       saveHeldStateToSession();
       mountedChecklists.forEach(({ idPrefix }) => {
         const input = document.getElementById(`${idPrefix}-other-text`);
-        if (Boolean(input) & Boolean(document.activeElement !== input)) input.value = otherHeld.text;
+        if ([input, document.activeElement !== input].every(Boolean)) input.value = otherHeld.text;
       });
       renderJoinHeldSummary();
     }
@@ -2168,7 +2172,7 @@
       // Real held LPs only -- "Other" must never satisfy this gate, ticking
       // it isn't the same as holding a card LIQ can actually price.
       if (heldState.size === 0) {
-        if (Boolean(otherHeld.checked) & Boolean(otherHeld.text.trim())) {
+        if ([otherHeld.checked, otherHeld.text.trim()].every(Boolean)) {
           showError("Other isn't included in your results yet. Tick at least one covered programme to continue.");
         } else {
           showError("Select at least one card first, LIQ needs to know what you hold to give you a real answer.");
