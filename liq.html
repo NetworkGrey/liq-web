@@ -20,9 +20,9 @@
       --muted: #94a3b8;
       --border: #cbd5e1;
       --border-soft: #dbe3ee;
-      --blue: #1457e6;
-      --blue-hover: #0f49c7;
-      --blue-dark: #0b2e75;
+      --blue: #a8a133;
+      --blue-hover: #8e8829;
+      --blue-dark: #4a4717;
       --blue-soft: #edf4ff;
       --shadow: 0 14px 36px rgba(15, 23, 42, .08);
       --shadow-soft: 0 8px 24px rgba(15, 23, 42, .05);
@@ -30,7 +30,7 @@
       --max: 1120px;
 
       /* Trust section (tokenised 20 July 2026, mirrors live Additional CSS) */
-      --trust-dark: linear-gradient(135deg, rgba(20,87,230,.22), transparent 48%), #061b44;
+      --trust-dark: linear-gradient(135deg, rgba(168,161,51,.22), transparent 48%), #21200a;
       --trust-light: #fff;
 
       /* Font stacks */
@@ -64,8 +64,8 @@
       min-height: 100vh;
       margin: 0;
       background:
-        linear-gradient(rgba(20,87,230,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(20,87,230,.035) 1px, transparent 1px),
+        linear-gradient(rgba(168,161,51,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(168,161,51,.035) 1px, transparent 1px),
         var(--page);
       background-size: 40px 40px;
       color: var(--ink);
@@ -366,14 +366,14 @@
       font-size: var(--text-sm);
       font-weight: 700;
       padding: 11px 24px;
-      box-shadow: 0 12px 24px rgba(20,87,230,.18);
+      box-shadow: 0 12px 24px rgba(168,161,51,.18);
       transition: background .16s ease, transform .16s ease, box-shadow .16s ease;
     }
 
     button[id$="-btn"]:hover {
       background: var(--blue-hover);
       transform: translateY(-1px);
-      box-shadow: 0 16px 28px rgba(20,87,230,.23);
+      box-shadow: 0 16px 28px rgba(168,161,51,.23);
     }
 
     button[id$="-btn"]:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
